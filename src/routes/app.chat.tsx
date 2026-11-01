@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Message, MessageContent, MessageActions, MessageAction, MessageResponse } from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/app/chat")({
   component: ChatPage,
@@ -19,13 +20,14 @@ const STARTERS = [
 ];
 
 function ChatPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
 
   // Auto-scroll on new content
   useEffect(() => {
@@ -46,6 +48,42 @@ function ChatPage() {
     const controller = new AbortController();
     setAbortController(controller);
 
+    // Ensure we have a thread ID before sending
+    let currentThreadId = threadId;
+    if (!currentThreadId && user && profile) {
+      const { data, error } = await supabase
+        .from("chat_threads")
+        .insert({
+          user_id: user.id,
+          org_id: profile.org_id,
+          title: "New conversation",
+        })
+        .select("id")
+        .single();
+      
+      if (data) {
+        currentThreadId = data.id;
+        setThreadId(data.id);
+      } else if (error) {
+        console.error("Failed to create thread:", error);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "Error: Could not create conversation thread. Please try again." },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    if (!currentThreadId) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Error: Please sign in to start a conversation." },
+      ]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -54,7 +92,7 @@ function ChatPage() {
           Authorization: `Bearer ${localStorage.getItem("sb-access-token")}`,
         },
         body: JSON.stringify({
-          id: crypto.randomUUID(),
+          id: currentThreadId,
           messages: [
             ...messages.map((m) => ({
               role: m.role,
