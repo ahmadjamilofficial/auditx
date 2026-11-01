@@ -26,26 +26,29 @@ export function ThemeProvider({ children, defaultTheme = "system" }: { children:
     }
   }, []);
 
-  // Apply theme to DOM
+  // Apply theme to DOM - run immediately to set initial state
   useEffect(() => {
-    if (!mounted) return;
-
     const root = window.document.documentElement;
+    
+    // Remove existing classes
     root.classList.remove("light", "dark");
 
+    // Determine effective theme
+    let newEffectiveTheme: "light" | "dark";
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      root.classList.add(systemTheme);
-      setEffectiveTheme(systemTheme);
+      newEffectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     } else {
-      root.classList.add(theme);
-      setEffectiveTheme(theme);
+      newEffectiveTheme = theme;
     }
-  }, [theme, mounted]);
+
+    // Apply the class
+    root.classList.add(newEffectiveTheme);
+    setEffectiveTheme(newEffectiveTheme);
+  }, [theme]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (!mounted || theme !== "system") return;
+    if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -59,7 +62,7 @@ export function ThemeProvider({ children, defaultTheme = "system" }: { children:
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem("auditx-theme", newTheme);
