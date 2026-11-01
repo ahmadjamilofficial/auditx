@@ -319,51 +319,36 @@ export const Route = createFileRoute("/api/chat")({
           .single();
         if (threadError || !thread) return new Response("Thread not found", { status: 404 });
 
-        // ── Quota check (graceful — ai_usage table may not exist yet) ────────
-        const DAILY_LIMITS: Record<string, number> = { free: 20, pro: 100, enterprise: 500 };
-        const STEP_LIMITS: Record<string, number> = { free: 10, pro: 18, enterprise: 28 };
-        const MONTHLY_TX_LIMITS: Record<string, number | null> = { free: 50, pro: null, enterprise: null };
-
+        // ── Subscription check (replaces credit system) ────────────────────────
         const { data: subData } = await supabase
           .from("subscriptions")
-          .select("plan, status")
+          .select("plan, status, trial_end_at")
           .eq("org_id", thread.org_id)
           .maybeSingle();
-        // Paid features only apply while billing is in good standing.
-        const billingOk = !subData?.status || ["active", "trialing"].includes(subData.status as string);
-        const plan = billingOk ? ((subData?.plan as string | undefined) ?? "free") : "free";
-        const dailyLimit = DAILY_LIMITS[plan] ?? DAILY_LIMITS["free"]!;
-        const maxSteps = STEP_LIMITS[plan] ?? STEP_LIMITS["free"]!;
-        const monthlyTxLimit = MONTHLY_TX_LIMITS[plan] ?? 50;
 
-        let creditsUsedToday = 0;
-        try {
-          const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-          const { data: usageRows } = await supabase
-            .from("ai_usage")
-            .select("credits_used")
-            .eq("user_id", authData.user.id)
-            .eq("status", "ok")
-            .gte("created_at", since24h);
-          creditsUsedToday = (usageRows ?? []).reduce((s, r) => s + (r.credits_used ?? 0), 0);
-        } catch {
-          // Table not migrated yet — skip quota check, don't block the request
-          console.warn("[AuditX] ai_usage table not available yet; skipping quota check.");
-        }
+        // Check if user has active subscription or valid trial
+        const hasActiveSubscription = subData && ["active", "trialing"].includes(subData.status as string);
+        const isTrialValid = subData?.trial_end_at && new Date(subData.trial_end_at) > new Date();
 
-        if (creditsUsedToday >= dailyLimit) {
-          const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
-          const msg =
-            plan === "free"
-              ? `You've reached today's AI limit. Your Free plan includes ${dailyLimit} AI requests per day. Your limit will reset in the next 24 hours.`
-              : `You've used all ${dailyLimit} AI credits available today on your ${planLabel} plan. Your limit resets in 24 hours.`;
+        if (!hasActiveSubscription || (subData?.status === "trialing" && !isTrialValid)) {
           return new Response(
-            JSON.stringify({ code: "quota_exceeded", plan, daily_limit: dailyLimit, credits_used: creditsUsedToday, message: msg }),
-            { status: 429, headers: { "Content-Type": "application/json" } },
+            JSON.stringify({
+              code: "subscription_required",
+              message: "An active subscription is required to use AuditX AI. Please start a 7-day free trial or upgrade your plan.",
+              trial_available: true,
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
           );
         }
 
-        // Track this request — fire-and-forget, never block the stream
+        const plan = (subData?.plan as string) ?? "standard";
+        const isPro = plan === "pro";
+
+        // Pro users get higher step limits and background task access
+        const maxSteps = isPro ? 28 : 18;
+        const monthlyTxLimit = isPro ? null : 50; // Pro has unlimited transactions
+
+        // Track usage for analytics (but don't block on it)
         const usageId = crypto.randomUUID();
         supabase.from("ai_usage").insert({
           id:                 usageId,

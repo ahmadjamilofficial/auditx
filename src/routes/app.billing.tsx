@@ -12,63 +12,61 @@ export const Route = createFileRoute("/app/billing")({
 
 const plans = [
   {
-    name: "Free",
-    price: "bash",
-    note: "50 parsed transactions / month",
-    items: ["1 tax profile", "CSV export", "Community support"],
-  },
-  {
-    name: "Pro",
-    price: ".99",
-    note: "For active retail traders",
-    popular: true,
+    name: "Standard",
+    price: "$3",
+    monthlyPrice: 3,
+    note: "For individuals who need intelligent financial assistance",
+    popular: false,
+    trialDays: 7,
+    kelviqPlan: "standard-plan",
     items: [
-      "Unlimited transactions",
-      "PDF tax summary export",
-      "Anomaly detection",
-      "Tax-loss harvesting",
+      "Natural AI conversations",
+      "Agentic financial assistance",
+      "Persistent memory",
+      "Transaction analysis",
+      "Document analysis",
+      "Core audit tools",
+      "Light and dark themes",
+      "Standard integrations",
     ],
   },
   {
-    name: "Enterprise",
-    price: "9",
-    note: "Brokerages & portfolio managers",
+    name: "Pro",
+    price: "$5",
+    monthlyPrice: 5,
+    note: "For advanced users and businesses requiring more powerful automation",
+    popular: true,
+    trialDays: 7,
+    kelviqPlan: "pro-plan",
     items: [
-      "Multi-client accounts",
-      "Team roles & SSO",
-      "API access",
-      "Priority reconciliation",
-      "Dedicated audit retention",
+      "Everything in Standard",
+      "Advanced agent workflows",
+      "More integrations",
+      "Advanced reconciliation",
+      "Automated reporting",
+      "Background agent tasks",
+      "Advanced spreadsheet operations",
+      "Priority processing",
     ],
   },
 ];
 
-const invoices = [
-  { id: "INV-2025-08", date: "Aug 1, 2025", amount: ".99", status: "Paid" },
-  { id: "INV-2025-07", date: "Jul 1, 2025", amount: ".99", status: "Paid" },
-  { id: "INV-2025-06", date: "Jun 1, 2025", amount: ".99", status: "Paid" },
-];
+const invoices: Array<{ id: string; date: string; amount: string; status: string }> = [];
 
 function Billing() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const usedTx = 31;
-  const limitTx = (user as any)?.plan === "free" ? 50 : null;
+  const kelviqCheckoutUrl = "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   function handleManagePayment() {
-    toast.info("Payment management would open Stripe Customer Portal in production");
+    toast.info("Payment management would open Kelviq Customer Portal in production");
   }
 
-  function handleUpgrade() {
-    navigate({ to: "/pricing" });
-  }
-
-  function handlePlanUpgrade(planName: string) {
-    const subject = encodeURIComponent(`AuditX Plan Upgrade: ${planName}`);
-    const body = encodeURIComponent(`Hi AuditX Team,\n\nI would like to upgrade my organisation to the ${planName} plan.\n\nOrganisation ID: ${user?.id || "N/A"}`);
-    window.location.href = `mailto:ahmadjamildhami@gmail.com?subject=${subject}&body=${body}`;
-    toast.info(`Redirecting to your email client to complete the ${planName} upgrade...`);
+  function handleStartTrial(plan: typeof plans[0]) {
+    const checkoutUrl = kelviqCheckoutUrl.replace("plan_identifier=pro-plan", `plan_identifier=${plan.kelviqPlan}`);
+    window.open(checkoutUrl, "_blank");
+    toast.info(`Opening checkout for ${plan.name} plan...`);
   }
 
   function handleDownloadInvoice(invoiceId: string) {
@@ -89,13 +87,13 @@ function Billing() {
           <div>
             <p className="text-xs font-medium" style={{ color: "var(--ink-3)" }}>CURRENT PLAN</p>
             <div className="mt-1 flex items-center gap-2">
-              <p className="text-xl font-semibold capitalize">{(user as any)?.plan ?? "Pro"}</p>
-              <StatusPill tone={(user as any)?.plan === "free" ? "warn" : "ok"}>
-                {(user as any)?.plan === "free" ? "Free" : (user as any)?.plan === "pro" ? "Active" : "Enterprise"}
+              <p className="text-xl font-semibold capitalize">{(user as any)?.plan ?? "Standard"}</p>
+              <StatusPill tone="ok">
+                {(user as any)?.plan === "standard" ? "Active" : "Pro"}
               </StatusPill>
             </div>
             <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
-              {(user as any)?.plan === "free" ? "Free forever, 50 tx/mo limit" : "Renews Sep 1, 2025 · $9.99/mo"}
+              {(user as any)?.plan === "standard" ? "$3/month · Includes 7-day free trial" : "$5/month · Includes 7-day free trial"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -103,34 +101,8 @@ function Billing() {
               <CreditCard size={15} strokeWidth={1.75} />
               Manage payment
             </Btn>
-            {(user as any)?.plan === "free" && (
-              <Btn onClick={handleUpgrade}>
-                <Zap size={15} strokeWidth={1.75} />
-                Upgrade to Pro
-              </Btn>
-            )}
           </div>
         </div>
-
-        {limitTx && (
-          <div className="mt-6">
-            <div className="flex justify-between text-xs" style={{ color: "var(--ink-2)" }}>
-              <span>Transactions parsed this month</span>
-              <span className="tnum font-medium">
-                {usedTx} / {limitTx}
-              </span>
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: "var(--color-login-bg)" }}>
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: usedTx / limitTx > 0.8 ? "var(--warn)" : "var(--color-accent)" }}
-                initial={{ width: 0 }}
-                animate={{ width: `${(usedTx / limitTx) * 100}%` }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </div>
-          </div>
-        )}
       </Panel>
 
       <div>
@@ -175,24 +147,24 @@ function Billing() {
                 </ul>
                 <Btn
                   variant={
-                    ((user as any)?.plan ?? "pro") === plan.name.toLowerCase()
+                    ((user as any)?.plan ?? "standard") === plan.name.toLowerCase()
                       ? "secondary"
                       : plan.popular
                         ? "primary"
                         : "secondary"
                   }
                   className="mt-5 w-full"
-                  disabled={((user as any)?.plan ?? "pro") === plan.name.toLowerCase()}
+                  disabled={((user as any)?.plan ?? "standard") === plan.name.toLowerCase()}
                   onClick={() => {
-                    if (((user as any)?.plan ?? "pro") !== plan.name.toLowerCase()) {
-                      handlePlanUpgrade(plan.name);
+                    if (((user as any)?.plan ?? "standard") !== plan.name.toLowerCase()) {
+                      handleStartTrial(plan);
                     }
                   }}
                 >
-                  {((user as any)?.plan ?? "pro") === plan.name.toLowerCase()
+                  {((user as any)?.plan ?? "standard") === plan.name.toLowerCase()
                     ? "Current plan"
-                    : plan.name === "Enterprise"
-                      ? "Contact sales"
+                    : plan.trialDays
+                      ? `Start ${plan.trialDays}-day free trial`
                       : `Upgrade to ${plan.name}`}
                 </Btn>
               </Panel>
@@ -201,48 +173,50 @@ function Billing() {
         </div>
       </div>
 
-      <Panel>
-        <p className="mb-4 text-sm font-semibold">Invoice History</p>
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ border: "1px solid var(--hairline)" }}
-        >
-          <table className="w-full border-collapse">
-            <thead>
-              <tr style={{ background: "var(--color-login-bg)", borderBottom: "1px solid var(--hairline)" }}>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Invoice</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Date</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold">Amount</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((inv) => (
-                <tr key={inv.id} style={{ borderBottom: "1px solid var(--hairline)" }} className="hover:bg-black/5 transition-colors">
-                  <td className="px-4 py-3 font-mono text-sm">{inv.id}</td>
-                  <td className="px-4 py-3 text-sm" style={{ color: "var(--ink-2)" }}>{inv.date}</td>
-                  <td className="tnum px-4 py-3 text-right text-sm font-medium">{inv.amount}</td>
-                  <td className="px-4 py-3">
-                    <StatusPill tone="ok">{inv.status}</StatusPill>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button 
-                      type="button" 
-                      className="flex items-center gap-1.5 text-xs" 
-                      style={{ color: "var(--color-accent)" }}
-                      onClick={() => handleDownloadInvoice(inv.id)}
-                    >
-                      <Download size={13} strokeWidth={1.75} />
-                      PDF
-                    </button>
-                  </td>
+      {invoices.length > 0 && (
+        <Panel>
+          <p className="mb-4 text-sm font-semibold">Invoice History</p>
+          <div
+            className="overflow-hidden rounded-xl"
+            style={{ border: "1px solid var(--hairline)" }}
+          >
+            <table className="w-full border-collapse">
+              <thead>
+                <tr style={{ background: "var(--color-login-bg)", borderBottom: "1px solid var(--hairline)" }}>
+                  <th className="px-4 py-3 text-left text-xs font-semibold">Invoice</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold">Date</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold">Amount</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold">Status</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+              </thead>
+              <tbody>
+                {invoices.map((inv) => (
+                  <tr key={inv.id} style={{ borderBottom: "1px solid var(--hairline)" }} className="hover:bg-black/5 transition-colors">
+                    <td className="px-4 py-3 font-mono text-sm">{inv.id}</td>
+                    <td className="px-4 py-3 text-sm" style={{ color: "var(--ink-2)" }}>{inv.date}</td>
+                    <td className="tnum px-4 py-3 text-right text-sm font-medium">{inv.amount}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone="ok">{inv.status}</StatusPill>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        className="flex items-center gap-1.5 text-xs"
+                        style={{ color: "var(--color-accent)" }}
+                        onClick={() => handleDownloadInvoice(inv.id)}
+                      >
+                        <Download size={13} strokeWidth={1.75} />
+                        PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
 
       <div
         className="flex items-start gap-2.5 rounded-2xl px-5 py-4 text-sm"
@@ -250,7 +224,7 @@ function Billing() {
       >
         <ArrowUpRight size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }} />
         <p style={{ color: "var(--ink-2)" }}>
-          <strong>Upgrade Process:</strong> To upgrade your plan, please contact our billing team via email. We will process your request and set up your subscription.
+          <strong>Subscription:</strong> AuditX now uses a simple subscription model. Choose Standard ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is managed securely through Kelviq.
         </p>
       </div>
     </div>

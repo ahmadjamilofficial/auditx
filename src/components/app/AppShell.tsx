@@ -28,6 +28,7 @@ import { CommandBarProvider, useCommandBar } from "@/components/intelligence/Aud
 import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // ── Persist sidebar state across page loads ───────────────────────────────────
 const SIDEBAR_KEY = "auditx.sidebar.expanded";
@@ -477,6 +478,9 @@ function InnerShell({ children }: { children: ReactNode }) {
           </button>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             {/* Upload shortcut */}
             <Link
               to="/app/parser"

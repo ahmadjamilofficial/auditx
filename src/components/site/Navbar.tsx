@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Btn, Container } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   { label: "Product",      to: "/how-it-works" },
@@ -40,6 +41,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           <Btn onClick={() => nav({ to: isLoggedIn ? "/app/parser" : "/signup" })}>
             {isLoggedIn ? "Dashboard" : "Start Free Audit"}
           </Btn>

@@ -1,19 +1,20 @@
 // ─── AuditX AI Provider ────────────────────────────────────────────────────────
-// Server-only. Provider priority: OpenRouter → Lovable AI → Groq.
-// Set OPENROUTER_API_KEY (and optionally OPENROUTER_MODEL) in your .env.
+// Server-only. Provider: Google Gemini (primary) → OpenRouter → Lovable AI → Groq.
+// Set GEMINI_API_KEY in your .env (required).
 
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { LanguageModel } from "ai";
 
-export const AI_MODEL = "openai/gpt-6-astra";
+export const AI_MODEL = "gemini-2.0-flash-exp";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 
 /** Must be passed to every streamText call that uses the resolved model. */
 export const AI_PROVIDER_OPTIONS = {} as const;
 
 export interface ResolvedModel {
-  provider: "lovable" | "openrouter" | "groq";
+  provider: "gemini" | "lovable" | "openrouter" | "groq";
   modelId: string;
   model: LanguageModel;
   cascade: Array<{ id: string; model: LanguageModel }>;
@@ -31,10 +32,20 @@ function readEnv(name: string, env?: Record<string, unknown>): string | undefine
 }
 
 /**
- * OpenRouter is primary. Falls back to LOVABLE_API_KEY (Lovable Cloud hosting),
- * then GROQ_API_KEY. Set OPENROUTER_API_KEY in your .env to use OpenRouter.
+ * Google Gemini is primary. Falls back to OpenRouter, then LOVABLE_API_KEY,
+ * then GROQ_API_KEY. Set GEMINI_API_KEY in your .env to use Gemini.
  */
 export async function resolveAgentModel(env?: Record<string, unknown>): Promise<ResolvedModel | null> {
+  const geminiKey = readEnv("GEMINI_API_KEY", env);
+  if (geminiKey) {
+    const modelId = readEnv("GEMINI_MODEL", env) ?? "gemini-2.0-flash-exp";
+    const provider = createGoogleGenerativeAI({
+      apiKey: geminiKey,
+    });
+    const model = provider(modelId) as LanguageModel;
+    return { provider: "gemini", modelId, model, cascade: [{ id: modelId, model }] };
+  }
+
   const openRouterKey = readEnv("OPENROUTER_API_KEY", env);
   if (openRouterKey) {
     const modelId = readEnv("OPENROUTER_MODEL", env) ?? "openai/gpt-4o-mini";
@@ -71,7 +82,7 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
     return { provider: "groq", modelId, model, cascade: [{ id: modelId, model }] };
   }
 
-  console.warn("[AuditX] No AI key available: set LOVABLE_API_KEY, OPENROUTER_API_KEY or GROQ_API_KEY.");
+  console.warn("[AuditX] No AI key available: set GEMINI_API_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY or GROQ_API_KEY.");
   return null;
 }
 
