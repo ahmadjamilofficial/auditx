@@ -96,12 +96,17 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
       // Map Kelviq plan identifiers to our plans
       const plan = planIdentifier === "pro-plan" ? "pro" : "standard";
 
-      // Find or create organization by customer email (you may need to map this differently)
-      // For now, we'll assume customer metadata includes org_id or user email
-      const orgId = (data.metadata?.org_id as string) || (data.customer_email as string);
+      // Get org_id from metadata
+      const orgId = data.metadata?.org_id as string;
+
+      if (!orgId) {
+        console.error("[Kelviq] No org_id in metadata, cannot link subscription");
+        return;
+      }
 
       // Create or update subscription
       const { error: subError } = await supabase.from("subscriptions").upsert({
+        org_id: orgId,
         kelviq_customer_id: customerId,
         kelviq_subscription_id: subscriptionId,
         plan,
@@ -116,6 +121,16 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
 
       if (subError) {
         console.error("[Kelviq] Failed to create subscription:", subError);
+      }
+
+      // Update user's profile plan
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ plan })
+        .eq("org_id", orgId);
+
+      if (profileError) {
+        console.error("[Kelviq] Failed to update profile plan:", profileError);
       }
       break;
     }
@@ -140,6 +155,24 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
       if (updateError) {
         console.error("[Kelviq] Failed to update subscription:", updateError);
       }
+
+      // Update user's profile plan
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("org_id")
+        .eq("kelviq_subscription_id", subscriptionId)
+        .single();
+
+      if (subscription) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ plan })
+          .eq("org_id", subscription.org_id);
+
+        if (profileError) {
+          console.error("[Kelviq] Failed to update profile plan:", profileError);
+        }
+      }
       break;
     }
 
@@ -158,6 +191,24 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
 
       if (cancelError) {
         console.error("[Kelviq] Failed to cancel subscription:", cancelError);
+      }
+
+      // Update user's profile plan to standard (downgrade to basic)
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("org_id")
+        .eq("kelviq_subscription_id", subscriptionId)
+        .single();
+
+      if (subscription) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ plan: "standard" })
+          .eq("org_id", subscription.org_id);
+
+        if (profileError) {
+          console.error("[Kelviq] Failed to update profile plan on cancel:", profileError);
+        }
       }
       break;
     }

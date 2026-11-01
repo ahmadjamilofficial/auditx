@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Btn, Panel, Reveal, StatusPill } from "@/components/kit";
 import { PageShell } from "@/components/site/PageShell";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -45,16 +46,20 @@ function Cell({ v }: { v: string | boolean }) {
 
 function Pricing() {
   const navigate = useNavigate();
+  const { session, profile } = useAuth();
   const KELVIQ_CHECKOUT_URL = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   function handlePlanClick(planName: string) {
-    // Direct to Kelviq checkout for both plans
-    if (planName === "Standard") {
-      const standardUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", "plan_identifier=standard-plan");
-      window.location.href = standardUrl;
-    } else if (planName === "Pro") {
-      window.location.href = KELVIQ_CHECKOUT_URL;
+    // If not logged in, redirect to signup first, then to checkout
+    if (!session) {
+      navigate({ to: "/signup", search: { plan: planName.toLowerCase() } });
+      return;
     }
+
+    // Construct checkout URL with org_id in metadata
+    const baseUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", `plan_identifier=${planName.toLowerCase()}-plan`);
+    const checkoutUrl = `${baseUrl}&metadata[org_id]=${profile?.org_id}`;
+    window.location.href = checkoutUrl;
   }
 
   return (

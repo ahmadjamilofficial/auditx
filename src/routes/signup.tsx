@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Logo } from "@/components/brand/Logo";
 import { signUpWithEmail, signInWithGoogle } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/signup")({
   component: SignUp,
@@ -36,13 +37,36 @@ function SignUp() {
   const [serverErr, setServerErr] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  
+  // Get plan from URL query param
+  const searchParams = new URLSearchParams(window.location.search);
+  const selectedPlan = searchParams.get("plan");
 
-  // As soon as session is confirmed, go straight to dashboard
+  // As soon as session is confirmed, redirect to checkout if plan selected, otherwise dashboard
   useEffect(() => {
     if (!loading && session) {
-      nav({ to: "/app/parser", replace: true });
+      if (selectedPlan) {
+        // Get org_id from profile first
+        const fetchProfileAndRedirect = async () => {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("org_id")
+            .eq("user_id", session.user.id)
+            .single();
+          
+          if (profileData) {
+            const KELVIQ_CHECKOUT_URL = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+            const checkoutUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", `plan_identifier=${selectedPlan}-plan`);
+            const finalUrl = `${checkoutUrl}&metadata[org_id]=${profileData.org_id}`;
+            window.location.href = finalUrl;
+          }
+        };
+        fetchProfileAndRedirect();
+      } else {
+        nav({ to: "/app/parser", replace: true });
+      }
     }
-  }, [session, loading, nav]);
+  }, [session, loading, nav, selectedPlan]);
 
   const {
     register,

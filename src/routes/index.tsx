@@ -136,13 +136,14 @@ const faqs = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 function Home() {
-  const { session, loading } = useAuth();
+  const { session, loading, profile } = useAuth();
   const ctaTo = !loading && session ? "/app/parser" : "/signup";
   const [chatValue, setChatValue] = useState("");
   const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
   const [isBusy, setIsBusy] = useState(false);
   const [pendingFileList, setPendingFileList] = useState<File[]>([]);
   const navigate = useNavigate();
+  const KELVIQ_CHECKOUT_URL = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   const handleAddFiles = (files: FileList | null) => {
     if (!files) return;
@@ -633,9 +634,13 @@ function Home() {
                   <button
                     type="button"
                     onClick={() => {
-                      const kelviqCheckoutUrl = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
-                      const checkoutUrl = kelviqCheckoutUrl.replace("plan_identifier=pro-plan", `plan_identifier=${t.name.toLowerCase()}-plan`);
-                      window.location.href = checkoutUrl;
+                      if (!session) {
+                        navigate({ to: "/signup", search: { plan: t.name.toLowerCase() } });
+                        return;
+                      }
+                      const checkoutUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", `plan_identifier=${t.name.toLowerCase()}-plan`);
+                      const finalUrl = `${checkoutUrl}&metadata[org_id]=${profile?.org_id}`;
+                      window.location.href = finalUrl;
                     }}
                     className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all hover:shadow-md"
                     style={
