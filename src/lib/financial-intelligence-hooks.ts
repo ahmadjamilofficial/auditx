@@ -24,7 +24,7 @@ import {
 
 export function usePortfolioSummary() {
   const { profile } = useAuth();
-  const { data: transactions = [], isLoading } = useTransactions(profile?.org_id);
+  const { data: transactions = [], isLoading: txLoading } = useTransactions(profile?.org_id);
   const { data: flags = [] } = useReconciliationFlags(profile?.org_id);
 
   // Detect jurisdiction from actual transaction exchanges
@@ -35,13 +35,23 @@ export function usePortfolioSummary() {
       : nseCount > transactions.length / 2 ? "NSE" : "PSX";
 
   const taxYear = String(new Date().getFullYear());
-  const summary = computePortfolioSummary(transactions, jurisdiction, taxYear);
-  const summaryWithFlags: PortfolioSummary = {
-    ...summary,
-    openFlags: flags.length,
-  };
 
-  return { summary: summaryWithFlags, isLoading };
+  // Use React Query to handle async computation with live market data
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ["portfolio_summary", profile?.org_id, transactions.length],
+    enabled: !txLoading && !!profile?.org_id,
+    queryFn: async () => {
+      const computed = await computePortfolioSummary(transactions, jurisdiction, taxYear);
+      return {
+        ...computed,
+        openFlags: flags.length,
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+  });
+
+  return { summary: summary ?? null, isLoading: txLoading || summaryLoading };
 }
 
 // ── Financial Health Score ────────────────────────────────────────────────────

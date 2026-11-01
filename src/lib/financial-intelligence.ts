@@ -5,6 +5,7 @@
 
 import { supabase } from "./supabase";
 import { computeTax } from "./tax";
+import { fetchMarketPrices, type MarketPrice } from "./market-data";
 import type { Transaction } from "./demo-data";
 
 // ── Event Types ───────────────────────────────────────────────────────────────
@@ -107,11 +108,11 @@ export interface PortfolioSummary {
   currency: string;
 }
 
-export function computePortfolioSummary(
+export async function computePortfolioSummary(
   transactions: Transaction[],
   jurisdiction: "PSX" | "NSE",
   taxYear: string,
-): PortfolioSummary {
+): Promise<PortfolioSummary> {
   // Detect actual exchange from transaction data — don't blindly trust org default.
   // If any transaction uses NSE, treat the ledger as NSE for currency purposes.
   const hasNSE  = transactions.some((t) => t.exchange === "NSE");
@@ -123,10 +124,12 @@ export function computePortfolioSummary(
     nseCount > psxCount ? "NSE" : (hasPSX ? "PSX" : (hasNSE ? "NSE" : jurisdiction));
   const currency = detectedJurisdiction === "NSE" ? "INR" : "PKR";
 
-  // Build current positions (net BUY - SELL)
-  const positions: Record<string, { qty: number; avgCost: number }> = {};
+  // Build current positions (net BUY - SELL) with avg cost
+  const positions: Record<string, { qty: number; avgCost: number; exchange: "PSX" | "NSE" }> = {};
   for (const tx of transactions.sort((a, b) => a.trade_date.localeCompare(b.trade_date))) {
-    if (!positions[tx.ticker]) positions[tx.ticker] = { qty: 0, avgCost: 0 };
+    if (!positions[tx.ticker]) {
+      positions[tx.ticker] = { qty: 0, avgCost: 0, exchange: tx.exchange || detectedJurisdiction };
+    }
     const p = positions[tx.ticker]!;
     if (tx.action === "BUY") {
       const totalCost = p.avgCost * p.qty + tx.price * tx.quantity;
@@ -137,17 +140,47 @@ export function computePortfolioSummary(
     }
   }
 
-  // Portfolio value uses average cost as proxy (no live prices)
-  const totalValue = Object.entries(positions)
+  // Fetch live market prices for all positions
+  const tickerList = Object.entries(positions)
     .filter(([, p]) => p.qty > 0)
-    .reduce((sum, [, p]) => sum + p.qty * p.avgCost, 0);
+    .map(([ticker, p]) => ({ ticker, exchange: p.exchange }));
 
-  const tickerBreakdown = Object.entries(positions)
-    .filter(([, p]) => p.qty > 0)
-    .map(([ticker, p]) => ({ ticker, value: p.qty * p.avgCost, pct: 0 }))
+  const marketPrices = await fetchMarketPrices(tickerList);
+
+  // Calculate portfolio value using live market prices
+  let totalValue = 0;
+  let totalUnrealizedGain = 0;
+  const tickerBreakdown: Array<{ ticker: string; value: number; pct: number }> = [];
+
+  for (const [ticker, p] of Object.entries(positions)) {
+    if (p.qty <= 0) continue;
+
+    const key = `${p.exchange}:${ticker}`;
+    const marketPrice = marketPrices.get(key);
+    const currentPrice = marketPrice?.price || p.avgCost; // Fallback to avg cost if price fetch fails
+
+    const marketValue = p.qty * currentPrice;
+    const costBasis = p.qty * p.avgCost;
+    const unrealizedGain = marketValue - costBasis;
+
+    totalValue += marketValue;
+    totalUnrealizedGain += unrealizedGain;
+
+    tickerBreakdown.push({
+      ticker,
+      value: marketValue,
+      pct: 0, // Will calculate after totalValue is known
+    });
+  }
+
+  // Calculate percentages
+  const finalTickerBreakdown = tickerBreakdown
     .sort((a, b) => b.value - a.value)
     .slice(0, 8)
-    .map((item) => ({ ...item, pct: totalValue > 0 ? (item.value / totalValue) * 100 : 0 }));
+    .map((item) => ({
+      ...item,
+      pct: totalValue > 0 ? (item.value / totalValue) * 100 : 0,
+    }));
 
   // Tax computation uses the detected jurisdiction
   const tax = computeTax(transactions, { jurisdiction: detectedJurisdiction, filerStatus: "Filer", taxYear });
@@ -157,12 +190,12 @@ export function computePortfolioSummary(
   return {
     totalValue: Math.round(totalValue),
     realizedGains: Math.round(tax.totalGain),
-    unrealizedGains: 0, // requires live market feed
+    unrealizedGains: Math.round(totalUnrealizedGain),
     taxLiability: Math.round(tax.estimatedTaxDue),
     unreconciledCount,
     totalTransactions: transactions.length,
     openFlags: 0, // fetched separately
-    tickerBreakdown,
+    tickerBreakdown: finalTickerBreakdown,
     currency,
   };
 }

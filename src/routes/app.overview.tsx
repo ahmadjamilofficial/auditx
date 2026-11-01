@@ -249,7 +249,7 @@ function MissionControl() {
 
   const currentYear = String(new Date().getFullYear());
   const { score, isLoading: scoreLoading } = useHealthScore();
-  const { summary } = usePortfolioSummary();
+  const { summary, isLoading: summaryLoading } = usePortfolioSummary();
   const { priorities, isLoading: prioritiesLoading } = usePriorities();
   const { data: events = [], isLoading: eventsLoading } = useFinancialEvents(30);
   const { data: insights = [] } = useFinancialInsights(5);
@@ -257,27 +257,12 @@ function MissionControl() {
   const tax = computeTax(transactions, { jurisdiction: detectedJurisdiction, filerStatus: "Filer", taxYear: currentYear });
   const unreconciledCount = transactions.filter((t) => t.status === "needs_review").length;
 
-  // Portfolio allocation — use same avg-cost remaining-position logic as computePortfolioSummary
-  const positions: Record<string, { qty: number; avgCost: number }> = {};
-  for (const tx of [...transactions].sort((a, b) => a.trade_date.localeCompare(b.trade_date))) {
-    if (!positions[tx.ticker]) positions[tx.ticker] = { qty: 0, avgCost: 0 };
-    const p = positions[tx.ticker]!;
-    if (tx.action === "BUY") {
-      const totalCost = p.avgCost * p.qty + tx.price * tx.quantity;
-      p.qty += tx.quantity;
-      p.avgCost = p.qty > 0 ? totalCost / p.qty : 0;
-    } else if (tx.action === "SELL") {
-      p.qty = Math.max(0, p.qty - tx.quantity);
-    }
-  }
-  const allocationData = Object.entries(positions)
-    .filter(([, p]) => p.qty > 0)
-    .map(([name, p]) => ({ name, value: Math.round(p.qty * p.avgCost) }))
-    .sort((a, b) => b.value - a.value)
+  // Portfolio allocation — use live market data from summary
+  const allocationData = (summary?.tickerBreakdown ?? [])
     .slice(0, 6)
-    .map((d, i) => ({ ...d, color: allocationColors[i] ?? "#ccc" }));
+    .map((d, i) => ({ name: d.ticker, value: d.value, color: allocationColors[i] ?? "#ccc" }));
 
-  const totalPortfolioValue = allocationData.reduce((s, d) => s + d.value, 0);
+  const totalPortfolioValue = summary?.totalValue ?? 0;
 
   // Cumulative P&L chart
   const pnlByMonth: Record<string, number> = {};
@@ -362,26 +347,34 @@ function MissionControl() {
         <div className="lg:col-span-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
           <MetricCard
             label="Portfolio Value"
-            value={txLoading ? "—" : `${currency} ${fmt(totalPortfolioValue)}`}
-            sub="Current positions"
+            value={summaryLoading ? "—" : `${currency} ${fmt(totalPortfolioValue)}`}
+            sub="Live market prices"
             tone="info"
             i={0}
             askWhy="Why did my portfolio value change?"
           />
           <MetricCard
             label="Realized Gains YTD"
-            value={`${currency} ${fmt(tax.totalGain)}`}
+            value={summaryLoading ? "—" : `${currency} ${fmt(summary?.realizedGains ?? 0)}`}
             sub="FIFO lot matching"
-            tone={tax.totalGain >= 0 ? "ok" : "bad"}
+            tone={(summary?.realizedGains ?? 0) >= 0 ? "ok" : "bad"}
             i={1}
             askWhy="Why did my realized gains change?"
+          />
+          <MetricCard
+            label="Unrealized Gains"
+            value={summaryLoading ? "—" : `${currency} ${fmt(summary?.unrealizedGains ?? 0)}`}
+            sub="Live market prices"
+            tone={(summary?.unrealizedGains ?? 0) >= 0 ? "ok" : "bad"}
+            i={2}
+            askWhy="Why did my unrealized gains change?"
           />
           <MetricCard
             label="Estimated Tax Liability"
             value={`${currency} ${fmt(tax.estimatedTaxDue)}`}
             sub={`FIFO · ${jurisdiction} Filer`}
             tone="warn"
-            i={2}
+            i={3}
             askWhy="Why did my estimated tax change?"
           />
           <MetricCard
@@ -389,7 +382,7 @@ function MissionControl() {
             value={String(unreconciledCount)}
             sub={unreconciledCount > 0 ? "Requires review" : "All matched"}
             tone={unreconciledCount > 0 ? "warn" : "ok"}
-            i={3}
+            i={4}
             askWhy="Why are these transactions unreconciled?"
           />
           <MetricCard
@@ -397,14 +390,14 @@ function MissionControl() {
             value={String(transactions.length)}
             sub="In your ledger"
             tone="info"
-            i={4}
+            i={5}
           />
           <MetricCard
             label="Open Flags"
             value={String(flags.length)}
             sub={flags.length > 0 ? "Need attention" : "Clean book"}
             tone={flags.length > 0 ? "warn" : "ok"}
-            i={5}
+            i={6}
           />
         </div>
       </div>
