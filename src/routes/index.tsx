@@ -103,23 +103,20 @@ const steps = [
 
 const tiers = [
   {
-    name: "Free",
-    price: "$0",
-    note: "Manual uploads, no continuous monitoring",
-    items: ["50 parsed transactions/month", "1 tax profile", "CSV export", "Community support"],
+    name: "Standard",
+    price: "$3",
+    note: "For individual traders",
+    popular: false,
+    trialDays: 7,
+    items: ["Unlimited transactions", "Real-time market data", "Unrealized P&L tracking", "1 tax profile", "CSV export", "Core audit tools", "Natural AI conversations", "Light and dark themes"],
   },
   {
     name: "Pro",
-    price: "$9.99",
-    note: "Continuous monitoring on up to 3 sources",
+    price: "$5",
+    note: "For active traders and professionals",
     popular: true,
-    items: ["Unlimited transactions", "3 connected sources", "Activity feed + revert", "Review inbox", "PDF tax reports", "Anomaly detection"],
-  },
-  {
-    name: "Professional",
-    price: "$49",
-    note: "Multi-client autonomous runs and API",
-    items: ["Everything in Pro", "Unlimited connected sources", "Multi-client accounts", "Team roles", "API access", "Priority reconciliation"],
+    trialDays: 7,
+    items: ["Everything in Standard", "Advanced agent workflows", "Background task execution", "PDF tax reports", "Anomaly detection", "Tax-loss harvesting", "Advanced reconciliation", "Priority processing"],
   },
 ];
 
@@ -130,7 +127,8 @@ const faqs = [
   ["Which brokers are supported?", "AuditX is format-driven: any PSX or NSE contract note, dividend voucher, CSV or Excel export can be parsed — including photographed slips."],
   ["Is the tax math AI-generated?", "No. FIFO lot matching, holding-period tiers and CGT bands are computed by deterministic code. The AI only reads documents and explains pre-computed results."],
   ["Which jurisdictions are covered?", "Pakistan (PSX CGT slabs with Filer/Non-Filer WHT) and India (NSE STCG/LTCG). More jurisdictions in progress."],
-  ["What can I export?", "CSV on every plan. PDF tax summaries and full audit-trail reports on Pro and Professional."],
+  ["What's the difference between Standard and Pro?", "Standard includes unlimited transactions, real-time market data, and core audit tools. Pro adds advanced agent workflows, background task execution, PDF reports, and tax-loss harvesting."],
+  ["How does the 7-day free trial work?", "Both plans include a 7-day free trial. You get full access to all features. Cancel anytime during the trial with no charge."],
   ["How do I know a ledger row wasn't altered?", "Every mutation appends a SHA-256 hash-chained audit-log entry. The chain can be recomputed and verified from the Audit Trail screen."],
   ["What happens when extraction confidence is low?", "Fields with confidence scores below 0.75 are automatically routed for manual review. AuditX never silently guesses — it asks you to verify."],
 ];
@@ -591,10 +589,13 @@ function Home() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Start free, upgrade when your book grows
+              Simple, transparent pricing
             </h2>
+            <p className="mt-3 text-sm" style={{ color: "var(--ink-2)" }}>
+              Every plan includes a 7-day free trial. Cancel anytime.
+            </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 max-w-4xl mx-auto">
             {tiers.map((t, i) => (
               <Reveal key={t.name} i={i}>
                 <div
@@ -615,11 +616,12 @@ function Home() {
                   <div className="mb-1 text-sm font-semibold">{t.name}</div>
                   <div className="tnum mb-1 text-3xl font-bold">
                     {t.price}
-                    {t.name !== "Free" && (
-                      <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>/mo</span>
-                    )}
+                    <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>/mo</span>
                   </div>
                   <div className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>{t.note}</div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <StatusPill tone="ok">{t.trialDays}-day free trial</StatusPill>
+                  </div>
                   <ul className="mb-6 space-y-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
                     {t.items.map((it) => (
                       <li key={it} className="flex items-start gap-2">
@@ -628,20 +630,23 @@ function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link to={t.name === "Professional" ? "/contact" : ctaTo}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all hover:shadow-md"
-                      style={
-                        t.popular
-                          ? { background: "var(--color-accent)", color: "#fff" }
-                          : { border: "1px solid var(--hairline)", color: "var(--ink-2)" }
-                      }
-                    >
-                      {t.name === "Professional" ? "Contact sales" : session ? "Go to Dashboard" : "Start Free Audit"}
-                      <ArrowRight size={14} strokeWidth={2} />
-                    </button>
-                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const kelviqCheckoutUrl = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+                      const checkoutUrl = kelviqCheckoutUrl.replace("plan_identifier=pro-plan", `plan_identifier=${t.name.toLowerCase()}-plan`);
+                      window.location.href = checkoutUrl;
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all hover:shadow-md"
+                    style={
+                      t.popular
+                        ? { background: "var(--color-accent)", color: "#fff" }
+                        : { border: "1px solid var(--hairline)", color: "var(--ink-2)" }
+                    }
+                  >
+                    Start {t.trialDays}-day free trial
+                    <ArrowRight size={14} strokeWidth={2} />
+                  </button>
                 </div>
               </Reveal>
             ))}

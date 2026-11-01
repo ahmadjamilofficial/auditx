@@ -8,32 +8,32 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "AuditX Pricing — Free, Pro and Professional Plans" },
+      { title: "AuditX Pricing — Standard and Pro Plans" },
       {
         name: "description",
         content:
-          "Compare AuditX plans: free parsing for 50 transactions a month, Pro at $9.99 for active traders, and Professional for teams and brokerages at $49.",
+          "Compare AuditX plans: Standard at $3/month with 7-day free trial, Pro at $5/month with 7-day free trial. Unlimited transactions, real-time market data, and tax-loss harvesting.",
       },
       { property: "og:title", content: "AuditX Pricing" },
       {
-        property: "og:description", content: "Free, Pro and Professional plans for trade reconciliation and CGT reporting." },
+        property: "og:description", content: "Standard and Pro plans with 7-day free trials for trade reconciliation and CGT reporting." },
     ],
   }),
   component: Pricing,
 });
 
-const rows: [string, string | boolean, string | boolean, string | boolean][] = [
-  ["Parsed transactions / month", "50", "Unlimited", "Unlimited"],
-  ["Tax profiles", "1", "3", "Unlimited"],
-  ["CSV export", true, true, true],
-  ["PDF tax reports", false, true, true],
-  ["Anomaly detection", false, true, true],
-  ["Tax-loss harvesting", false, true, true],
-  ["Multi-account management", false, false, true],
-  ["Team roles & permissions", false, false, true],
-  ["API access", false, false, true],
-  ["Priority reconciliation", false, false, true],
-  ["Audit-trail retention", "90 days", "2 years", "7 years"],
+const rows: [string, string | boolean, string | boolean][] = [
+  ["Parsed transactions / month", "Unlimited", "Unlimited"],
+  ["Real-time market data", true, true],
+  ["Unrealized P&L tracking", true, true],
+  ["Tax profiles", "1", "Unlimited"],
+  ["CSV export", true, true],
+  ["PDF tax reports", false, true],
+  ["Anomaly detection", true, true],
+  ["Tax-loss harvesting", false, true],
+  ["Background task execution", false, true],
+  ["Priority reconciliation", false, true],
+  ["Audit-trail retention", "90 days", "2 years"],
 ];
 
 function Cell({ v }: { v: string | boolean }) {
@@ -45,56 +45,28 @@ function Cell({ v }: { v: string | boolean }) {
 
 function Pricing() {
   const navigate = useNavigate();
-  const [annual, setAnnual] = useState(false);
-  const pro = annual ? "$7.99" : "$9.99";
-  const ent = annual ? "$39" : "$49";
+  const KELVIQ_CHECKOUT_URL = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   function handlePlanClick(planName: string) {
-    if (planName === "Free") {
-      navigate({ to: "/signup" });
-    } else if (planName === "Professional") {
-      const subject = encodeURIComponent(`AuditX Plan Inquiry: ${planName}`);
-      const body = encodeURIComponent(`Hi AuditX Team,
-
-I am interested in the ${planName} plan.
-
-Please send me more details on how to get started.`);
-      window.location.href = `mailto:ahmadjamildhami@gmail.com?subject=${subject}&body=${body}`;
-    } else {
-      navigate({ to: "/signup" });
+    // Direct to Kelviq checkout for both plans
+    if (planName === "Standard") {
+      const standardUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", "plan_identifier=standard-plan");
+      window.location.href = standardUrl;
+    } else if (planName === "Pro") {
+      window.location.href = KELVIQ_CHECKOUT_URL;
     }
   }
 
   return (
     <PageShell
       eyebrow="Pricing"
-      title="Plans that scale with your ledger"
-      sub="Every plan includes deterministic tax math, hash-chained audit logging and per-organisation data isolation."
+      title="Simple, transparent pricing"
+      sub="Every plan includes deterministic tax math, hash-chained audit logging, real-time market data, and per-organisation data isolation. 7-day free trial on all plans."
     >
-      <div className="flex items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={() => setAnnual(false)}
-          className={`rounded-full px-4 py-2 text-sm font-medium ${annual ? "" : "bg-white"}`}
-          style={annual ? { color: "var(--ink-2)" } : { border: "1px solid var(--hairline)" }}
-        >
-          Monthly
-        </button>
-        <button
-          type="button"
-          onClick={() => setAnnual(true)}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${annual ? "bg-white" : ""}`}
-          style={annual ? { border: "1px solid var(--hairline)" } : { color: "var(--ink-2)" }}
-        >
-          Annual <StatusPill tone="ok">Save 20%</StatusPill>
-        </button>
-      </div>
-
-      <div className="mt-10 grid gap-6 md:grid-cols-3">
+      <div className="mt-10 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
         {[
-          { name: "Free", price: "$0", note: "For trying AuditX" },
-          { name: "Pro", price: pro, note: "For active traders", popular: true },
-          { name: "Professional", price: ent, note: "For professional teams and brokerages" },
+          { name: "Standard", price: "$3", note: "For individual traders", popular: false },
+          { name: "Pro", price: "$5", note: "For active traders and professionals", popular: true },
         ].map((t, i) => (
           <Reveal key={t.name} i={i}>
             <Panel
@@ -109,32 +81,33 @@ Please send me more details on how to get started.`);
               </div>
               <p className="tnum mt-4 text-3xl font-semibold">
                 {t.price}
-                {t.name !== "Free" && (
-                  <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
-                    /mo
-                  </span>
-                )}
+                <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
+                  /mo
+                </span>
               </p>
               <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
                 {t.note}
               </p>
+              <div className="mt-2 flex items-center gap-2">
+                <StatusPill tone="ok">7-day free trial</StatusPill>
+              </div>
               <Btn
                 className="mt-6 w-full"
                 variant={t.popular ? "primary" : "secondary"}
                 onClick={() => handlePlanClick(t.name)}
               >
-                {t.name === "Professional" ? "Contact sales" : "Start Free Audit"}
+                Start 7-day free trial
               </Btn>
             </Panel>
           </Reveal>
         ))}
       </div>
 
-      <div className="mt-16 overflow-x-auto">
+      <div className="mt-16 overflow-x-auto max-w-4xl mx-auto">
         <table className="w-full min-w-[640px] border-collapse text-left">
           <thead>
             <tr style={{ borderBottom: "1px solid var(--hairline)" }}>
-              {["Feature", "Free", "Pro", "Professional"].map((h) => (
+              {["Feature", "Standard", "Pro"].map((h) => (
                 <th key={h} className="py-3 text-sm font-semibold">
                   {h}
                 </th>
@@ -156,23 +129,21 @@ Please send me more details on how to get started.`);
                 <td className="py-3">
                   <Cell v={r[2]} />
                 </td>
-                <td className="py-3">
-                  <Cell v={r[3]} />
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <Panel className="mt-14 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h3 className="text-lg font-semibold">Need custom retention or on-prem exports?</h3>
-          <p className="mt-1.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            Professional plans can be tailored per jurisdiction, client volume and audit policy.
-          </p>
+      <Panel className="mt-14 max-w-4xl mx-auto">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h3 className="text-lg font-semibold">Money-back guarantee</h3>
+            <p className="mt-1.5 text-sm" style={{ color: "var(--ink-2)" }}>
+              Not satisfied? Cancel anytime within the trial period. No questions asked.
+            </p>
+          </div>
         </div>
-        <Btn onClick={() => window.location.href = "mailto:ahmadjamildhami@gmail.com?subject=Professional Inquiry"}>Contact sales</Btn>
       </Panel>
     </PageShell>
   );
