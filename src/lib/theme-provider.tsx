@@ -13,21 +13,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children, defaultTheme = "system" }: { children: React.ReactNode; defaultTheme?: Theme }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = localStorage.getItem("auditx-theme") as Theme;
-    return stored || defaultTheme;
-  });
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
 
-  const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">(() => {
-    if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    return theme;
-  });
-
+  // Initialize theme from localStorage and system preference on mount
   useEffect(() => {
-    const root = window.document.documentElement;
+    setMounted(true);
+    const stored = localStorage.getItem("auditx-theme") as Theme;
+    if (stored) {
+      setThemeState(stored);
+    }
+  }, []);
 
+  // Apply theme to DOM
+  useEffect(() => {
+    if (!mounted) return;
+
+    const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
@@ -38,24 +41,25 @@ export function ThemeProvider({ children, defaultTheme = "system" }: { children:
       root.classList.add(theme);
       setEffectiveTheme(theme);
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
+  // Listen for system theme changes
   useEffect(() => {
+    if (!mounted || theme !== "system") return;
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleChange = () => {
-      if (theme === "system") {
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
-        const root = window.document.documentElement;
-        root.classList.remove("light", "dark");
-        root.classList.add(systemTheme);
-        setEffectiveTheme(systemTheme);
-      }
+      const systemTheme = mediaQuery.matches ? "dark" : "light";
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(systemTheme);
+      setEffectiveTheme(systemTheme);
     };
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem("auditx-theme", newTheme);
