@@ -116,22 +116,6 @@
 }
 
 .dark {
-  --color-text: #e8eaf0;
-  --color-accent: #8f63ea;
-  --color-accent-hover: #a885f0;
-  --color-accent-pressed: #7342e2;
-  --color-login-bg: #1a1e2e;
-  --color-sheet: #252a3a;
-  --hairline: rgba(232, 234, 240, 0.12);
-  --ink-2: rgba(232, 234, 240, 0.7);
-  --ink-3: rgba(232, 234, 240, 0.5);
-  --ok: #34d399;
-  --warn: #fbbf24;
-  --bad: #f87171;
-  --info: #60a5fa;
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
-  --shadow-hover: 0 4px 24px rgba(115, 66, 226, 0.25);
-
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
