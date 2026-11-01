@@ -2,7 +2,7 @@
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Github } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
@@ -54,7 +54,17 @@ export function LandingNavbar() {
         </div>
 
         {/* Right actions */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
+          <button
+            type="button"
+            onClick={() => window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank")}
+            className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
+            title="Open Source on GitHub"
+            style={{ color: "var(--ink-2)" }}
+          >
+            <Github size={18} strokeWidth={1.75} />
+            <span className="hidden sm:inline">Open Source</span>
+          </button>
           {!isLoggedIn && (
             <button
               type="button"
@@ -145,6 +155,20 @@ export function LandingNavbar() {
                     </Link>
                   </motion.div>
                 ))}
+                <motion.div
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + links.length * 0.06, duration: 0.35 }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank"); }}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-black/5"
+                  >
+                    <Github size={18} strokeWidth={1.75} />
+                    Open Source
+                  </button>
+                </motion.div>
               </nav>
 
               <div className="mt-auto flex flex-col gap-2">

@@ -1,9 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+import { Mail, Phone, MessageCircle } from "lucide-react";
 import { Btn, Panel } from "@/components/kit";
 import { PageShell } from "@/components/site/PageShell";
 
@@ -23,131 +19,96 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
-const schema = z.object({
-  name: z.string().min(2, "Please enter your name"),
-  email: z.string().email("Enter a valid email address"),
-  subject: z.string().min(3, "Add a short subject"),
-  message: z.string().min(20, "Give us at least 20 characters of context"),
-});
-
-type Values = z.infer<typeof schema>;
-
-const field =
-  "mt-1.5 w-full rounded-[10px] bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2";
-
 function Contact() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
-
-  const onSubmit = async (v: Values) => {
-    await new Promise((r) => setTimeout(r, 600));
-    toast.success("Message queued", { description: `We'll reply to ${v.email} within one business day.` });
-    reset();
-  };
-
   return (
     <PageShell
       eyebrow="Contact"
-      title="Talk to the people who built the engine"
-      sub="Sales, support and compliance questions all land with the team that maintains the pipeline."
+      title="Get in touch"
+      sub="Reach out directly via email, phone, or WhatsApp. Messages only on WhatsApp."
     >
-      <div className="grid gap-6 md:grid-cols-3">
-        <Panel className="md:col-span-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  className={field}
-                  style={{ border: "1px solid var(--hairline)" }}
-                  {...register("name")}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>
-                    {errors.name.message}
+      <div className="max-w-2xl">
+        <Panel>
+          <div className="space-y-6">
+            {/* Email */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex size-10 items-center justify-center rounded-xl"
+                  style={{ background: "rgba(115,66,226,0.08)" }}
+                >
+                  <Mail size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Email</p>
+                  <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                    ahmadjamildhami@gmail.com
                   </p>
-                )}
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  className={field}
-                  style={{ border: "1px solid var(--hairline)" }}
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>
-                    {errors.email.message}
+              <Btn
+                onClick={() => window.location.href = "mailto:ahmadjamildhami@gmail.com"}
+                variant="outline"
+              >
+                Send email
+              </Btn>
+            </div>
+
+            {/* Phone */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex size-10 items-center justify-center rounded-xl"
+                  style={{ background: "rgba(115,66,226,0.08)" }}
+                >
+                  <Phone size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Phone</p>
+                  <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                    +92 333 818 8722
                   </p>
-                )}
+                </div>
               </div>
+              <Btn
+                onClick={() => window.location.href = "tel:+923338188722"}
+                variant="outline"
+              >
+                Call
+              </Btn>
             </div>
-            <div>
-              <label className="text-sm font-medium" htmlFor="subject">
-                Subject
-              </label>
-              <input
-                id="subject"
-                className={field}
-                style={{ border: "1px solid var(--hairline)" }}
-                {...register("subject")}
-              />
-              {errors.subject && (
-                <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>
-                  {errors.subject.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="text-sm font-medium" htmlFor="message">
+
+            {/* WhatsApp */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex size-10 items-center justify-center rounded-xl"
+                  style={{ background: "rgba(37,211,102,0.08)" }}
+                >
+                  <MessageCircle size={18} strokeWidth={1.75} style={{ color: "#25D366" }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">WhatsApp</p>
+                  <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                    +92 333 818 8722
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                    Messages only
+                  </p>
+                </div>
+              </div>
+              <Btn
+                onClick={() => window.open("https://wa.me/923338188722", "_blank")}
+                variant="outline"
+              >
                 Message
-              </label>
-              <textarea
-                id="message"
-                rows={6}
-                className={field}
-                style={{ border: "1px solid var(--hairline)" }}
-                {...register("message")}
-              />
-              {errors.message && (
-                <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>
-                  {errors.message.message}
-                </p>
-              )}
+              </Btn>
             </div>
-            <Btn type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending…" : "Send message"}
-            </Btn>
-          </form>
+          </div>
         </Panel>
 
-        <Panel>
-          <h3 className="text-base font-semibold">Direct</h3>
-          <ul className="mt-4 space-y-4 text-sm" style={{ color: "var(--ink-2)" }}>
-            <li className="flex items-start gap-3">
-              <Mail size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-              hello@auditx.app
-            </li>
-            <li className="flex items-start gap-3">
-              <Phone size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-              +92 21 3455 0110
-            </li>
-            <li className="flex items-start gap-3">
-              <MapPin size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-              Karachi · Bengaluru
-            </li>
-          </ul>
-        </Panel>
+        <div className="mt-6 text-center text-sm" style={{ color: "var(--ink-3)" }}>
+          We typically respond within 24 hours
+        </div>
       </div>
     </PageShell>
   );

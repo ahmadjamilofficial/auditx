@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Github } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Btn, Container } from "@/components/kit";
@@ -39,7 +39,16 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
+          <button
+            onClick={() => window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank")}
+            className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
+            type="button"
+            title="Open Source on GitHub"
+          >
+            <Github size={18} strokeWidth={1.75} />
+            <span className="hidden sm:inline">Open Source</span>
+          </button>
           <Btn onClick={() => nav({ to: isLoggedIn ? "/app/parser" : "/signup" })}>
             {isLoggedIn ? "Dashboard" : "Start Free Audit"}
           </Btn>
@@ -108,6 +117,20 @@ export function Navbar() {
                     </Link>
                   </motion.div>
                 ))}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.18 + links.length * 0.07, duration: 0.4 }}
+                >
+                  <button
+                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank"); }}
+                    className="flex items-center gap-2 py-2.5 text-lg font-medium"
+                    type="button"
+                  >
+                    <Github size={18} strokeWidth={1.75} />
+                    Open Source
+                  </button>
+                </motion.div>
               </nav>
               <div className="mt-auto flex flex-col gap-2">
                 <Btn
