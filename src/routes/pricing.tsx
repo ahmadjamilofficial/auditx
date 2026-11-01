@@ -47,7 +47,7 @@ function Cell({ v }: { v: string | boolean }) {
 function Pricing() {
   const navigate = useNavigate();
   const { session, profile } = useAuth();
-  const KELVIQ_CHECKOUT_URL = import.meta.env.VITE_KELVIQ_CHECKOUT_URL || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+  const KELVIQ_CHECKOUT_URL = import.meta.env['VITE_KELVIQ_CHECKOUT_URL'] || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   function handlePlanClick(planName: string) {
     // If not logged in, redirect to signup first, then to checkout
