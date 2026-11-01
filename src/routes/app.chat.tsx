@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Sparkles, User, StopCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { useChat } from "ai/react";
 import { Message, MessageContent, MessageActions, MessageAction, MessageResponse } from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
 
 export const Route = createFileRoute("/app/chat")({
   component: ChatPage,

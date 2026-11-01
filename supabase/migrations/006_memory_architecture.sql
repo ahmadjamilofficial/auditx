@@ -3,6 +3,11 @@
 -- Run in Supabase Dashboard → SQL Editor. Safe to run multiple times.
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- 0. Enable pgvector extension for vector columns (semantic search)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- 1. conversations — conversation metadata (replaces chat_threads for enhanced memory)
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.conversations (

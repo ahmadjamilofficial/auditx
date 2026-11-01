@@ -6,7 +6,10 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 1. subscriptions — Kelviq subscription records
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS public.subscriptions (
+-- Drop existing table if it exists with different schema
+DROP TABLE IF EXISTS public.subscriptions CASCADE;
+
+CREATE TABLE public.subscriptions (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id              uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   kelviq_customer_id  text,                        -- Kelviq customer ID
@@ -23,16 +26,16 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
   updated_at          timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS subscriptions_org_idx ON public.subscriptions (org_id);
-CREATE INDEX IF NOT EXISTS subscriptions_kelviq_idx ON public.subscriptions (kelviq_subscription_id);
-CREATE INDEX IF NOT EXISTS subscriptions_status_idx ON public.subscriptions (status);
+CREATE INDEX subscriptions_org_idx ON public.subscriptions (org_id);
+CREATE INDEX subscriptions_kelviq_idx ON public.subscriptions (kelviq_subscription_id);
+CREATE INDEX subscriptions_status_idx ON public.subscriptions (status);
 
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "org_select_subscriptions" ON public.subscriptions;
 CREATE POLICY "org_select_subscriptions"
   ON public.subscriptions FOR SELECT
-  USING (org_id IN (SELECT id FROM organizations WHERE user_id = auth.uid()));
+  USING (org_id IN (SELECT org_id FROM profiles WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "service_insert_subscriptions" ON public.subscriptions;
 CREATE POLICY "service_insert_subscriptions"
