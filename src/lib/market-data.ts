@@ -1,5 +1,5 @@
 // ─── Live Market Data Service ───────────────────────────────────────────────
-// Fetches real-time stock prices from Yahoo Finance via a proxy
+// Fetches real-time stock prices from server-side API to avoid CORS issues
 // This enables accurate portfolio valuation and unrealized P&L calculations
 
 import { supabase } from "./supabase";
@@ -27,59 +27,32 @@ export interface TickerQuote {
 const PRICE_CACHE = new Map<string, { data: MarketPrice; expires: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// ─── Fetch single ticker price from Yahoo Finance ───────────────────────────
+// ─── Fetch market prices from server-side API ───────────────────────────────
 
-async function fetchYahooPrice(ticker: string): Promise<TickerQuote | null> {
+async function fetchFromServer(tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }>): Promise<Map<string, MarketPrice>> {
   try {
-    // Use a CORS proxy to avoid browser restrictions
-    const proxyUrl = "https://query1.finance.yahoo.com/v8/finance/chart/";
-    const response = await fetch(`${proxyUrl}${ticker}?interval=1d&range=1d`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+    const response = await fetch("/api/market-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tickers }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return new Map();
+    }
 
     const data = await response.json();
-    const result = data.chart?.result?.[0];
-    const meta = result?.meta;
-    const quote = result?.indicators?.quote?.[0];
+    const prices = new Map<string, MarketPrice>();
 
-    if (!meta || !quote) return null;
+    for (const price of data.prices || []) {
+      const key = `${price.exchange}:${price.ticker}`;
+      prices.set(key, price);
+    }
 
-    const latestPrice = quote.close?.[quote.close.length - 1] || meta.regularMarketPrice;
-    const prevClose = meta.previousClose || quote.open?.[0];
-
-    if (!latestPrice || prevClose === undefined) return null;
-
-    const change = latestPrice - prevClose;
-    const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
-
-    return {
-      symbol: meta.symbol,
-      regularMarketPrice: latestPrice,
-      regularMarketChange: change,
-      regularMarketChangePercent: changePercent,
-      currency: meta.currency || "USD",
-      marketState: meta.marketState || "CLOSED",
-    };
+    return prices;
   } catch (error) {
-    console.error(`[MarketData] Failed to fetch price for ${ticker}:`, error);
-    return null;
+    return new Map();
   }
-}
-
-// ─── Normalize ticker symbols for Yahoo Finance ─────────────────────────────
-
-function normalizeTicker(ticker: string, exchange: "PSX" | "NSE"): string {
-  // NSE tickers need .NS suffix
-  if (exchange === "NSE") {
-    return `${ticker}.NS`;
-  }
-  // PSX tickers might need .KAR suffix, but many work without
-  // Try without suffix first, then with
-  return ticker;
 }
 
 // ─── Fetch multiple ticker prices (batched) ─────────────────────────────────
@@ -99,7 +72,7 @@ export async function fetchMarketPrices(
     }
   }
 
-  // Fetch uncached prices
+  // Fetch uncached prices from server
   const uncached = tickers.filter(
     ({ ticker, exchange }) => {
       const key = `${exchange}:${ticker}`;
@@ -108,30 +81,18 @@ export async function fetchMarketPrices(
     },
   );
 
-  // Fetch in parallel with delay to avoid rate limiting
-  for (const { ticker, exchange } of uncached) {
-    const normalized = normalizeTicker(ticker, exchange);
-    const quote = await fetchYahooPrice(normalized);
+  if (uncached.length > 0) {
+    const serverPrices = await fetchFromServer(uncached);
 
-    if (quote) {
-      const currency = exchange === "NSE" ? "INR" : "PKR";
-      const marketPrice: MarketPrice = {
-        ticker,
-        exchange,
-        price: quote.regularMarketPrice,
-        change: quote.regularMarketChange,
-        changePercent: quote.regularMarketChangePercent,
-        currency,
-        lastUpdated: new Date().toISOString(),
-      };
-
+    for (const { ticker, exchange } of uncached) {
       const key = `${exchange}:${ticker}`;
-      prices.set(key, marketPrice);
-      PRICE_CACHE.set(key, { data: marketPrice, expires: now + CACHE_TTL });
-    }
+      const price = serverPrices.get(key);
 
-    // Add small delay between requests to avoid rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 100));
+      if (price) {
+        prices.set(key, price);
+        PRICE_CACHE.set(key, { data: price, expires: now + CACHE_TTL });
+      }
+    }
   }
 
   return prices;
@@ -158,15 +119,6 @@ export function getCachedPrice(ticker: string, exchange: "PSX" | "NSE"): MarketP
   return null;
 }
 
-// ─── Server-side price fetch (for background jobs) ───────────────────────────
-
-export async function fetchMarketPricesServer(
-  tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }>,
-): Promise<Map<string, MarketPrice>> {
-  // Same logic as client-side, but can be called from Edge Functions
-  return fetchMarketPrices(tickers);
-}
-
 // ─── Store daily price snapshots in database for historical analysis ─────────
 
 export async function storePriceSnapshot(
@@ -187,7 +139,7 @@ export async function storePriceSnapshot(
   );
 
   if (error) {
-    console.error("[MarketData] Failed to store price snapshot:", error);
+    // Silent error handling
   }
 }
 

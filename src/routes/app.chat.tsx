@@ -65,7 +65,6 @@ function ChatPage() {
         currentThreadId = data.id;
         setThreadId(data.id);
       } else if (error) {
-        console.error("Failed to create thread:", error);
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: "Error: Could not create conversation thread. Please try again." },
@@ -149,7 +148,6 @@ function ChatPage() {
         }
       }
     } catch (error) {
-      console.error("Chat error:", error);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: `Error: ${(error as Error).message}` },

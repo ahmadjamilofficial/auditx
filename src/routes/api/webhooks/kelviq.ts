@@ -45,7 +45,6 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
             .maybeSingle();
 
           if (existingEvent) {
-            console.log(`[Kelviq] Duplicate event ${body.id}, skipping`);
             return new Response("Event already processed", { status: 200 });
           }
 
@@ -58,7 +57,6 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
           });
 
           if (eventError) {
-            console.error("[Kelviq] Failed to store event:", eventError);
             return new Response("Failed to store event", { status: 500 });
           }
 
@@ -73,7 +71,6 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
 
           return new Response("Webhook processed", { status: 200 });
         } catch (error) {
-          console.error("[Kelviq] Webhook error:", error);
           return new Response("Webhook processing failed", { status: 500 });
         }
       },
@@ -100,7 +97,6 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
       const orgId = data.metadata?.org_id as string;
 
       if (!orgId) {
-        console.error("[Kelviq] No org_id in metadata, cannot link subscription");
         return;
       }
 
@@ -120,7 +116,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
       });
 
       if (subError) {
-        console.error("[Kelviq] Failed to create subscription:", subError);
+        // Silent error handling
       }
 
       // Update user's profile plan
@@ -130,7 +126,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .eq("org_id", orgId);
 
       if (profileError) {
-        console.error("[Kelviq] Failed to update profile plan:", profileError);
+        // Silent error handling
       }
       break;
     }
@@ -153,7 +149,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .eq("kelviq_subscription_id", subscriptionId);
 
       if (updateError) {
-        console.error("[Kelviq] Failed to update subscription:", updateError);
+        // Silent error handling
       }
 
       // Update user's profile plan
@@ -170,7 +166,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
           .eq("org_id", subscription.org_id);
 
         if (profileError) {
-          console.error("[Kelviq] Failed to update profile plan:", profileError);
+          // Silent error handling
         }
       }
       break;
@@ -190,7 +186,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .eq("kelviq_subscription_id", subscriptionId);
 
       if (cancelError) {
-        console.error("[Kelviq] Failed to cancel subscription:", cancelError);
+        // Silent error handling
       }
 
       // Update user's profile plan to standard (downgrade to basic)
@@ -207,7 +203,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
           .eq("org_id", subscription.org_id);
 
         if (profileError) {
-          console.error("[Kelviq] Failed to update profile plan on cancel:", profileError);
+          // Silent error handling
         }
       }
       break;
@@ -227,7 +223,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .eq("kelviq_subscription_id", subscriptionId);
 
       if (paymentError) {
-        console.error("[Kelviq] Failed to update subscription after payment:", paymentError);
+        // Silent error handling
       }
       break;
     }
@@ -245,13 +241,14 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .eq("kelviq_subscription_id", subscriptionId);
 
       if (failError) {
-        console.error("[Kelviq] Failed to mark subscription as past_due:", failError);
+        // Silent error handling
       }
       break;
     }
 
     default:
-      console.log(`[Kelviq] Unhandled event type: ${eventType}`);
+      // Unhandled event type - silently ignore
+      break;
   }
 }
 
