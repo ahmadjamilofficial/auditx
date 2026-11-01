@@ -6,7 +6,6 @@ import { useAuth } from "@/lib/auth-context";
 import { Message, MessageContent, MessageActions, MessageAction, MessageResponse } from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useChat } from "@ai-sdk/react";
 
 export const Route = createFileRoute("/app/chat")({
   component: ChatPage,
@@ -23,15 +22,10 @@ function ChatPage() {
   const { user } = useAuth();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, stop, setMessages } = useChat({
-    api: "/api/chat",
-    body: {
-      id: crypto.randomUUID(),
-    },
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("sb-access-token")}`,
-    },
-  });
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   // Auto-scroll on new content
   useEffect(() => {
@@ -39,6 +33,99 @@ function ChatPage() {
   }, [messages]);
 
   const isEmpty = messages.length === 0;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setIsLoading(true);
+
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("sb-access-token")}`,
+        },
+        body: JSON.stringify({
+          id: crypto.randomUUID(),
+          messages: [
+            ...messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            { role: "user", content: userMessage },
+          ],
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to send message");
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let assistantMessage = "";
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                assistantMessage += parsed.content;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: assistantMessage,
+                  };
+                  return newMessages;
+                });
+              }
+            } catch (e) {
+              // Ignore parse errors for non-JSON chunks
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Error: ${(error as Error).message}` },
+      ]);
+    } finally {
+      setIsLoading(false);
+      setAbortController(null);
+    }
+  }
+
+  function stop() {
+    abortController?.abort();
+    setIsLoading(false);
+  }
 
   return (
     <div className="flex h-[calc(100dvh-56px)] flex-col bg-background">
@@ -104,7 +191,7 @@ function ChatPage() {
             <AnimatePresence initial={false}>
               {messages.map((msg, i) => (
                 <motion.div
-                  key={msg.id}
+                  key={i}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
@@ -152,7 +239,7 @@ function ChatPage() {
           >
             <textarea
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything or give AuditX a task..."
               className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               rows={1}
