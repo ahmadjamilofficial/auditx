@@ -263,53 +263,54 @@ export const Route = createFileRoute("/api/chat")({
       },
 
       POST: async ({ request }) => {
-        const authorization = request.headers.get("authorization") ?? "";
-        if (!authorization.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
+        try {
+          const authorization = request.headers.get("authorization") ?? "";
+          if (!authorization.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
 
-        const body = (await request.json()) as ChatBody;
-        if (typeof body.id !== "string" || !Array.isArray(body.messages)) {
-          return new Response("A thread id and messages are required", { status: 400 });
-        }
+          const body = (await request.json()) as ChatBody;
+          if (typeof body.id !== "string" || !Array.isArray(body.messages)) {
+            return new Response("A thread id and messages are required", { status: 400 });
+          }
 
-        const url = process.env["SUPABASE_URL"] ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
-        const key =
-          process.env["SUPABASE_PUBLISHABLE_KEY"] ??
-          ((import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
-        const approvalSecret = process.env["TOOL_APPROVAL_SECRET"] ?? "auditx-tool-approval";
-        if (!url || !key) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+          const url = process.env["SUPABASE_URL"] ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
+          const key =
+            process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+            ((import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
+          const approvalSecret = process.env["TOOL_APPROVAL_SECRET"] ?? "auditx-tool-approval";
+          if (!url || !key) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
 
-        // Get env from global storage (set in server.ts)
-        const env = (globalThis as any).__VERCEL_ENV__;
+          // Get env from global storage (set in server.ts)
+          const env = (globalThis as any).__VERCEL_ENV__;
 
-        const resolved = await resolveAgentModel(env);
-        if (!resolved) {
-          // Key is missing or placeholder — tell the operator exactly what to do
-          return new Response(
-            JSON.stringify({
-              code: "ai_not_configured",
-              message:
-                "AI is not configured on this server. " +
-                "Add GEMINI_API_KEY (or OPENROUTER_API_KEY, LOVABLE_API_KEY, GROQ_API_KEY) to your hosting environment variables and redeploy.",
-            }),
-            { status: 503, headers: { "Content-Type": "application/json" } },
-          );
-        }
-        const model = resolved.model;
+          const resolved = await resolveAgentModel(env);
+          if (!resolved) {
+            // Key is missing or placeholder — tell the operator exactly what to do
+            return new Response(
+              JSON.stringify({
+                code: "ai_not_configured",
+                message:
+                  "AI is not configured on this server. " +
+                  "Add GEMINI_API_KEY (or OPENROUTER_API_KEY, LOVABLE_API_KEY, GROQ_API_KEY) to your hosting environment variables and redeploy.",
+              }),
+              { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+          }
+          const model = resolved.model;
 
-        const supabase = createClient<Database>(url, key, {
-          global: { headers: { Authorization: authorization } },
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) return new Response("Unauthorized", { status: 401 });
+          const supabase = createClient<Database>(url, key, {
+            global: { headers: { Authorization: authorization } },
+            auth: { persistSession: false, autoRefreshToken: false },
+          });
+          const { data: authData, error: authError } = await supabase.auth.getUser();
+          if (authError || !authData.user) return new Response("Unauthorized", { status: 401 });
 
-        const { data: thread, error: threadError } = await supabase
-          .from("chat_threads")
-          .select("id, org_id")
-          .eq("id", body.id)
-          .eq("user_id", authData.user.id)
-          .single();
-        if (threadError || !thread) return new Response("Thread not found", { status: 404 });
+          const { data: thread, error: threadError } = await supabase
+            .from("chat_threads")
+            .select("id, org_id")
+            .eq("id", body.id)
+            .eq("user_id", authData.user.id)
+            .single();
+          if (threadError || !thread) return new Response("Thread not found", { status: 404 });
 
         // ── Subscription check (replaces credit system) ────────────────────────
         const { data: subData } = await supabase
@@ -927,7 +928,15 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
             const { error: updateError } = await supabase.from("chat_threads").update({ title, updated_at: new Date().toISOString() }).eq("id", thread.id).eq("user_id", authData.user.id);
           },
         });
-      },
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            code: "internal_error",
+            message: "An internal error occurred. Please try again.",
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
     }) as never,
   },
 });
