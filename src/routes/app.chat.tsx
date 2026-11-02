@@ -104,8 +104,14 @@ function ChatPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to send message");
+        let errorMessage = "Failed to send message";
+        try {
+          const error = await response.json();
+          errorMessage = error.message || error.error || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       // Handle streaming response
@@ -148,9 +154,10 @@ function ChatPage() {
         }
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Error: ${(error as Error).message}` },
+        { role: "assistant", content: `Error: ${errorMessage}` },
       ]);
     } finally {
       setIsLoading(false);
