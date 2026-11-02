@@ -937,6 +937,7 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
+      },
     }) as never,
   },
 });
