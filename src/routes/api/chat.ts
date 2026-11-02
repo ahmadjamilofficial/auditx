@@ -267,7 +267,16 @@ export const Route = createFileRoute("/api/chat")({
           const authorization = request.headers.get("authorization") ?? "";
           if (!authorization.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
 
-          const body = (await request.json()) as ChatBody;
+          let body: ChatBody;
+          try {
+            body = (await request.json()) as ChatBody;
+          } catch (e) {
+            return new Response(JSON.stringify({ code: "invalid_json", message: "Invalid JSON body" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
           if (typeof body.id !== "string" || !Array.isArray(body.messages)) {
             return new Response("A thread id and messages are required", { status: 400 });
           }
@@ -282,7 +291,20 @@ export const Route = createFileRoute("/api/chat")({
           // Get env from global storage (set in server.ts)
           const env = (globalThis as any).__VERCEL_ENV__;
 
-          const resolved = await resolveAgentModel(env);
+          let resolved;
+          try {
+            resolved = await resolveAgentModel(env);
+          } catch (e) {
+            return new Response(
+              JSON.stringify({
+                code: "ai_resolution_error",
+                message: "Failed to resolve AI model",
+                error: e instanceof Error ? e.message : String(e),
+              }),
+              { status: 500, headers: { "Content-Type": "application/json" } },
+            );
+          }
+
           if (!resolved) {
             // Key is missing or placeholder — tell the operator exactly what to do
             return new Response(
@@ -359,6 +381,21 @@ export const Route = createFileRoute("/api/chat")({
             // Silent error handling for ai_usage insert
           },
         );
+
+        // ── Convert UI messages to AI messages ─────────────────────────────
+        let uiMessages: UIMessage[];
+        try {
+          uiMessages = await spreadsheetsToText(body.messages as UIMessage[]);
+        } catch (e) {
+          return new Response(
+            JSON.stringify({
+              code: "message_conversion_error",
+              message: "Failed to process message attachments",
+              error: e instanceof Error ? e.message : String(e),
+            }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
 
         const audit = async (action: string, entityId: string, payload: Record<string, unknown>) => {
           const encoded = new TextEncoder().encode(`${Date.now()}-${action}-${entityId}-${authData.user.id}`);
@@ -892,7 +929,19 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
 
         // No abortSignal: the answer finishes and is saved even if the
         // browser connection drops mid-response.
-        const result = streamText({ model, ...STREAM_OPTS });
+        let result;
+        try {
+          result = streamText({ model, ...STREAM_OPTS });
+        } catch (e) {
+          return new Response(
+            JSON.stringify({
+              code: "ai_stream_error",
+              message: "Failed to start AI stream",
+              error: e instanceof Error ? e.message : String(e),
+            }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
         void result.consumeStream();
         return result.toUIMessageStreamResponse({
           sendReasoning: true,
