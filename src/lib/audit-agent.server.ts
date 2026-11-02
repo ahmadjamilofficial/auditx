@@ -82,7 +82,6 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
     return { provider: "groq", modelId, model, cascade: [{ id: modelId, model }] };
   }
 
-  console.warn("[AuditX] No AI key available: set GEMINI_API_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY or GROQ_API_KEY.");
   return null;
 }
 

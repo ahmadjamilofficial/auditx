@@ -280,24 +280,16 @@ export const Route = createFileRoute("/api/chat")({
 
         // Get env from global storage (set in server.ts)
         const env = (globalThis as any).__VERCEL_ENV__;
-        console.log("[AuditX Chat] env from global:", env ? "exists" : "undefined");
-        if (env) {
-          console.log("[AuditX Chat] env keys:", Object.keys(env));
-        }
 
         const resolved = await resolveAgentModel(env);
         if (!resolved) {
           // Key is missing or placeholder — tell the operator exactly what to do
-          console.warn(
-            "[AuditX] AI not configured. " +
-            "Create a .env file with OPENROUTER_API_KEY to enable AI features.",
-          );
           return new Response(
             JSON.stringify({
               code: "ai_not_configured",
               message:
                 "AI is not configured on this server. " +
-                "Add OPENROUTER_API_KEY (or GROQ_API_KEY) to your hosting environment variables and redeploy.",
+                "Add GEMINI_API_KEY (or OPENROUTER_API_KEY, LOVABLE_API_KEY, GROQ_API_KEY) to your hosting environment variables and redeploy.",
             }),
             { status: 503, headers: { "Content-Type": "application/json" } },
           );
@@ -362,7 +354,9 @@ export const Route = createFileRoute("/api/chat")({
           status:             "ok",
         } as never).then(
           () => undefined,
-          (err: unknown) => console.warn("[AuditX] ai_usage insert failed (table may not exist yet):", err),
+          (err: unknown) => {
+            // Silent error handling for ai_usage insert
+          },
         );
 
         const audit = async (action: string, entityId: string, payload: Record<string, unknown>) => {
@@ -379,7 +373,9 @@ export const Route = createFileRoute("/api/chat")({
             prev_hash: "",
             hash,
           });
-          if (error) console.error("[AuditX] Audit log failed", error);
+          if (error) {
+            // Silent error handling for audit log
+          }
         };
 
         const tools = {
@@ -901,7 +897,6 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           sendReasoning: true,
           originalMessages: uiMessages,
           onError: (e) => {
-            console.error("[AuditX] AI stream error", e);
             const st = (e as { statusCode?: number })?.statusCode;
             if (st === 402) return "AI credits are used up. Add credits in your workspace settings to continue.";
             if (st === 429) return "AuditX AI is busy right now. Please try again in a moment.";
@@ -929,9 +924,7 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
               })),
               { onConflict: "thread_id,ai_message_id" },
             );
-            if (messageError) console.error("[AuditX] Message persistence failed", messageError);
             const { error: updateError } = await supabase.from("chat_threads").update({ title, updated_at: new Date().toISOString() }).eq("id", thread.id).eq("user_id", authData.user.id);
-            if (updateError) console.error("[AuditX] Thread update failed", updateError);
           },
         });
       },
