@@ -929,10 +929,13 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           },
         });
       } catch (error) {
+        // Return more detailed error for debugging
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return new Response(
           JSON.stringify({
             code: "internal_error",
             message: "An internal error occurred. Please try again.",
+            error: errorMessage,
           }),
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
