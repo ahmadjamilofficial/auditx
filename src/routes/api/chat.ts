@@ -883,6 +883,13 @@ export const Route = createFileRoute("/api/chat")({
 
         const modelCascade = resolved.cascade;
 
+        // Tell the model which entitlements apply so it never promises a
+        // capability the user's plan doesn't include.
+        const planSection = `
+
+━━ ACCOUNT ━━
+The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transactionsPerMonth ?? "unlimited"} new transactions per month, 1 broker account and CSV export; specialist delegation, PDF exports, anomaly detection and tax-loss harvesting are Pro/Enterprise capabilities. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
+
         const SYSTEM_PROMPT = `You are AuditX, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
 
 ━━ SPEED AND EFFICIENCY (most important) ━━
@@ -912,7 +919,7 @@ export const Route = createFileRoute("/api/chat")({
 Mark figures as verified (with source) or assumption. Use markdown tables. Never reveal hidden reasoning.`;
 
         const STREAM_OPTS = {
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + planSection,
           messages: cleanedMessages,
           tools,
           // Only destructive deletes need a confirmation; everything else is audited.
