@@ -1,22 +1,35 @@
 // ─── AuditX AI Provider ────────────────────────────────────────────────────────
-// Server-only. Provider: Google Gemini (primary) → OpenRouter → Lovable AI → Groq.
-// Set GEMINI_API_KEY in your .env (required).
+// Server-only. Provider: Lovable AI (primary) → OpenRouter → Groq.
+// Lovable AI always answers with the project's own key; the fallbacks exist only
+// for deployments outside Lovable hosting (e.g. psxl.live on Vercel).
 
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { LanguageModel } from "ai";
 
-export const AI_MODEL = "gemini-2.0-flash-exp";
+export const AI_MODEL = "openai/gpt-6-astra";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 
+/** Required request options for openai/gpt-6-astra on the Lovable gateway /v1/responses. */
+const LOVABLE_PROVIDER_OPTIONS = {
+  openai: {
+    forceReasoning: true,
+    reasoningEffort: "low",
+    reasoningSummary: "auto",
+    store: false,
+    include: ["reasoning.encrypted_content"],
+  },
+} as const;
+
 /** Must be passed to every streamText call that uses the resolved model. */
-export const AI_PROVIDER_OPTIONS = {} as const;
+export const AI_PROVIDER_OPTIONS = LOVABLE_PROVIDER_OPTIONS;
 
 export interface ResolvedModel {
-  provider: "gemini" | "lovable" | "openrouter" | "groq";
+  provider: "lovable" | "openrouter" | "groq";
   modelId: string;
   model: LanguageModel;
+  /** Per-provider options — use resolved.providerOptions, never the constant, on fallback providers. */
+  providerOptions: Record<string, unknown>;
   cascade: Array<{ id: string; model: LanguageModel }>;
 }
 
@@ -32,18 +45,25 @@ function readEnv(name: string, env?: Record<string, unknown>): string | undefine
 }
 
 /**
- * Google Gemini is primary. Falls back to OpenRouter, then LOVABLE_API_KEY,
- * then GROQ_API_KEY. Set GEMINI_API_KEY in your .env to use Gemini.
+ * Lovable AI is primary. Falls back to OpenRouter, then GROQ_API_KEY, for
+ * deployments that run outside Lovable hosting.
  */
 export async function resolveAgentModel(env?: Record<string, unknown>): Promise<ResolvedModel | null> {
-  const geminiKey = readEnv("GEMINI_API_KEY", env);
-  if (geminiKey) {
-    const modelId = readEnv("GEMINI_MODEL", env) ?? "gemini-2.0-flash-exp";
-    const provider = createGoogleGenerativeAI({
-      apiKey: geminiKey,
+  const lovableKey = readEnv("LOVABLE_API_KEY", env);
+  if (lovableKey) {
+    const provider = createOpenAI({
+      baseURL: GATEWAY,
+      apiKey: lovableKey,
+      headers: { "Lovable-API-Key": lovableKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     });
-    const model = provider(modelId) as LanguageModel;
-    return { provider: "gemini", modelId, model, cascade: [{ id: modelId, model }] };
+    const model = provider.responses(AI_MODEL) as unknown as LanguageModel;
+    return {
+      provider: "lovable",
+      modelId: AI_MODEL,
+      model,
+      providerOptions: LOVABLE_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
+      cascade: [{ id: AI_MODEL, model }],
+    };
   }
 
   const openRouterKey = readEnv("OPENROUTER_API_KEY", env);
@@ -53,21 +73,16 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
       name: "openrouter",
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: openRouterKey,
-      headers: { "HTTP-Referer": readEnv("VITE_APP_URL", env) ?? "https://auditx.app", "X-Title": "AuditX" },
+      headers: { "HTTP-Referer": readEnv("VITE_APP_URL", env) ?? "https://psxl.live", "X-Title": "AuditX" },
     });
-    const model = provider.chatModel(modelId) as LanguageModel;
-    return { provider: "openrouter", modelId, model, cascade: [{ id: modelId, model }] };
-  }
-
-  const lovableKey = readEnv("LOVABLE_API_KEY", env);
-  if (lovableKey) {
-    const provider = createOpenAI({
-      baseURL: GATEWAY,
-      apiKey: lovableKey,
-      headers: { "Lovable-API-Key": lovableKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    });
-    const model = provider.responses(AI_MODEL) as LanguageModel;
-    return { provider: "lovable", modelId: AI_MODEL, model, cascade: [{ id: AI_MODEL, model }] };
+    const model = provider.chatModel(modelId) as unknown as LanguageModel;
+    return {
+      provider: "openrouter",
+      modelId,
+      model,
+      providerOptions: {},
+      cascade: [{ id: modelId, model }],
+    };
   }
 
   const groqKey = readEnv("GROQ_API_KEY", env);
@@ -78,8 +93,14 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
       baseURL: "https://api.groq.com/openai/v1",
       apiKey: groqKey,
     });
-    const model = provider.chatModel(modelId) as LanguageModel;
-    return { provider: "groq", modelId, model, cascade: [{ id: modelId, model }] };
+    const model = provider.chatModel(modelId) as unknown as LanguageModel;
+    return {
+      provider: "groq",
+      modelId,
+      model,
+      providerOptions: {},
+      cascade: [{ id: modelId, model }],
+    };
   }
 
   return null;

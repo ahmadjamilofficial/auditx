@@ -3,7 +3,8 @@ import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage }
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { resolveAgentModel, AI_PROVIDER_OPTIONS } from "@/lib/audit-agent.server";
+import { resolveAgentModel } from "@/lib/audit-agent.server";
+import { planOf } from "@/lib/plans";
 import { computeTax } from "@/lib/tax";
 import { computePortfolioSummary } from "@/lib/financial-intelligence";
 import type { Transaction } from "@/lib/demo-data";
@@ -334,34 +335,27 @@ export const Route = createFileRoute("/api/chat")({
             .single();
           if (threadError || !thread) return new Response("Thread not found", { status: 404 });
 
-        // ── Subscription check (replaces credit system) ────────────────────────
+        // ── Plan entitlements (Free / Pro / Enterprise — no checkout, mailto upgrades) ──
+        // A missing or inactive subscription row means the org is on the Free plan.
         const { data: subData } = await supabase
           .from("subscriptions")
           .select("plan, status, trial_end_at")
           .eq("org_id", thread.org_id)
           .maybeSingle();
 
-        // Check if user has active subscription or valid trial
-        const hasActiveSubscription = subData && ["active", "trialing"].includes(subData.status as string);
-        const isTrialValid = subData?.trial_end_at && new Date(subData.trial_end_at) > new Date();
+        const subActive = subData && ["active", "trialing"].includes(subData.status as string);
+        const trialValid = subData?.trial_end_at ? new Date(subData.trial_end_at) > new Date() : false;
+        // Cancelled / past_due / missing → Free limits until the subscription is sorted out.
+        const rawPlan = (subData?.plan as string) ?? "free";
+        const plan = subActive && (subData?.status !== "trialing" || trialValid) ? rawPlan : "free";
+        const limits = planOf(plan);
+        const isPro = plan === "pro" || plan === "enterprise";
 
-        if (!hasActiveSubscription || (subData?.status === "trialing" && !isTrialValid)) {
-          return new Response(
-            JSON.stringify({
-              code: "subscription_required",
-              message: "An active subscription is required to use AuditX AI. Please start a 7-day free trial or upgrade your plan.",
-              trial_available: true,
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const plan = (subData?.plan as string) ?? "standard";
-        const isPro = plan === "pro";
-
-        // Pro users get higher step limits and background task access
-        const maxSteps = isPro ? 28 : 18;
-        const monthlyTxLimit = isPro ? null : 50; // Pro has unlimited transactions
+        // Higher plans get larger tool budgets for deeper audits.
+        const maxSteps = plan === "enterprise" ? 36 : isPro ? 28 : 18;
+        const monthlyTxLimit = limits.transactionsPerMonth; // null = unlimited
+        // Specialist delegation is a Pro/Enterprise capability.
+        const canDelegate = isPro;
 
         // Track usage for analytics (but don't block on it)
         const usageId = crypto.randomUUID();
@@ -455,9 +449,17 @@ export const Route = createFileRoute("/api/chat")({
               context: z.string(),
             }),
             execute: async ({ agent, objective, context }) => {
+              if (!canDelegate) {
+                return {
+                  agent,
+                  findings:
+                    "Specialist agents are a Pro/Enterprise capability. This account is on the Free plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
+                  model_used: "not_available_on_free_plan",
+                };
+              }
               const sub = streamText({
                 model,
-                providerOptions: AI_PROVIDER_OPTIONS as never,
+                providerOptions: resolved.providerOptions as never,
                 system: `${SPECIALISTS[agent]}\n\nReturn compact markdown (under 400 words): findings, figures, evidence references, and a confidence rating (high/medium/low). Never expose hidden reasoning.`,
                 prompt: `Objective:\n${objective}\n\nData and context:\n${context.slice(0, 40000)}`,
               });
@@ -881,6 +883,13 @@ export const Route = createFileRoute("/api/chat")({
 
         const modelCascade = resolved.cascade;
 
+        // Tell the model which entitlements apply so it never promises a
+        // capability the user's plan doesn't include.
+        const planSection = `
+
+━━ ACCOUNT ━━
+The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transactionsPerMonth ?? "unlimited"} new transactions per month, 1 broker account and CSV export; specialist delegation, PDF exports, anomaly detection and tax-loss harvesting are Pro/Enterprise capabilities. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
+
         const SYSTEM_PROMPT = `You are AuditX, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
 
 ━━ SPEED AND EFFICIENCY (most important) ━━
@@ -910,7 +919,7 @@ export const Route = createFileRoute("/api/chat")({
 Mark figures as verified (with source) or assumption. Use markdown tables. Never reveal hidden reasoning.`;
 
         const STREAM_OPTS = {
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + planSection,
           messages: cleanedMessages,
           tools,
           // Only destructive deletes need a confirmation; everything else is audited.
@@ -923,7 +932,7 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           // write its final answer instead of stopping mid-way.
           prepareStep: ({ stepNumber }: { stepNumber: number }) =>
             stepNumber >= maxSteps ? { toolChoice: "none" as const } : {},
-          providerOptions: AI_PROVIDER_OPTIONS as never,
+          providerOptions: resolved.providerOptions as never,
         };
 
         // No abortSignal: the answer finishes and is saved even if the
