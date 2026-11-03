@@ -24,12 +24,14 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiIntelligenceRouteImport } from './routes/api/intelligence'
+import { Route as ApiMarketDataRouteImport } from './routes/api/market-data'
 import { Route as ApiSheetsImportRouteImport } from './routes/api/sheets-import'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppAgentRouteImport } from './routes/app.agent'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as AppAgentRouteImport } from './routes/app.agent'
 import { Route as AppAuditTrailRouteImport } from './routes/app.audit-trail'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppInsightsRouteImport } from './routes/app.insights'
 import { Route as AppInvestigationsRouteImport } from './routes/app.investigations'
 import { Route as AppLedgerRouteImport } from './routes/app.ledger'
@@ -41,11 +43,17 @@ import { Route as AppReviewRouteImport } from './routes/app.review'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppTaxRouteImport } from './routes/app.tax'
 import { Route as AppTimelineRouteImport } from './routes/app.timeline'
-import { Route as AppParserIndexRouteImport } from './routes/app.parser.index'
-import { Route as AppParserThreadIdRouteImport } from './routes/app.parser.$threadId'
 import { Route as ApiAgentApproveRouteImport } from './routes/api/agent/approve'
 import { Route as ApiAgentHeartbeatRouteImport } from './routes/api/agent/heartbeat'
 import { Route as ApiDocumentsUploadRouteImport } from './routes/api/documents/upload'
+import { Route as ApiWebhooksEmailRouteImport } from './routes/api/webhooks/email'
+import { Route as ApiWebhooksKelviqRouteImport } from './routes/api/webhooks/kelviq'
+import { Route as AppParserIndexRouteImport } from './routes/app.parser.index'
+import { Route as AppParserThreadIdRouteImport } from './routes/app.parser.$threadId'
+import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google/callback'
+import { Route as ApiAuthGoogleStartRouteImport } from './routes/api/auth/google/start'
+import { Route as ApiAuthOnedriveCallbackRouteImport } from './routes/api/auth/onedrive/callback'
+import { Route as ApiAuthOnedriveStartRouteImport } from './routes/api/auth/onedrive/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -122,6 +130,11 @@ const ApiIntelligenceRoute = ApiIntelligenceRouteImport.update({
   path: '/api/intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMarketDataRoute = ApiMarketDataRouteImport.update({
+  id: '/api/market-data',
+  path: '/api/market-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSheetsImportRoute = ApiSheetsImportRouteImport.update({
   id: '/api/sheets-import',
   path: '/api/sheets-import',
@@ -132,14 +145,14 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAgentRoute = AppAgentRouteImport.update({
-  id: '/agent',
-  path: '/agent',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppActivityRoute = AppActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAgentRoute = AppAgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAuditTrailRoute = AppAuditTrailRouteImport.update({
@@ -150,6 +163,11 @@ const AppAuditTrailRoute = AppAuditTrailRouteImport.update({
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInsightsRoute = AppInsightsRouteImport.update({
@@ -207,6 +225,31 @@ const AppTimelineRoute = AppTimelineRouteImport.update({
   path: '/timeline',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiAgentApproveRoute = ApiAgentApproveRouteImport.update({
+  id: '/api/agent/approve',
+  path: '/api/agent/approve',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentHeartbeatRoute = ApiAgentHeartbeatRouteImport.update({
+  id: '/api/agent/heartbeat',
+  path: '/api/agent/heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocumentsUploadRoute = ApiDocumentsUploadRouteImport.update({
+  id: '/api/documents/upload',
+  path: '/api/documents/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksEmailRoute = ApiWebhooksEmailRouteImport.update({
+  id: '/api/webhooks/email',
+  path: '/api/webhooks/email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksKelviqRoute = ApiWebhooksKelviqRouteImport.update({
+  id: '/api/webhooks/kelviq',
+  path: '/api/webhooks/kelviq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppParserIndexRoute = AppParserIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -216,6 +259,26 @@ const AppParserThreadIdRoute = AppParserThreadIdRouteImport.update({
   id: '/$threadId',
   path: '/$threadId',
   getParentRoute: () => AppParserRoute,
+} as any)
+const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
+  id: '/api/auth/google/callback',
+  path: '/api/auth/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGoogleStartRoute = ApiAuthGoogleStartRouteImport.update({
+  id: '/api/auth/google/start',
+  path: '/api/auth/google/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthOnedriveCallbackRoute = ApiAuthOnedriveCallbackRouteImport.update({
+  id: '/api/auth/onedrive/callback',
+  path: '/api/auth/onedrive/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthOnedriveStartRoute = ApiAuthOnedriveStartRouteImport.update({
+  id: '/api/auth/onedrive/start',
+  path: '/api/auth/onedrive/start',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -234,11 +297,13 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/api/chat': typeof ApiChatRoute
   '/api/intelligence': typeof ApiIntelligenceRoute
+  '/api/market-data': typeof ApiMarketDataRoute
   '/api/sheets-import': typeof ApiSheetsImportRoute
-  '/app/agent': typeof AppAgentRoute
   '/app/activity': typeof AppActivityRoute
+  '/app/agent': typeof AppAgentRoute
   '/app/audit-trail': typeof AppAuditTrailRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -251,8 +316,17 @@ export interface FileRoutesByFullPath {
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app/': typeof AppIndexRoute
+  '/api/agent/approve': typeof ApiAgentApproveRoute
+  '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
+  '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/webhooks/email': typeof ApiWebhooksEmailRoute
+  '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
   '/app/parser/': typeof AppParserIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
+  '/api/auth/google/start': typeof ApiAuthGoogleStartRoute
+  '/api/auth/onedrive/callback': typeof ApiAuthOnedriveCallbackRoute
+  '/api/auth/onedrive/start': typeof ApiAuthOnedriveStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -269,11 +343,13 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/api/chat': typeof ApiChatRoute
   '/api/intelligence': typeof ApiIntelligenceRoute
+  '/api/market-data': typeof ApiMarketDataRoute
   '/api/sheets-import': typeof ApiSheetsImportRoute
-  '/app/agent': typeof AppAgentRoute
   '/app/activity': typeof AppActivityRoute
+  '/app/agent': typeof AppAgentRoute
   '/app/audit-trail': typeof AppAuditTrailRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -285,8 +361,17 @@ export interface FileRoutesByTo {
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app': typeof AppIndexRoute
+  '/api/agent/approve': typeof ApiAgentApproveRoute
+  '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
+  '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/webhooks/email': typeof ApiWebhooksEmailRoute
+  '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
   '/app/parser': typeof AppParserIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
+  '/api/auth/google/start': typeof ApiAuthGoogleStartRoute
+  '/api/auth/onedrive/callback': typeof ApiAuthOnedriveCallbackRoute
+  '/api/auth/onedrive/start': typeof ApiAuthOnedriveStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -305,11 +390,13 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/api/chat': typeof ApiChatRoute
   '/api/intelligence': typeof ApiIntelligenceRoute
+  '/api/market-data': typeof ApiMarketDataRoute
   '/api/sheets-import': typeof ApiSheetsImportRoute
-  '/app/agent': typeof AppAgentRoute
   '/app/activity': typeof AppActivityRoute
+  '/app/agent': typeof AppAgentRoute
   '/app/audit-trail': typeof AppAuditTrailRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -322,8 +409,17 @@ export interface FileRoutesById {
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app/': typeof AppIndexRoute
+  '/api/agent/approve': typeof ApiAgentApproveRoute
+  '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
+  '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/webhooks/email': typeof ApiWebhooksEmailRoute
+  '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
   '/app/parser/': typeof AppParserIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
+  '/api/auth/google/start': typeof ApiAuthGoogleStartRoute
+  '/api/auth/onedrive/callback': typeof ApiAuthOnedriveCallbackRoute
+  '/api/auth/onedrive/start': typeof ApiAuthOnedriveStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -343,11 +439,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/chat'
     | '/api/intelligence'
+    | '/api/market-data'
     | '/api/sheets-import'
-    | '/app/agent'
     | '/app/activity'
+    | '/app/agent'
     | '/app/audit-trail'
     | '/app/billing'
+    | '/app/chat'
     | '/app/insights'
     | '/app/investigations'
     | '/app/ledger'
@@ -360,8 +458,17 @@ export interface FileRouteTypes {
     | '/app/tax'
     | '/app/timeline'
     | '/app/'
+    | '/api/agent/approve'
+    | '/api/agent/heartbeat'
+    | '/api/documents/upload'
+    | '/api/webhooks/email'
+    | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
     | '/app/parser/'
+    | '/api/auth/google/callback'
+    | '/api/auth/google/start'
+    | '/api/auth/onedrive/callback'
+    | '/api/auth/onedrive/start'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -378,11 +485,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/chat'
     | '/api/intelligence'
+    | '/api/market-data'
     | '/api/sheets-import'
-    | '/app/agent'
     | '/app/activity'
+    | '/app/agent'
     | '/app/audit-trail'
     | '/app/billing'
+    | '/app/chat'
     | '/app/insights'
     | '/app/investigations'
     | '/app/ledger'
@@ -394,8 +503,17 @@ export interface FileRouteTypes {
     | '/app/tax'
     | '/app/timeline'
     | '/app'
+    | '/api/agent/approve'
+    | '/api/agent/heartbeat'
+    | '/api/documents/upload'
+    | '/api/webhooks/email'
+    | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
     | '/app/parser'
+    | '/api/auth/google/callback'
+    | '/api/auth/google/start'
+    | '/api/auth/onedrive/callback'
+    | '/api/auth/onedrive/start'
   id:
     | '__root__'
     | '/'
@@ -413,11 +531,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/chat'
     | '/api/intelligence'
+    | '/api/market-data'
     | '/api/sheets-import'
-    | '/app/agent'
     | '/app/activity'
+    | '/app/agent'
     | '/app/audit-trail'
     | '/app/billing'
+    | '/app/chat'
     | '/app/insights'
     | '/app/investigations'
     | '/app/ledger'
@@ -430,8 +550,17 @@ export interface FileRouteTypes {
     | '/app/tax'
     | '/app/timeline'
     | '/app/'
+    | '/api/agent/approve'
+    | '/api/agent/heartbeat'
+    | '/api/documents/upload'
+    | '/api/webhooks/email'
+    | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
     | '/app/parser/'
+    | '/api/auth/google/callback'
+    | '/api/auth/google/start'
+    | '/api/auth/onedrive/callback'
+    | '/api/auth/onedrive/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -450,10 +579,17 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiIntelligenceRoute: typeof ApiIntelligenceRoute
+  ApiMarketDataRoute: typeof ApiMarketDataRoute
   ApiSheetsImportRoute: typeof ApiSheetsImportRoute
-  ApiAgentApproveRoute: typeof ApiAgentApproveRouteImport
-  ApiAgentHeartbeatRoute: typeof ApiAgentHeartbeatRouteImport
-  ApiDocumentsUploadRoute: typeof ApiDocumentsUploadRouteImport
+  ApiAgentApproveRoute: typeof ApiAgentApproveRoute
+  ApiAgentHeartbeatRoute: typeof ApiAgentHeartbeatRoute
+  ApiDocumentsUploadRoute: typeof ApiDocumentsUploadRoute
+  ApiWebhooksEmailRoute: typeof ApiWebhooksEmailRoute
+  ApiWebhooksKelviqRoute: typeof ApiWebhooksKelviqRoute
+  ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
+  ApiAuthGoogleStartRoute: typeof ApiAuthGoogleStartRoute
+  ApiAuthOnedriveCallbackRoute: typeof ApiAuthOnedriveCallbackRoute
+  ApiAuthOnedriveStartRoute: typeof ApiAuthOnedriveStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -563,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/market-data': {
+      id: '/api/market-data'
+      path: '/api/market-data'
+      fullPath: '/api/market-data'
+      preLoaderRoute: typeof ApiMarketDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sheets-import': {
       id: '/api/sheets-import'
       path: '/api/sheets-import'
@@ -575,6 +718,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/agent': {
@@ -596,6 +746,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/app/billing'
       preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/chat': {
+      id: '/app/chat'
+      path: '/chat'
+      fullPath: '/app/chat'
+      preLoaderRoute: typeof AppChatRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/insights': {
@@ -647,6 +804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/review': {
+      id: '/app/review'
+      path: '/review'
+      fullPath: '/app/review'
+      preLoaderRoute: typeof AppReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
@@ -668,6 +832,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTimelineRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/agent/approve': {
+      id: '/api/agent/approve'
+      path: '/api/agent/approve'
+      fullPath: '/api/agent/approve'
+      preLoaderRoute: typeof ApiAgentApproveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/heartbeat': {
+      id: '/api/agent/heartbeat'
+      path: '/api/agent/heartbeat'
+      fullPath: '/api/agent/heartbeat'
+      preLoaderRoute: typeof ApiAgentHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/documents/upload': {
+      id: '/api/documents/upload'
+      path: '/api/documents/upload'
+      fullPath: '/api/documents/upload'
+      preLoaderRoute: typeof ApiDocumentsUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/email': {
+      id: '/api/webhooks/email'
+      path: '/api/webhooks/email'
+      fullPath: '/api/webhooks/email'
+      preLoaderRoute: typeof ApiWebhooksEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/kelviq': {
+      id: '/api/webhooks/kelviq'
+      path: '/api/webhooks/kelviq'
+      fullPath: '/api/webhooks/kelviq'
+      preLoaderRoute: typeof ApiWebhooksKelviqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/parser/': {
       id: '/app/parser/'
       path: '/'
@@ -681,6 +880,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/parser/$threadId'
       preLoaderRoute: typeof AppParserThreadIdRouteImport
       parentRoute: typeof AppParserRoute
+    }
+    '/api/auth/google/callback': {
+      id: '/api/auth/google/callback'
+      path: '/api/auth/google/callback'
+      fullPath: '/api/auth/google/callback'
+      preLoaderRoute: typeof ApiAuthGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/google/start': {
+      id: '/api/auth/google/start'
+      path: '/api/auth/google/start'
+      fullPath: '/api/auth/google/start'
+      preLoaderRoute: typeof ApiAuthGoogleStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/onedrive/callback': {
+      id: '/api/auth/onedrive/callback'
+      path: '/api/auth/onedrive/callback'
+      fullPath: '/api/auth/onedrive/callback'
+      preLoaderRoute: typeof ApiAuthOnedriveCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/onedrive/start': {
+      id: '/api/auth/onedrive/start'
+      path: '/api/auth/onedrive/start'
+      fullPath: '/api/auth/onedrive/start'
+      preLoaderRoute: typeof ApiAuthOnedriveStartRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -700,10 +927,11 @@ const AppParserRouteWithChildren = AppParserRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppAgentRoute: typeof AppAgentRoute
   AppActivityRoute: typeof AppActivityRoute
+  AppAgentRoute: typeof AppAgentRoute
   AppAuditTrailRoute: typeof AppAuditTrailRoute
   AppBillingRoute: typeof AppBillingRoute
+  AppChatRoute: typeof AppChatRoute
   AppInsightsRoute: typeof AppInsightsRoute
   AppInvestigationsRoute: typeof AppInvestigationsRoute
   AppLedgerRoute: typeof AppLedgerRoute
@@ -719,10 +947,11 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAgentRoute: AppAgentRoute,
   AppActivityRoute: AppActivityRoute,
+  AppAgentRoute: AppAgentRoute,
   AppAuditTrailRoute: AppAuditTrailRoute,
   AppBillingRoute: AppBillingRoute,
+  AppChatRoute: AppChatRoute,
   AppInsightsRoute: AppInsightsRoute,
   AppInvestigationsRoute: AppInvestigationsRoute,
   AppLedgerRoute: AppLedgerRoute,
@@ -755,7 +984,17 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiChatRoute: ApiChatRoute,
   ApiIntelligenceRoute: ApiIntelligenceRoute,
+  ApiMarketDataRoute: ApiMarketDataRoute,
   ApiSheetsImportRoute: ApiSheetsImportRoute,
+  ApiAgentApproveRoute: ApiAgentApproveRoute,
+  ApiAgentHeartbeatRoute: ApiAgentHeartbeatRoute,
+  ApiDocumentsUploadRoute: ApiDocumentsUploadRoute,
+  ApiWebhooksEmailRoute: ApiWebhooksEmailRoute,
+  ApiWebhooksKelviqRoute: ApiWebhooksKelviqRoute,
+  ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,
+  ApiAuthGoogleStartRoute: ApiAuthGoogleStartRoute,
+  ApiAuthOnedriveCallbackRoute: ApiAuthOnedriveCallbackRoute,
+  ApiAuthOnedriveStartRoute: ApiAuthOnedriveStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
