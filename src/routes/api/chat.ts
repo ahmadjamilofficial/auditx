@@ -449,6 +449,14 @@ export const Route = createFileRoute("/api/chat")({
               context: z.string(),
             }),
             execute: async ({ agent, objective, context }) => {
+              if (!canDelegate) {
+                return {
+                  agent,
+                  findings:
+                    "Specialist agents are a Pro/Enterprise capability. This account is on the Free plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
+                  model_used: "not_available_on_free_plan",
+                };
+              }
               const sub = streamText({
                 model,
                 providerOptions: resolved.providerOptions as never,
