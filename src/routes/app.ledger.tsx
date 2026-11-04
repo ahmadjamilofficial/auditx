@@ -779,7 +779,7 @@ function ImportPanel({
         } else if (file.type.includes("text") || file.type.includes("csv") || lower.endsWith(".csv") || lower.endsWith(".txt")) {
           content = await file.text();
         } else {
-          throw new Error(`${file.name}: PDFs and images are read in the AuditX chat — drop them there instead.`);
+          throw new Error(`${file.name}: PDFs and images are read in the Wab chat — drop them there instead.`);
         }
 
         const raw = await complete({
@@ -912,7 +912,7 @@ function ImportPanel({
                   <span style={{ color: "var(--color-accent)" }}>browse</span>
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
-                  CSV, Excel (.xlsx) or text files. PDFs and images go in the AuditX chat.
+                  CSV, Excel (.xlsx) or text files. PDFs and images go in the Wab chat.
                 </p>
                 <input
                   ref={inputRef}
@@ -1181,7 +1181,7 @@ function Ledger() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `auditx-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `wab-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1199,7 +1199,7 @@ function Ledger() {
     );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Ledger");
-    XLSX.writeFile(wb, `auditx-ledger-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `wab-ledger-${new Date().toISOString().slice(0, 10)}.xlsx`);
     toast.success("Ledger exported for Excel / Google Sheets");
   }
 

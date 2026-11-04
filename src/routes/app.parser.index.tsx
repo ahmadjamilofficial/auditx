@@ -19,7 +19,7 @@ function ParserIndex() {
     const currentUser = user;
     if (!currentUser) return;
     setFailure(null);
-    console.log("[AuditX][ParserIndex] Opening workspace", { userId: currentUser.id });
+    console.log("[Wab][ParserIndex] Opening workspace", { userId: currentUser.id });
 
     try {
       const { data: existing, error: listError } = await withTimeout(
@@ -36,7 +36,7 @@ function ParserIndex() {
 
       const found = existing?.[0]?.id;
       if (found) {
-        console.log("[AuditX][ParserIndex] Existing thread found, navigating", { threadId: found });
+        console.log("[Wab][ParserIndex] Existing thread found, navigating", { threadId: found });
         navigate({ to: "/app/parser/$threadId", params: { threadId: found }, replace: true });
         return;
       }
@@ -74,10 +74,10 @@ function ParserIndex() {
       );
       if (error || !created) throw new Error(error?.message ?? "Could not open the AI workspace.");
 
-      console.log("[AuditX][ParserIndex] Thread created, navigating", { threadId: created.id });
+      console.log("[Wab][ParserIndex] Thread created, navigating", { threadId: created.id });
       navigate({ to: "/app/parser/$threadId", params: { threadId: created.id }, replace: true });
     } catch (cause) {
-      console.error("[AuditX][ParserIndex] ERROR opening workspace", { userId: currentUser.id, cause });
+      console.error("[Wab][ParserIndex] ERROR opening workspace", { userId: currentUser.id, cause });
       started.current = false;
       setFailure(cause instanceof Error ? cause.message : "Could not open the AI workspace.");
     }

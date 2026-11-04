@@ -10,7 +10,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-const WEBHOOK_SECRET = process.env["EMAIL_WEBHOOK_SECRET"] ?? "auditx-email-webhook";
+const WEBHOOK_SECRET = process.env["EMAIL_WEBHOOK_SECRET"] ?? "wab-email-webhook";
 
 export const Route = createFileRoute("/api/webhooks/email")({
   server: {

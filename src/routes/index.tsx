@@ -28,16 +28,16 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AuditX — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
+      { title: "Wab — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
       {
         name: "description",
         content:
-          "Upload contract notes, broker statements, CSVs, PDFs, or trade records. AuditX extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger.",
+          "Upload contract notes, broker statements, CSVs, PDFs, or trade records. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger.",
       },
-      { name: "keywords", content: "PSX CGT calculator, NSE STCG LTCG, trade reconciliation, broker slip parser, capital gains tax Pakistan India, FIFO tax engine, AuditX" },
-      { property: "og:title", content: "AuditX — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
-      { property: "og:description", content: "Upload contract notes, broker statements, CSVs, PDFs, or trade records. AuditX extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger." },
-      { property: "og:url", content: "https://auditx.app/" },
+      { name: "keywords", content: "PSX CGT calculator, NSE STCG LTCG, trade reconciliation, broker slip parser, capital gains tax Pakistan India, FIFO tax engine, Wab" },
+      { property: "og:title", content: "Wab — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
+      { property: "og:description", content: "Upload contract notes, broker statements, CSVs, PDFs, or trade records. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger." },
+      { property: "og:url", content: "https://psxl.live/" },
     ],
   }),
   component: Home,
@@ -85,7 +85,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Review Inbox",
-    desc: "Low-confidence items and material decisions batch into a single inbox. Approve, reject, or skip — AuditX learns from each choice.",
+    desc: "Low-confidence items and material decisions batch into a single inbox. Approve, reject, or skip — Wab learns from each choice.",
   },
 ];
 
@@ -93,7 +93,7 @@ const features = [
 
 const steps = [
   { n: "01", title: "Connect",    desc: "Link a Google Sheet, OneDrive file, or drop broker statements directly." },
-  { n: "02", title: "Watch",      desc: "AuditX monitors sources continuously — no button to press, no prompt to write." },
+  { n: "02", title: "Watch",      desc: "Wab monitors sources continuously — no button to press, no prompt to write." },
   { n: "03", title: "Act",        desc: "High-confidence changes apply automatically. Uncertain ones go to your Review Inbox." },
   { n: "04", title: "Trace",      desc: "Every action is logged with before/after state and a one-click revert." },
   { n: "05", title: "Report",     desc: "Generate a traceable, tax-ready report with a full evidence chain." },
@@ -124,13 +124,13 @@ const tiers = [
 
 const faqs = [
   ["How is my financial data secured?", "Documents live in a private, per-organisation bucket served only through short-lived signed URLs. Every row is isolated by Postgres row-level security keyed to your organisation membership."],
-  ["Which brokers are supported?", "AuditX is format-driven: any PSX or NSE contract note, dividend voucher, CSV or Excel export can be parsed — including photographed slips."],
+  ["Which brokers are supported?", "Wab is format-driven: any PSX or NSE contract note, dividend voucher, CSV or Excel export can be parsed — including photographed slips."],
   ["Is the tax math AI-generated?", "No. FIFO lot matching, holding-period tiers and CGT bands are computed by deterministic code. The AI only reads documents and explains pre-computed results."],
   ["Which jurisdictions are covered?", "Pakistan (PSX CGT slabs with Filer/Non-Filer WHT) and India (NSE STCG/LTCG). More jurisdictions in progress."],
   ["What's the difference between Standard and Pro?", "Standard includes unlimited transactions, real-time market data, and core audit tools. Pro adds advanced agent workflows, background task execution, PDF reports, and tax-loss harvesting."],
   ["How does the 7-day free trial work?", "Both plans include a 7-day free trial. You get full access to all features. Cancel anytime during the trial with no charge."],
   ["How do I know a ledger row wasn't altered?", "Every mutation appends a SHA-256 hash-chained audit-log entry. The chain can be recomputed and verified from the Audit Trail screen."],
-  ["What happens when extraction confidence is low?", "Fields with confidence scores below 0.75 are automatically routed for manual review. AuditX never silently guesses — it asks you to verify."],
+  ["What happens when extraction confidence is low?", "Fields with confidence scores below 0.75 are automatically routed for manual review. Wab never silently guesses — it asks you to verify."],
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ function Home() {
     setIsBusy(true);
     // Navigate to parser with the prompt and attachments
     const message = chatValue.trim() || "Analyze the attached document(s).";
-    // Hand the prompt and files to the AuditX workspace
+    // Hand the prompt and files to the Wab workspace
     setPendingPrompt(message);
     setPendingFiles(pendingFileList);
     navigate({ to: !loading && session ? "/app/parser" : "/signin" });
@@ -231,7 +231,7 @@ function Home() {
             className="mx-auto mb-10 max-w-[560px] text-base leading-relaxed sm:text-lg"
             style={{ color: "var(--ink-2)" }}
           >
-            AuditX acts on your data continuously — extracting, reconciling, and
+            Wab acts on your data continuously — extracting, reconciling, and
             flagging anomalies without waiting for a prompt.
             Every change is traceable and reversible.
           </motion.p>
@@ -328,7 +328,7 @@ function Home() {
                 letterSpacing: "-0.01em",
               }}
             >
-              See AuditX in action
+              See Wab in action
             </h2>
             <p className="mt-3 text-sm" style={{ color: "var(--ink-2)" }}>
               Demo visualization — not actual production data
@@ -448,12 +448,12 @@ function Home() {
         </Container>
       </section>
 
-      {/* ─── WHY TRUST AUDITX? ─────────────────────────────────────────────────── */}
+      {/* ─── WHY TRUST WAB? ─────────────────────────────────────────────────── */}
       <section style={{ background: "var(--color-login-bg)" }}>
         <Container className="grid items-center gap-16 py-24 md:grid-cols-2">
           <Reveal>
             <p className="mb-4 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
-              Why trust AuditX?
+              Why trust Wab?
             </p>
             <h2
               className="mb-4"
@@ -542,7 +542,7 @@ function Home() {
                 letterSpacing: "-0.01em",
               }}
             >
-              AuditX handles the problems spreadsheets can't
+              Wab handles the problems spreadsheets can't
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
@@ -719,7 +719,7 @@ function Home() {
             </button>
           </Link>
           <p className="mt-4 text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
-            AuditX does not provide tax or legal advice.
+            Wab does not provide tax or legal advice.
           </p>
         </Container>
       </section>

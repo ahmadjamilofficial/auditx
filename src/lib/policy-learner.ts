@@ -1,4 +1,4 @@
-// ─── AuditX Policy Learner ────────────────────────────────────────────────────
+// ─── Wab Policy Learner ────────────────────────────────────────────────────
 // After 3 consecutive approvals / rejections of the same action pattern,
 // this module updates org_policy_config to bake the decision in permanently.
 

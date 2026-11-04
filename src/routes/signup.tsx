@@ -368,7 +368,7 @@ function SignUp() {
           </form>
 
           <p className="mt-6 text-center text-xs leading-relaxed" style={{ color: "var(--ink-3)" }}>
-            By signing up you agree to our Terms of Service. AuditX does not provide tax or legal advice.
+            By signing up you agree to our Terms of Service. Wab does not provide tax or legal advice.
           </p>
         </motion.div>
       </div>

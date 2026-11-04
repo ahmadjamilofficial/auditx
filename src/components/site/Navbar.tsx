@@ -23,7 +23,7 @@ export function Navbar() {
   return (
     <>
       <Container className="relative z-10 flex items-center justify-between py-4 sm:py-5">
-        <Link to="/" aria-label="AuditX home">
+        <Link to="/" aria-label="Wab home">
           <Logo />
         </Link>
 
@@ -41,7 +41,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           <button
-            onClick={() => window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank")}
+            onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
             type="button"
             title="Open Source on GitHub"
@@ -123,7 +123,7 @@ export function Navbar() {
                   transition={{ delay: 0.18 + links.length * 0.07, duration: 0.4 }}
                 >
                   <button
-                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank"); }}
+                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/wab", "_blank"); }}
                     className="flex items-center gap-2 py-2.5 text-lg font-medium"
                     type="button"
                   >

@@ -379,7 +379,7 @@ export function ConnectedSourcesTab({ orgId }: { orgId: string }) {
         <AlertTriangle size={28} style={{ color: "var(--warn)" }} />
         <p className="mt-3 text-sm font-semibold">Autonomous mode not available on your plan</p>
         <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--ink-3)" }}>
-          Upgrade to Pro to connect Google Sheets and OneDrive sources and let AuditX monitor them automatically.
+          Upgrade to Pro to connect Google Sheets and OneDrive sources and let Wab monitor them automatically.
         </p>
         <a
           href="/app/billing"

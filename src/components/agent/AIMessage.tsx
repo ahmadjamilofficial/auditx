@@ -235,7 +235,7 @@ function renderBlock(block: Block, idx: number): React.ReactNode {
 export function AIMessage({ text }: { text: string }) {
   const blocks = parseBlocks(text);
   return (
-    <div className="auditx-md text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
+    <div className="wab-md text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>
       {blocks.map((b, i) => <Fragment key={i}>{renderBlock(b, i)}</Fragment>)}
     </div>
   );

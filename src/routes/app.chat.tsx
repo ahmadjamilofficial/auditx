@@ -259,7 +259,7 @@ function ChatPage() {
                 style={{ color: "var(--ink-3)" }}
               >
                 <Bot size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-                <span>AuditX is thinking</span>
+                <span>Wab is thinking</span>
                 <span className="flex gap-1">
                   <span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span>
                   <span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span>
@@ -283,7 +283,7 @@ function ChatPage() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything or give AuditX a task..."
+              placeholder="Ask anything or give Wab a task..."
               className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               rows={1}
               disabled={isLoading}
@@ -318,7 +318,7 @@ function ChatPage() {
             )}
           </form>
           <p className="mt-2 text-center text-xs" style={{ color: "var(--ink-3)" }}>
-            AuditX can make mistakes. Consider checking important information.
+            Wab can make mistakes. Consider checking important information.
           </p>
         </div>
       </div>

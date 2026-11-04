@@ -82,7 +82,7 @@ function getPageContext(page: string, entityId?: string): string {
   if (page.includes("reports")) return "Reports";
   if (page.includes("parser")) return "Document Parser";
   if (page.includes("investigations")) return "Investigations";
-  return "AuditX";
+  return "Wab";
 }
 
 // ── Message renderer ──────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemPrompt: "You are AuditX Intelligence. Provide concise, evidence-based financial analysis. Only use numbers from the data provided.",
+            systemPrompt: "You are Wab Intelligence. Provide concise, evidence-based financial analysis. Only use numbers from the data provided.",
             userPrompt: finalPrompt,
             maxTokens: 512,
             temperature: 0.3,
@@ -256,7 +256,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
             <Brain size={13} style={{ color: "var(--color-accent)" }} />
           </div>
           <div>
-            <p className="text-xs font-semibold">AuditX Intelligence</p>
+            <p className="text-xs font-semibold">Wab Intelligence</p>
             <p className="text-[10px]" style={{ color: "var(--ink-3)" }}>
               Context: {pageContext}
             </p>
@@ -325,7 +325,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
             <div className="flex items-center gap-2">
               <Sparkles size={11} style={{ color: "var(--color-accent)" }} />
               <span className="text-[11px] font-semibold" style={{ color: "var(--color-accent)" }}>
-                AuditX Analysis
+                Wab Analysis
               </span>
             </div>
             <button

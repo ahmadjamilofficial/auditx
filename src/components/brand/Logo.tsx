@@ -17,7 +17,7 @@ export function Logo({ fill = "#192837" }: { fill?: string }) {
   return (
     <span className="flex items-center gap-2" style={{ color: fill }}>
       <LogoMark fill={fill} />
-      <span className="text-lg font-semibold lowercase tracking-tight">auditx</span>
+      <span className="text-lg font-semibold lowercase tracking-tight">wab</span>
     </span>
   );
 }

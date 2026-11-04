@@ -9,13 +9,13 @@ import { useAuth } from "@/lib/auth-context";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "AuditX Pricing — Standard and Pro Plans" },
+      { title: "Wab Pricing — Standard and Pro Plans" },
       {
         name: "description",
         content:
-          "Compare AuditX plans: Standard at $3/month with 7-day free trial, Pro at $5/month with 7-day free trial. Unlimited transactions, real-time market data, and tax-loss harvesting.",
+          "Compare Wab plans: Standard at $3/month with 7-day free trial, Pro at $5/month with 7-day free trial. Unlimited transactions, real-time market data, and tax-loss harvesting.",
       },
-      { property: "og:title", content: "AuditX Pricing" },
+      { property: "og:title", content: "Wab Pricing" },
       {
         property: "og:description", content: "Standard and Pro plans with 7-day free trials for trade reconciliation and CGT reporting." },
     ],

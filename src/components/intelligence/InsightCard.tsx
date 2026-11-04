@@ -1,5 +1,5 @@
 // ─── Insight Card Component ───────────────────────────────────────────────────
-// "AuditX Found Something" — proactive AI insights with evidence.
+// "Wab Found Something" — proactive AI insights with evidence.
 
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
@@ -218,7 +218,7 @@ export function InsightCardEmpty() {
       </div>
       <p className="mt-3 text-sm font-medium">No active insights</p>
       <p className="mt-1 text-xs" style={{ color: "var(--ink-2)" }}>
-        AuditX will surface important findings as your data grows.
+        Wab will surface important findings as your data grows.
       </p>
     </div>
   );

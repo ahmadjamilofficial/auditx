@@ -7,7 +7,7 @@
 import { useEffect } from "react";
 import { supabase } from "./supabase";
 
-const THROTTLE_KEY = "auditx.heartbeat.last";
+const THROTTLE_KEY = "wab.heartbeat.last";
 const THROTTLE_MS  = 5 * 60 * 1000; // 5 minutes
 
 export function useAgentHeartbeat(enabled: boolean) {

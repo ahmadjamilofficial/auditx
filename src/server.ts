@@ -56,8 +56,8 @@ export default {
       globalThis.__VERCEL_ENV__ = env as Record<string, unknown> | undefined;
       
       // Log available environment variables for debugging
-      console.log("[AuditX Server] env type:", typeof env);
-      console.log("[AuditX Server] env keys:", env ? Object.keys(env as Record<string, unknown>) : "env is undefined");
+      console.log("[Wab Server] env type:", typeof env);
+      console.log("[Wab Server] env keys:", env ? Object.keys(env as Record<string, unknown>) : "env is undefined");
       
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/auth/google/start")({
         const redirect  = url.searchParams.get("redirect_back") ?? "/app/settings";
 
         const clientId    = process.env["GOOGLE_CLIENT_ID"] ?? "";
-        const callbackUrl = `${process.env["VITE_APP_URL"] ?? "https://auditx.app"}/api/auth/google/callback`;
+        const callbackUrl = `${process.env["VITE_APP_URL"] ?? "https://psxl.live"}/api/auth/google/callback`;
 
         if (!clientId) {
           return new Response("GOOGLE_CLIENT_ID not configured", { status: 503 });

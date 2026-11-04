@@ -1,6 +1,6 @@
 import type { UIMessage } from "ai";
 
-const PREFIX = "auditx.chat.";
+const PREFIX = "wab.chat.";
 
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;

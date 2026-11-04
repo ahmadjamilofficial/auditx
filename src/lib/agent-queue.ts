@@ -1,4 +1,4 @@
-// ─── AuditX Agent Queue Client ────────────────────────────────────────────────
+// ─── Wab Agent Queue Client ────────────────────────────────────────────────
 // Client-side helpers for enqueuing and monitoring agent jobs.
 // The actual job runner lives in supabase/functions/agent-runner/.
 
@@ -67,7 +67,7 @@ export async function enqueueJob(
 
   // Trigger the runner Edge Function immediately (fire-and-forget)
   supabase.functions.invoke("agent-runner", { body: { job_id: data.id } })
-    .catch((e: unknown) => console.warn("[AuditX] agent-runner invoke failed:", e));
+    .catch((e: unknown) => console.warn("[Wab] agent-runner invoke failed:", e));
 
   return data as AgentJob;
 }

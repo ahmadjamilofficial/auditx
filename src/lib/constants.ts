@@ -13,7 +13,7 @@ export function upgradeMailto(plan: string, context: { email?: string | undefine
   return mailto(
     `I want to upgrade my plan — ${plan}`,
     [
-      "Hi AuditX team,",
+      "Hi Wab team,",
       "",
       `I want to upgrade my plan to ${plan}.`,
       "",

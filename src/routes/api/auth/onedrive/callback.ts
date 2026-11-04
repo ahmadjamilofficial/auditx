@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/auth/onedrive/callback")({
         const clientId     = process.env["MICROSOFT_CLIENT_ID"]     ?? "";
         const clientSecret = process.env["MICROSOFT_CLIENT_SECRET"] ?? "";
         const tenantId     = process.env["MICROSOFT_TENANT_ID"]     ?? "common";
-        const appUrl       = process.env["VITE_APP_URL"] ?? "https://auditx.app";
+        const appUrl       = process.env["VITE_APP_URL"] ?? "https://psxl.live";
         const callbackUrl  = `${appUrl}/api/auth/onedrive/callback`;
 
         // Exchange code for tokens

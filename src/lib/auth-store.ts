@@ -12,7 +12,7 @@ export interface User {
   jurisdiction: "PSX" | "NSE";
 }
 
-const STORAGE_KEY = "auditx_demo_user";
+const STORAGE_KEY = "wab_demo_user";
 
 export function getStoredUser(): User | null {
   try {

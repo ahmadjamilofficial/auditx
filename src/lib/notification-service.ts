@@ -1,11 +1,11 @@
-// ─── AuditX Notification Service ─────────────────────────────────────────────
+// ─── Wab Notification Service ─────────────────────────────────────────────
 // Abstracted notification service with Browser implementation.
 // Architecture is ready for a future Tauri implementation.
 //
 // Usage:
 //   const svc = BrowserNotificationService.getInstance();
 //   await svc.requestPermission();
-//   svc.send({ title: "AuditX completed your report", body: "...", link: "/app/reports" });
+//   svc.send({ title: "Wab completed your report", body: "...", link: "/app/reports" });
 
 export type NotificationPermission = "granted" | "denied" | "unsupported" | "default";
 
@@ -61,7 +61,7 @@ export class BrowserNotificationService implements INotificationService {
     const n = new window.Notification(payload.title, {
       body: payload.body,
       icon: payload.icon ?? "/favicon.svg",
-      tag: "auditx",
+      tag: "wab",
     });
 
     if (payload.link) {

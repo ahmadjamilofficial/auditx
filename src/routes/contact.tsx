@@ -6,13 +6,13 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact AuditX — Sales, Support & Compliance" },
+      { title: "Contact Wab — Sales, Support & Compliance" },
       {
         name: "description",
         content:
-          "Get in touch with the AuditX team about reconciliation, enterprise plans, jurisdictions or compliance questions.",
+          "Get in touch with the Wab team about reconciliation, enterprise plans, jurisdictions or compliance questions.",
       },
-      { property: "og:title", content: "Contact AuditX" },
+      { property: "og:title", content: "Contact Wab" },
       { property: "og:description", content: "Talk to sales, support or the compliance team." },
     ],
   }),

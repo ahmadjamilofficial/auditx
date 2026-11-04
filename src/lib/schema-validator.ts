@@ -1,4 +1,4 @@
-// ─── AuditX Schema Validator ──────────────────────────────────────────────────
+// ─── Wab Schema Validator ──────────────────────────────────────────────────
 // Validates LLM outputs against Zod schemas before they touch any data.
 // Throws SchemaValidationError — never silently accepts malformed output.
 

@@ -1,4 +1,4 @@
-// ─── AuditX AI Provider ────────────────────────────────────────────────────────
+// ─── Wab AI Provider ────────────────────────────────────────────────────────
 // Server-only. Provider: Lovable AI (primary) → OpenRouter → Groq.
 // Lovable AI always answers with the project's own key; the fallbacks exist only
 // for deployments outside Lovable hosting (e.g. psxl.live on Vercel).
@@ -73,7 +73,7 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
       name: "openrouter",
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: openRouterKey,
-      headers: { "HTTP-Referer": readEnv("VITE_APP_URL", env) ?? "https://psxl.live", "X-Title": "AuditX" },
+      headers: { "HTTP-Referer": readEnv("VITE_APP_URL", env) ?? "https://psxl.live", "X-Title": "Wab" },
     });
     const model = provider.chatModel(modelId) as unknown as LanguageModel;
     return {
@@ -110,9 +110,9 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
 export function describeAiError(e: unknown): { status: number; message: string } {
   const status = (e as { statusCode?: number; status?: number })?.statusCode ?? (e as { status?: number })?.status ?? 500;
   if (status === 402) return { status, message: "AI credits are used up. Add credits in your workspace settings to continue." };
-  if (status === 429) return { status, message: "AuditX AI is busy right now. Please try again in a moment." };
+  if (status === 429) return { status, message: "Wab AI is busy right now. Please try again in a moment." };
   if (status === 403) return { status, message: "AI access is blocked for this workspace." };
-  return { status, message: "AuditX AI is temporarily unavailable. Your data was not changed." };
+  return { status, message: "Wab AI is temporarily unavailable. Your data was not changed." };
 }
 
 export function isProviderError(e: unknown): boolean {

@@ -1,4 +1,4 @@
-// ─── AuditX Connected Sources ─────────────────────────────────────────────────
+// ─── Wab Connected Sources ─────────────────────────────────────────────────
 // Client-side CRUD for connected_sources table.
 // OAuth token encryption happens server-side via Supabase Vault.
 

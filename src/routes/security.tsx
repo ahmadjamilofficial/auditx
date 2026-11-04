@@ -6,13 +6,13 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/security")({
   head: () => ({
     meta: [
-      { title: "Security & Audit Architecture — AuditX" },
+      { title: "Security & Audit Architecture — Wab" },
       {
         name: "description",
         content:
-          "How AuditX protects trade data: hash-chained immutable audit logs, per-organisation row-level security, encrypted storage and deterministic tax math.",
+          "How Wab protects trade data: hash-chained immutable audit logs, per-organisation row-level security, encrypted storage and deterministic tax math.",
       },
-      { property: "og:title", content: "Security & Audit Architecture — AuditX" },
+      { property: "og:title", content: "Security & Audit Architecture — Wab" },
       {
         property: "og:description",
         content: "Immutable hash-chained audit logging, RLS isolation and encrypted document storage.",
@@ -60,7 +60,7 @@ function Security() {
     <PageShell
       eyebrow="Security"
       title="Zero-manual-error architecture"
-      sub="AuditX is built so that a number can always be traced back to a document, and a document can always be traced back to an unbroken chain."
+      sub="Wab is built so that a number can always be traced back to a document, and a document can always be traced back to an unbroken chain."
     >
       <div className="grid gap-6 md:grid-cols-3">
         {pillars.map((p, i) => (

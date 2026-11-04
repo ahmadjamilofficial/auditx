@@ -1,4 +1,4 @@
-// ─── AuditX Financial Insights ────────────────────────────────────────────────
+// ─── Wab Financial Insights ────────────────────────────────────────────────
 // Proactively surfaced findings from deterministic financial data.
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -69,7 +69,7 @@ function InsightsPage() {
         type: "FEE_DISCREPANCY",
         severity: "CRITICAL",
         title: `${criticalFlags.length} Critical Reconciliation Flag${criticalFlags.length > 1 ? "s" : ""} Detected`,
-        summary: `AuditX detected ${criticalFlags.length} critical reconciliation issue${criticalFlags.length > 1 ? "s" : ""} that may affect your financial records. ${criticalFlags[0]?.flag_type ?? "Discrepancy"}: ${criticalFlags[0]?.description ?? ""}`,
+        summary: `Wab detected ${criticalFlags.length} critical reconciliation issue${criticalFlags.length > 1 ? "s" : ""} that may affect your financial records. ${criticalFlags[0]?.flag_type ?? "Discrepancy"}: ${criticalFlags[0]?.description ?? ""}`,
         confidence: 0.97,
         financialImpact: totalImpact,
         currency,
@@ -123,7 +123,7 @@ function InsightsPage() {
         type: "TAX_OPPORTUNITY",
         severity: "LOW",
         title: `Tax-Loss Harvesting Opportunity — ${currency} ${totalSaving.toLocaleString("en-PK", { maximumFractionDigits: 0 })} Potential Saving`,
-        summary: `AuditX identified ${harvestOpportunities.length} position${harvestOpportunities.length > 1 ? "s" : ""} with unrealized losses that could offset your realized gains of ${currency} ${tax.totalGain.toLocaleString("en-PK", { maximumFractionDigits: 0 })}, reducing your estimated tax liability.`,
+        summary: `Wab identified ${harvestOpportunities.length} position${harvestOpportunities.length > 1 ? "s" : ""} with unrealized losses that could offset your realized gains of ${currency} ${tax.totalGain.toLocaleString("en-PK", { maximumFractionDigits: 0 })}, reducing your estimated tax liability.`,
         confidence: 0.82,
         financialImpact: totalSaving,
         currency,
@@ -200,7 +200,7 @@ function InsightsPage() {
             Financial Insights
           </h1>
           <p className="mt-0.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            AuditX continuously monitors your financial data and surfaces findings proactively.
+            Wab continuously monitors your financial data and surfaces findings proactively.
           </p>
         </div>
         <div

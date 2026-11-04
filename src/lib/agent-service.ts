@@ -1,4 +1,4 @@
-// ─── AuditX agent service ─────────────────────────────────────────────────────
+// ─── Wab agent service ─────────────────────────────────────────────────────
 // UI-agnostic orchestration layer:
 //   ChatComposer → AgentRequest → (extraction + streaming AI) → AgentActivity / AIMessage
 // Model cascade: nvidia/nemotron-3-ultra-550b-a55b:free → inclusionai/ling-3.0-flash-fin:free → openrouter/free
@@ -104,7 +104,7 @@ function getApiKey(): string {
   const key = (import.meta.env["VITE_OPENROUTER_API_KEY"] as string | undefined) ?? "";
   if (!key || key.length < 10) {
     throw new Error(
-      "AuditX Intelligence: AI API key not configured. Add VITE_OPENROUTER_API_KEY to your .env file.",
+      "Wab Intelligence: AI API key not configured. Add VITE_OPENROUTER_API_KEY to your .env file.",
     );
   }
   return key;
@@ -148,8 +148,8 @@ async function streamWithCascade(
         headers: {
           Authorization: `Bearer ${key}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://auditx.app",
-          "X-Title": "AuditX",
+          "HTTP-Referer": "https://psxl.live",
+          "X-Title": "Wab",
         },
         body: JSON.stringify({
           model,
@@ -165,7 +165,7 @@ async function streamWithCascade(
         const errText = await resp.text().catch(() => resp.statusText);
         const err = new Error(`OpenRouter ${resp.status}: ${errText}`);
         if ((resp.status === 429 || resp.status === 502 || resp.status === 503) && i < STREAM_MODELS.length - 1) {
-          console.warn(`[AuditX agent] Provider error ${resp.status} on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
+          console.warn(`[Wab agent] Provider error ${resp.status} on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
           continue;
         }
         throw err;
@@ -200,7 +200,7 @@ async function streamWithCascade(
       const msg = String((e as Error)?.message ?? "").toLowerCase();
       const isQuota = msg.includes("429") || msg.includes("502") || msg.includes("503") || msg.includes("quota") || msg.includes("rate limit") || msg.includes("rate-limit") || msg.includes("overloaded") || msg.includes("upstream error") || msg.includes("provider_unavailable");
       if (isQuota && i < STREAM_MODELS.length - 1) {
-        console.warn(`[AuditX agent] Quota on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
+        console.warn(`[Wab agent] Quota on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
         continue;
       }
       throw e;
@@ -211,7 +211,7 @@ async function streamWithCascade(
 
 // ── Analyst system prompt ─────────────────────────────────────────────────────
 
-const ANALYST_SYSTEM = `You are AuditX, a financial audit and compliance analyst for retail investors in PSX (Pakistan) and NSE (India) markets.
+const ANALYST_SYSTEM = `You are Wab, a financial audit and compliance analyst for retail investors in PSX (Pakistan) and NSE (India) markets.
 
 You receive the user's own uploaded financial documents (or structured fields extracted from them) plus an instruction. Apply the instruction to their data.
 

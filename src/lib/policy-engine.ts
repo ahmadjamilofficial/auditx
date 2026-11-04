@@ -1,4 +1,4 @@
-// ─── AuditX Policy Engine ─────────────────────────────────────────────────────
+// ─── Wab Policy Engine ─────────────────────────────────────────────────────
 // Classifies every agent action into AUTO | NOTIFY | REVIEW | STOP.
 // This is pure deterministic code — the LLM never makes tier decisions.
 

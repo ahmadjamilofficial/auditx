@@ -1,4 +1,4 @@
-// ─── AuditX Parser Workspace ──────────────────────────────────────────────────
+// ─── Wab Parser Workspace ──────────────────────────────────────────────────
 // AI chat interface with agentic tool execution, approval gates,
 // quota-aware error handling, and chat deletion.
 
@@ -224,7 +224,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is temporarily busy",
+      title: "Wab is temporarily busy",
       body: "The AI service has reached its current request limit. Your data is safe and no changes were made. Try again in a few minutes.",
       cta: "Try again",
       ctaLink: null,
@@ -234,7 +234,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is taking longer than expected",
+      title: "Wab is taking longer than expected",
       body: "The AI service didn't respond in time. Your financial data hasn't been changed.",
       cta: "Try again",
       ctaLink: null,
@@ -244,7 +244,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is temporarily unavailable",
+      title: "Wab is temporarily unavailable",
       body: "The AI service didn't respond. Your financial data was not changed. This is usually resolved in seconds.",
       cta: "Try again",
       ctaLink: null,
@@ -509,7 +509,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         >
           <AlertTriangle size={14} style={{ color: "var(--warn)", flexShrink: 0 }} />
           <p className="mr-auto text-xs" style={{ color: "var(--ink-2)" }}>
-            AuditX wants to write to your ledger. Review the input above before approving.
+            Wab wants to write to your ledger. Review the input above before approving.
           </p>
           <button
             type="button"
@@ -616,7 +616,7 @@ function Chat({
     onFinish: () => { void queryClient.invalidateQueries({ queryKey: ["chat_threads", user?.id] }); },
     onError: (cause) => {
       // Don't show a generic toast — the ErrorBanner in the UI handles it
-      console.error("[AuditX] Chat error", cause);
+      console.error("[Wab] Chat error", cause);
     },
   });
 
@@ -702,7 +702,7 @@ function Chat({
           <div className="flex size-6 items-center justify-center rounded-lg" style={{ background: "rgba(115,66,226,0.1)" }}>
             <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
           </div>
-          <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>AuditX</span>
+          <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>Wab</span>
           <span className="text-xs" style={{ color: "var(--ink-3)" }}>Financial AI Agent</span>
         </div>
 
@@ -763,10 +763,10 @@ function Chat({
                 <Sparkles size={26} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
               </div>
               <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem,3vw,2rem)" }}>
-                Ask AuditX a question about your data
+                Ask Wab a question about your data
               </h1>
               <p className="mt-3 max-w-lg text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-                AuditX works autonomously in the background. Use this chat to ask
+                Wab works autonomously in the background. Use this chat to ask
                 questions, investigate anomalies, or request a specific analysis.
               </p>
             </motion.div>
@@ -875,7 +875,7 @@ function Chat({
             <PromptInputTextarea
               ref={textareaRef}
               autoFocus
-              placeholder="Ask AuditX a question about your data…"
+              placeholder="Ask Wab a question about your data…"
             />
             <PromptInputFooter>
               <PromptInputTools>
@@ -891,7 +891,7 @@ function Chat({
           </PromptInput>
 
           <p className="mt-2 text-center text-[11px]" style={{ color: "var(--ink-3)" }}>
-            AuditX acts on your data autonomously. Every change is traceable and reversible.
+            Wab acts on your data autonomously. Every change is traceable and reversible.
           </p>
         </div>
       </div>
