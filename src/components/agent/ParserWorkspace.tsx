@@ -648,9 +648,6 @@ function Chat({
 
         {/* Right controls */}
         <div className="flex items-center gap-2" ref={menuRef}>
-          {/* Usage indicator — compact */}
-          <AiUsageBar userId={user?.id} plan={plan} />
-
           {/* Thread menu */}
           <div className="relative">
             <button
