@@ -57,6 +57,7 @@ import {
   useDeleteChatThread,
   AI_PLAN_DAILY_LIMITS,
 } from "@/lib/data-hooks";
+import { loadComposerDraft, saveComposerDraft, clearComposerDraft } from "@/lib/chat-session";
 
 // ── Suggestion chips ──────────────────────────────────────────────────────────
 
@@ -805,6 +806,7 @@ function Chat({
             onSubmit={async ({ text, files }) => {
               const trimmed = (text ?? "").trim();
               if (!trimmed && (!files || files.length === 0)) return;
+              clearComposerDraft(threadId);
               await sendMessage({ text: trimmed || "Analyse the attached document(s).", files });
             }}
           >
@@ -812,6 +814,7 @@ function Chat({
               ref={textareaRef}
               autoFocus
               placeholder="Ask Wab a question about your data…"
+              onChange={(e) => saveComposerDraft(threadId, e.currentTarget.value)}
             />
             <PromptInputFooter>
               <PromptInputTools>
