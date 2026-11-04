@@ -1,4 +1,4 @@
-// ─── AuditX Intelligence Tool Layer ──────────────────────────────────────────
+// ─── Wab Intelligence Tool Layer ──────────────────────────────────────────
 // Modular, intent-based tools that power the AI Explanation Layer.
 // AI calls these functions — never raw DB queries.
 // ALL returned numbers are deterministic — never AI-generated.
@@ -432,7 +432,7 @@ export function buildIntelligencePrompt(
     .map((r, i) => `## Tool Result ${i + 1} (Source: ${r.source}, Confidence: ${(r.confidence * 100).toFixed(0)}%)\n${JSON.stringify(r.data, null, 2)}`)
     .join("\n\n");
 
-  return `You are AuditX, a financial intelligence system for ${context.jurisdiction} investors.
+  return `You are Wab, a financial intelligence system for ${context.jurisdiction} investors.
 
 CRITICAL RULES:
 - NEVER invent or estimate financial numbers

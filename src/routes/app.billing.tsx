@@ -224,7 +224,7 @@ function Billing() {
       >
         <ArrowUpRight size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }} />
         <p style={{ color: "var(--ink-2)" }}>
-          <strong>Subscription:</strong> AuditX now uses a simple subscription model. Choose Standard ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is managed securely through Kelviq.
+          <strong>Subscription:</strong> Wab now uses a simple subscription model. Choose Standard ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is managed securely through Kelviq.
         </p>
       </div>
     </div>

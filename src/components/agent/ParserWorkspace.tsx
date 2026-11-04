@@ -1,4 +1,4 @@
-// ─── AuditX Parser Workspace ──────────────────────────────────────────────────
+// ─── Wab Parser Workspace ──────────────────────────────────────────────────
 // AI chat interface with agentic tool execution, approval gates,
 // quota-aware error handling, and chat deletion.
 
@@ -54,10 +54,10 @@ import { takePendingFiles, takePendingPrompt } from "@/lib/chat-session";
 import { supabase } from "@/lib/supabase";
 import { withTimeout } from "@/lib/utils";
 import {
-  useAiUsageToday,
   useDeleteChatThread,
   AI_PLAN_DAILY_LIMITS,
 } from "@/lib/data-hooks";
+import { loadComposerDraft, saveComposerDraft, clearComposerDraft } from "@/lib/chat-session";
 
 // ── Suggestion chips ──────────────────────────────────────────────────────────
 
@@ -122,66 +122,6 @@ function classifyError(msg: string): "quota" | "credits" | "rate_limit" | "timeo
   return "generic";
 }
 
-// ── AI Usage Indicator ────────────────────────────────────────────────────────
-
-function AiUsageBar({ userId, plan }: { userId: string | undefined; plan: string }) {
-  const { data } = useAiUsageToday(userId);
-  const dailyLimit = AI_PLAN_DAILY_LIMITS[plan] ?? AI_PLAN_DAILY_LIMITS["free"]!;
-  const used = data?.credits_used_today ?? 0;
-  const pct = Math.min((used / dailyLimit) * 100, 100);
-  const remaining = Math.max(dailyLimit - used, 0);
-  const low = pct >= 80;
-  const critical = pct >= 95;
-
-  if (!userId) return null;
-
-  return (
-    <div
-      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs"
-      style={{
-        border: "1px solid var(--hairline)",
-        background: critical ? "rgba(214,69,69,0.05)" : low ? "rgba(201,138,26,0.05)" : "white",
-      }}
-    >
-      <Zap
-        size={13}
-        strokeWidth={1.75}
-        style={{ color: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--ink-3)", flexShrink: 0 }}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span style={{ color: "var(--ink-2)" }}>
-            AI usage · {plan.charAt(0).toUpperCase() + plan.slice(1)}
-          </span>
-          <span
-            className="font-semibold tabular-nums"
-            style={{ color: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--ink-2)" }}
-          >
-            {used} / {dailyLimit}
-          </span>
-        </div>
-        <div
-          className="h-1.5 w-full overflow-hidden rounded-full"
-          style={{ background: "var(--hairline)" }}
-        >
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${pct}%`,
-              background: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--color-accent)",
-            }}
-          />
-        </div>
-        {critical && (
-          <p className="mt-0.5" style={{ color: "var(--bad)" }}>
-            Almost at today's limit — {remaining} request{remaining !== 1 ? "s" : ""} remaining
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Quota / Error banner shown inline in the chat ─────────────────────────────
 
 function ErrorBanner({
@@ -224,7 +164,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is temporarily busy",
+      title: "Wab is temporarily busy",
       body: "The AI service has reached its current request limit. Your data is safe and no changes were made. Try again in a few minutes.",
       cta: "Try again",
       ctaLink: null,
@@ -234,7 +174,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is taking longer than expected",
+      title: "Wab is taking longer than expected",
       body: "The AI service didn't respond in time. Your financial data hasn't been changed.",
       cta: "Try again",
       ctaLink: null,
@@ -244,7 +184,7 @@ function ErrorBanner({
       color: "var(--warn)",
       bg: "rgba(201,138,26,0.06)",
       border: "rgba(201,138,26,0.2)",
-      title: "AuditX is temporarily unavailable",
+      title: "Wab is temporarily unavailable",
       body: "The AI service didn't respond. Your financial data was not changed. This is usually resolved in seconds.",
       cta: "Try again",
       ctaLink: null,
@@ -509,7 +449,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         >
           <AlertTriangle size={14} style={{ color: "var(--warn)", flexShrink: 0 }} />
           <p className="mr-auto text-xs" style={{ color: "var(--ink-2)" }}>
-            AuditX wants to write to your ledger. Review the input above before approving.
+            Wab wants to write to your ledger. Review the input above before approving.
           </p>
           <button
             type="button"
@@ -616,7 +556,7 @@ function Chat({
     onFinish: () => { void queryClient.invalidateQueries({ queryKey: ["chat_threads", user?.id] }); },
     onError: (cause) => {
       // Don't show a generic toast — the ErrorBanner in the UI handles it
-      console.error("[AuditX] Chat error", cause);
+      console.error("[Wab] Chat error", cause);
     },
   });
 
@@ -645,6 +585,14 @@ function Chat({
   useEffect(() => {
     if (status === "ready") { setCurrentStage(null); textareaRef.current?.focus(); }
   }, [status]);
+
+  // Restore the unsent draft after reload so typed text survives navigation.
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const draft = loadComposerDraft(threadId);
+    if (draft && !ta.value) ta.value = draft;
+  }, [threadId]);
 
   useEffect(() => {
     if (status !== "streaming") { setCurrentStage(null); return; }
@@ -702,15 +650,12 @@ function Chat({
           <div className="flex size-6 items-center justify-center rounded-lg" style={{ background: "rgba(115,66,226,0.1)" }}>
             <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
           </div>
-          <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>AuditX</span>
+          <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>Wab</span>
           <span className="text-xs" style={{ color: "var(--ink-3)" }}>Financial AI Agent</span>
         </div>
 
         {/* Right controls */}
         <div className="flex items-center gap-2" ref={menuRef}>
-          {/* Usage indicator — compact */}
-          <AiUsageBar userId={user?.id} plan={plan} />
-
           {/* Thread menu */}
           <div className="relative">
             <button
@@ -763,10 +708,10 @@ function Chat({
                 <Sparkles size={26} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
               </div>
               <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem,3vw,2rem)" }}>
-                Ask AuditX a question about your data
+                Ask Wab a question about your data
               </h1>
               <p className="mt-3 max-w-lg text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-                AuditX works autonomously in the background. Use this chat to ask
+                Wab works autonomously in the background. Use this chat to ask
                 questions, investigate anomalies, or request a specific analysis.
               </p>
             </motion.div>
@@ -869,13 +814,15 @@ function Chat({
             onSubmit={async ({ text, files }) => {
               const trimmed = (text ?? "").trim();
               if (!trimmed && (!files || files.length === 0)) return;
+              clearComposerDraft(threadId);
               await sendMessage({ text: trimmed || "Analyse the attached document(s).", files });
             }}
           >
             <PromptInputTextarea
               ref={textareaRef}
               autoFocus
-              placeholder="Ask AuditX a question about your data…"
+              placeholder="Ask Wab a question about your data…"
+              onChange={(e) => saveComposerDraft(threadId, e.currentTarget.value)}
             />
             <PromptInputFooter>
               <PromptInputTools>
@@ -891,7 +838,7 @@ function Chat({
           </PromptInput>
 
           <p className="mt-2 text-center text-[11px]" style={{ color: "var(--ink-3)" }}>
-            AuditX acts on your data autonomously. Every change is traceable and reversible.
+            Wab acts on your data autonomously. Every change is traceable and reversible.
           </p>
         </div>
       </div>

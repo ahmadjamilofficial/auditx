@@ -6,13 +6,13 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How AuditX Works — Upload, Extract, Reconcile, File" },
+      { title: "How Wab Works — Upload, Extract, Reconcile, File" },
       {
         name: "description",
         content:
-          "A walkthrough of the AuditX pipeline: multimodal extraction with confidence scoring, rule-based reconciliation and deterministic FIFO tax computation.",
+          "A walkthrough of the Wab pipeline: multimodal extraction with confidence scoring, rule-based reconciliation and deterministic FIFO tax computation.",
       },
-      { property: "og:title", content: "How AuditX Works" },
+      { property: "og:title", content: "How Wab Works" },
       {
         property: "og:description",
         content: "From a photographed broker slip to a filed capital-gains summary.",

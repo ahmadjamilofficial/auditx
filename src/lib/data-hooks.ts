@@ -405,7 +405,7 @@ export interface AiUsageToday {
   requests_today: number;
 }
 
-/** AuditX plan daily credit limits (mirrors ai_plan_limits table). */
+/** Wab plan daily credit limits (mirrors ai_plan_limits table). */
 export const AI_PLAN_DAILY_LIMITS: Record<string, number> = {
   free: 20,
   pro: 100,

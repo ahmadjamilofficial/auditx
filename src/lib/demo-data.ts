@@ -1,4 +1,4 @@
-// ─── Demo data for the AuditX prototype ─────────────────────────────────────
+// ─── Demo data for the Wab prototype ─────────────────────────────────────
 // All numbers are realistic but fictitious. Real FIFO math is in lib/tax.ts.
 
 export type TxAction = "BUY" | "SELL" | "DIV";
@@ -243,7 +243,7 @@ export const DEMO_AUDIT_LOG = [
   {
     id: "al001",
     timestamp: "2025-08-25T14:32:11Z",
-    actor: "AuditX Agent",
+    actor: "Wab Agent",
     action: "parse_document",
     entity_type: "document",
     entity_id: "doc-012",
@@ -253,7 +253,7 @@ export const DEMO_AUDIT_LOG = [
   {
     id: "al002",
     timestamp: "2025-08-25T14:32:15Z",
-    actor: "demo@auditx.io",
+    actor: "demo@wab.io",
     action: "post_to_ledger",
     entity_type: "transaction",
     entity_id: "t012",
@@ -263,7 +263,7 @@ export const DEMO_AUDIT_LOG = [
   {
     id: "al003",
     timestamp: "2025-08-22T09:11:04Z",
-    actor: "AuditX Agent",
+    actor: "Wab Agent",
     action: "flag_discrepancy",
     entity_type: "reconciliation_flag",
     entity_id: "f002",
@@ -273,7 +273,7 @@ export const DEMO_AUDIT_LOG = [
   {
     id: "al004",
     timestamp: "2025-08-20T18:45:22Z",
-    actor: "demo@auditx.io",
+    actor: "demo@wab.io",
     action: "compute_tax",
     entity_type: "tax_computation",
     entity_id: "tc001",
@@ -283,7 +283,7 @@ export const DEMO_AUDIT_LOG = [
   {
     id: "al005",
     timestamp: "2025-08-18T11:30:00Z",
-    actor: "demo@auditx.io",
+    actor: "demo@wab.io",
     action: "post_to_ledger",
     entity_type: "transaction",
     entity_id: "t009",

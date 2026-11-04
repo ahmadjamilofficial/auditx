@@ -235,7 +235,7 @@ function ReviewInbox() {
         <div>
           <h1 className="text-xl font-bold">Review Inbox</h1>
           <p className="mt-0.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            Items that need your decision before AuditX can proceed.
+            Items that need your decision before Wab can proceed.
           </p>
         </div>
 

@@ -82,7 +82,7 @@ export function AskWhyButton({ context, className }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt: "You are AuditX Intelligence. Explain financial metrics clearly and concisely. Only reference numbers from the provided data.",
+          systemPrompt: "You are Wab Intelligence. Explain financial metrics clearly and concisely. Only reference numbers from the provided data.",
           userPrompt: finalPrompt,
           maxTokens: 400,
           temperature: 0.3,

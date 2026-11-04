@@ -75,8 +75,8 @@ export function Footer() {
           className="mt-12 flex flex-col gap-2 border-t pt-6 text-xs sm:flex-row sm:justify-between"
           style={{ borderColor: "var(--hairline)", color: "var(--ink-3)" }}
         >
-          <span>© {new Date().getFullYear()} AuditX. All rights reserved.</span>
-          <span>AuditX does not provide tax or legal advice.</span>
+          <span>© {new Date().getFullYear()} Wab. All rights reserved.</span>
+          <span>Wab does not provide tax or legal advice.</span>
         </div>
       </Container>
     </footer>

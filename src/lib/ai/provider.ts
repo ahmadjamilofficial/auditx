@@ -1,10 +1,10 @@
 // ─── AI Provider Abstraction ─────────────────────────────────────────────────────
 //
-// This interface allows AuditX to switch between AI providers (Groq, OpenRouter, etc.)
+// This interface allows Wab to switch between AI providers (Groq, OpenRouter, etc.)
 // without changing the application code.
 //
 // Architecture:
-//   Frontend → AuditX API → AI Provider Abstraction → Groq/OpenRouter/etc → Model
+//   Frontend → Wab API → AI Provider Abstraction → Groq/OpenRouter/etc → Model
 
 import type { LanguageModel as LanguageModelV1 } from "ai";
 

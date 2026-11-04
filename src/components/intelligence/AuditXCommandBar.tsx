@@ -1,4 +1,4 @@
-// ─── AuditX Command Bar ────────────────────────────────────────────────────────
+// ─── Wab Command Bar ────────────────────────────────────────────────────────
 // Global intelligent command bar — replaces chat-first UX.
 // Keyboard shortcut: Ctrl+K / ⌘K
 // Context-aware: understands current page and entity.
@@ -51,7 +51,7 @@ function AIResponse({ text, isStreaming }: { text: string; isStreaming: boolean 
         style={{ color: "var(--color-accent)" }}
       >
         <Sparkles size={13} />
-        <span className="text-xs font-semibold uppercase tracking-wider">AuditX Intelligence</span>
+        <span className="text-xs font-semibold uppercase tracking-wider">Wab Intelligence</span>
         {isStreaming && <Loader2 size={12} className="ml-auto animate-spin" style={{ color: "var(--ink-3)" }} />}
       </div>
       <div
@@ -91,7 +91,7 @@ interface CommandBarProps {
   onClose: () => void;
 }
 
-export function AuditXCommandBar({ open, onClose }: CommandBarProps) {
+export function WabCommandBar({ open, onClose }: CommandBarProps) {
   const { profile } = useAuth();
   const { jurisdiction, taxYear } = useLedgerContext();
   const routerState = useRouterState();
@@ -197,7 +197,7 @@ export function AuditXCommandBar({ open, onClose }: CommandBarProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemPrompt: "You are AuditX Intelligence, a financial audit assistant. Be concise, precise, and reference specific numbers from the data provided. Never invent figures.",
+            systemPrompt: "You are Wab Intelligence, a financial audit assistant. Be concise, precise, and reference specific numbers from the data provided. Never invent figures.",
             userPrompt: finalPrompt,
             maxTokens: 1024,
             temperature: 0.3,
@@ -293,7 +293,7 @@ export function AuditXCommandBar({ open, onClose }: CommandBarProps) {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Ask AuditX anything about your finances…"
+                  placeholder="Ask Wab anything about your finances…"
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
@@ -420,7 +420,7 @@ export function AuditXCommandBar({ open, onClose }: CommandBarProps) {
                     style={{ color: "var(--color-accent)", background: "rgba(115,66,226,0.06)", border: "1px solid rgba(115,66,226,0.15)" }}
                   >
                     <Sparkles size={14} />
-                    Ask AuditX: "{query.slice(0, 60)}{query.length > 60 ? "…" : ""}"
+                    Ask Wab: "{query.slice(0, 60)}{query.length > 60 ? "…" : ""}"
                     <ArrowRight size={14} className="ml-auto" />
                   </button>
                 </div>
@@ -432,7 +432,7 @@ export function AuditXCommandBar({ open, onClose }: CommandBarProps) {
                 style={{ borderColor: "var(--hairline)", background: "rgba(25,40,55,0.02)" }}
               >
                 <span className="text-[11px]" style={{ color: "var(--ink-3)" }}>
-                  Powered by AuditX Intelligence · Numbers from your ledger
+                  Powered by Wab Intelligence · Numbers from your ledger
                 </span>
                 <div className="flex items-center gap-3 text-[11px]" style={{ color: "var(--ink-3)" }}>
                   <span>↵ Ask</span>
@@ -479,7 +479,7 @@ export function CommandBarProvider({ children }: { children: ReactNode }) {
   return (
     <CommandBarContext.Provider value={{ open, setOpen }}>
       {children}
-      <AuditXCommandBar open={open} onClose={() => setOpen(false)} />
+      <WabCommandBar open={open} onClose={() => setOpen(false)} />
     </CommandBarContext.Provider>
   );
 }

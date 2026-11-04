@@ -1,4 +1,4 @@
-// ─── AuditX Notification Center ──────────────────────────────────────────────
+// ─── Wab Notification Center ──────────────────────────────────────────────
 // Slide-in panel triggered by the bell icon in AppShell.
 // Shows persistent notifications from Supabase + browser permission prompt.
 
@@ -220,7 +220,7 @@ export function NotificationCenter({
               >
                 <Monitor size={14} style={{ color: "var(--color-accent)", flexShrink: 0 }} />
                 <p className="flex-1 text-xs" style={{ color: "var(--ink-2)" }}>
-                  Get desktop alerts when AuditX completes tasks.
+                  Get desktop alerts when Wab completes tasks.
                 </p>
                 <button
                   type="button"
@@ -249,7 +249,7 @@ export function NotificationCenter({
                   </div>
                   <p className="text-sm font-medium">All clear</p>
                   <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                    AuditX will notify you when something needs attention.
+                    Wab will notify you when something needs attention.
                   </p>
                 </div>
               ) : (

@@ -1,5 +1,5 @@
-// ─── AuditX Financial Intelligence Layer ────────────────────────────────────
-// The central nervous system of AuditX 2.0.
+// ─── Wab Financial Intelligence Layer ────────────────────────────────────
+// The central nervous system of Wab 2.0.
 // ALL financial numbers come from deterministic engines — never from AI.
 // AI only explains, summarises, and investigates pre-computed data.
 

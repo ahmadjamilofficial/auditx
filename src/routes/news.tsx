@@ -6,16 +6,16 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/news")({
   head: () => ({
     meta: [
-      { title: "AuditX News, Compliance Updates & Release Notes" },
+      { title: "Wab News, Compliance Updates & Release Notes" },
       {
         name: "description",
         content:
-          "Product announcements, regional compliance updates and the AuditX release-note timeline for traders on PSX and NSE.",
+          "Product announcements, regional compliance updates and the Wab release-note timeline for traders on PSX and NSE.",
       },
-      { property: "og:title", content: "AuditX News & Changelog" },
+      { property: "og:title", content: "Wab News & Changelog" },
       {
         property: "og:description",
-        content: "Product, compliance and company updates from the AuditX team.",
+        content: "Product, compliance and company updates from the Wab team.",
       },
     ],
   }),
@@ -48,7 +48,7 @@ const posts = [
   },
   {
     cat: "Company",
-    title: "AuditX opens an early-access program for micro-brokerages",
+    title: "Wab opens an early-access program for micro-brokerages",
     date: "21 May 2026",
     excerpt:
       "Multi-client rollups, member directories and reconciliation health leaderboards are in the hands of first design partners.",

@@ -206,7 +206,7 @@ function ActivityFeed() {
         <div>
           <h1 className="text-xl font-bold">Activity Feed</h1>
           <p className="mt-0.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            Every autonomous action AuditX has taken, in order. Revert any run instantly.
+            Every autonomous action Wab has taken, in order. Revert any run instantly.
           </p>
         </div>
         <button

@@ -15,13 +15,13 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { title: "AuditX Help Center — Guides, Parsing & Tax Support" },
+      { title: "Wab Help Center — Guides, Parsing & Tax Support" },
       {
         name: "description",
         content:
-          "Search AuditX guides on uploading statements, reconciliation, capital-gains computation, billing and troubleshooting.",
+          "Search Wab guides on uploading statements, reconciliation, capital-gains computation, billing and troubleshooting.",
       },
-      { property: "og:title", content: "AuditX Help Center" },
+      { property: "og:title", content: "Wab Help Center" },
       {
         property: "og:description",
         content: "Guides and answers for parsing, reconciliation, tax profiles and billing.",
@@ -42,7 +42,7 @@ const cats = [
 
 const popular = [
   "Why did my extraction land in the review queue?",
-  "How AuditX matches FIFO lots across broker accounts",
+  "How Wab matches FIFO lots across broker accounts",
   "Setting filer vs non-filer status for PSX withholding",
   "Exporting a tax summary your accountant will accept",
   "Fixing a duplicate fill flagged during reconciliation",

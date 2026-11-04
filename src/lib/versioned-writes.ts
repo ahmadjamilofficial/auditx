@@ -1,4 +1,4 @@
-// ─── AuditX Versioned Writes ──────────────────────────────────────────────────
+// ─── Wab Versioned Writes ──────────────────────────────────────────────────
 // Every agent write snapshots the row before mutating it.
 // revertRun restores all snapshots for a run atomically via a Postgres function.
 
@@ -122,6 +122,6 @@ export async function writeAuditEntry(
       policy_tier: policyTier ?? null,
     } as never)
     .then(() => undefined, (e: unknown) => {
-      console.warn("[AuditX] audit_log insert failed (non-fatal):", e);
+      console.warn("[Wab] audit_log insert failed (non-fatal):", e);
     });
 }

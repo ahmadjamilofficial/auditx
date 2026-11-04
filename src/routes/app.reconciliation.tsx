@@ -363,7 +363,7 @@ function Reconciliation() {
                                     style={{ background: "rgba(115,66,226,0.04)", border: "1px solid rgba(115,66,226,0.12)" }}>
                                     <div className="flex items-center gap-1.5 mb-1">
                                       <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
-                                      <span className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>AuditX AI</span>
+                                      <span className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>Wab AI</span>
                                     </div>
                                     <p style={{ color: "var(--ink-2)" }}>{aiExplanations[flag.id]}</p>
                                   </div>

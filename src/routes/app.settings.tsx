@@ -557,7 +557,7 @@ function Settings() {
               <Panel>
                 <p className="mb-1 text-sm font-semibold">Import Data</p>
                 <p className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  Upload an Excel / CSV file or connect a Google Sheet. AuditX will ask for
+                  Upload an Excel / CSV file or connect a Google Sheet. Wab will ask for
                   permission before touching any of your data.
                 </p>
                 <DirectSourceConnect
@@ -573,7 +573,7 @@ function Settings() {
               <Panel>
                 <p className="mb-1 text-sm font-semibold">Connected Sources</p>
                 <p className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  AuditX monitors these sources continuously and acts on changes automatically.
+                  Wab monitors these sources continuously and acts on changes automatically.
                 </p>
                 <ConnectedSourcesTab orgId={profile?.org_id ?? ""} />
               </Panel>

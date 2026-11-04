@@ -1,4 +1,4 @@
-// ─── AuditX Invariant Checks ──────────────────────────────────────────────────
+// ─── Wab Invariant Checks ──────────────────────────────────────────────────
 // Runs after every agent run. Pure TypeScript — no LLM involved.
 // If any check fails the whole run must be rolled back.
 

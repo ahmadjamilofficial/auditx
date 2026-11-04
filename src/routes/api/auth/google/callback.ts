@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/auth/google/callback")({
 
         const clientId     = process.env["GOOGLE_CLIENT_ID"]     ?? "";
         const clientSecret = process.env["GOOGLE_CLIENT_SECRET"] ?? "";
-        const callbackUrl  = `${process.env["VITE_APP_URL"] ?? "https://auditx.app"}/api/auth/google/callback`;
+        const callbackUrl  = `${process.env["VITE_APP_URL"] ?? "https://psxl.live"}/api/auth/google/callback`;
 
         // Exchange code for tokens
         const tokenRes = await fetch("https://oauth2.googleapis.com/token", {

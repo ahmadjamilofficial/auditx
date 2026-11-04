@@ -1,4 +1,4 @@
-// ─── AuditX Background Task Service ───────────────────────────────────────────
+// ─── Wab Background Task Service ───────────────────────────────────────────
 // Handles autonomous background task execution with retries and notifications
 
 import { createClient } from "@supabase/supabase-js";

@@ -1,4 +1,4 @@
-// ─── AuditX Model Routing ─────────────────────────────────────────────────────
+// ─── Wab Model Routing ─────────────────────────────────────────────────────
 // Wraps audit-agent.server.ts without modifying it.
 // Only the `model` string (and fallback list) changes per task type.
 // Keys, endpoints, auth, and provider options are untouched.

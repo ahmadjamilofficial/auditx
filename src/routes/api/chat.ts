@@ -286,7 +286,7 @@ export const Route = createFileRoute("/api/chat")({
           const key =
             process.env["SUPABASE_PUBLISHABLE_KEY"] ??
             ((import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
-          const approvalSecret = process.env["TOOL_APPROVAL_SECRET"] ?? "auditx-tool-approval";
+          const approvalSecret = process.env["TOOL_APPROVAL_SECRET"] ?? "wab-tool-approval";
           if (!url || !key) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
 
           // Get env from global storage (set in server.ts)
@@ -536,7 +536,7 @@ export const Route = createFileRoute("/api/chat")({
                 if ((count ?? 0) >= monthlyTxLimit) throw new Error(`Your ${plan} plan allows ${monthlyTxLimit} transactions per month. Upgrade to Pro on the Billing page to add more.`);
               }
               if (input.quantity <= 0 || input.price <= 0) throw new Error("Quantity and price must be positive");
-              const payload = { org_id: thread.org_id, ticker: input.ticker.toUpperCase(), action: action as "BUY" | "SELL" | "DIV", quantity: input.quantity, price: input.price, fees: input.fees ?? 0, wht: input.wht ?? 0, trade_date: input.trade_date, ref_id: input.ref_id ?? `AI-${Date.now()}`, broker: input.broker ?? "", exchange: input.exchange ?? "PSX", confidence_score: 0.95, status: "posted" as const, source: { via: "auditx_agent", thread_id: thread.id } };
+              const payload = { org_id: thread.org_id, ticker: input.ticker.toUpperCase(), action: action as "BUY" | "SELL" | "DIV", quantity: input.quantity, price: input.price, fees: input.fees ?? 0, wht: input.wht ?? 0, trade_date: input.trade_date, ref_id: input.ref_id ?? `AI-${Date.now()}`, broker: input.broker ?? "", exchange: input.exchange ?? "PSX", confidence_score: 0.95, status: "posted" as const, source: { via: "wab_agent", thread_id: thread.id } };
               const { data, error } = await supabase.from("transactions").insert(payload).select().single();
               if (error) throw new Error(error.message);
               await audit("ai_insert_transaction", data.id, payload);
@@ -725,7 +725,7 @@ export const Route = createFileRoute("/api/chat")({
               if (kind === "template") {
                 const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
                 return {
-                  filename: filename || `auditx-new-records-${stamp}.csv`,
+                  filename: filename || `wab-new-records-${stamp}.csv`,
                   csv: toCsv(cols, [cols.map(() => "")]),
                   kind,
                   note: "Blank template for new transactions. Required columns: ticker, action, quantity, price, trade_date.",
@@ -734,7 +734,7 @@ export const Route = createFileRoute("/api/chat")({
               if (kind === "custom") {
                 const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
                 return {
-                  filename: filename || `auditx-export-${stamp}.csv`,
+                  filename: filename || `wab-export-${stamp}.csv`,
                   csv: toCsv(cols, rows ?? []),
                   kind,
                 };
@@ -772,7 +772,7 @@ export const Route = createFileRoute("/api/chat")({
               return {
                 filename:
                   filename ||
-                  (kind === "unfinished" ? `auditx-unfinished-${stamp}.csv` : `auditx-ledger-${stamp}.csv`),
+                  (kind === "unfinished" ? `wab-unfinished-${stamp}.csv` : `wab-ledger-${stamp}.csv`),
                 csv: toCsv(cols, csvRows),
                 kind,
                 row_count: csvRows.length,
@@ -890,7 +890,7 @@ export const Route = createFileRoute("/api/chat")({
 ━━ ACCOUNT ━━
 The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transactionsPerMonth ?? "unlimited"} new transactions per month, 1 broker account and CSV export; specialist delegation, PDF exports, anomaly detection and tax-loss harvesting are Pro/Enterprise capabilities. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
 
-        const SYSTEM_PROMPT = `You are AuditX, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
+        const SYSTEM_PROMPT = `You are Wab, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
 
 ━━ SPEED AND EFFICIENCY (most important) ━━
 - Answer greetings, definitions and general questions directly with NO tools.
@@ -957,8 +957,8 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           onError: (e) => {
             const st = (e as { statusCode?: number })?.statusCode;
             if (st === 402) return "AI credits are used up. Add credits in your workspace settings to continue.";
-            if (st === 429) return "AuditX AI is busy right now. Please try again in a moment.";
-            return "AuditX AI hit an error. Your data was not changed — please try again.";
+            if (st === 429) return "Wab AI is busy right now. Please try again in a moment.";
+            return "Wab AI hit an error. Your data was not changed — please try again.";
           },
           onFinish: async ({ messages }) => {
             try {

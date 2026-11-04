@@ -11,7 +11,7 @@ export const Route = createFileRoute("/api/auth/onedrive/start")({
 
         const clientId   = process.env["MICROSOFT_CLIENT_ID"] ?? "";
         const tenantId   = process.env["MICROSOFT_TENANT_ID"] ?? "common";
-        const appUrl     = process.env["VITE_APP_URL"] ?? "https://auditx.app";
+        const appUrl     = process.env["VITE_APP_URL"] ?? "https://psxl.live";
         const callbackUrl = `${appUrl}/api/auth/onedrive/callback`;
 
         if (!clientId) {

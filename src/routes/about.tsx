@@ -5,13 +5,13 @@ import { PageShell } from "@/components/site/PageShell";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About AuditX — Audit Infrastructure for Emerging Markets" },
+      { title: "About Wab — Audit Infrastructure for Emerging Markets" },
       {
         name: "description",
         content:
-          "AuditX builds audit-grade reconciliation and tax tooling for traders and micro-brokerages on emerging-market exchanges.",
+          "Wab builds audit-grade reconciliation and tax tooling for traders and micro-brokerages on emerging-market exchanges.",
       },
-      { property: "og:title", content: "About AuditX" },
+      { property: "og:title", content: "About Wab" },
       {
         property: "og:description",
         content: "Why we build deterministic, explainable audit tooling for regional exchanges.",
@@ -41,7 +41,7 @@ function About() {
     <PageShell
       eyebrow="About"
       title="Audit infrastructure for the exchanges nobody built tools for"
-      sub="Reconciliation in emerging markets still runs on printed slips, WhatsApp screenshots and spreadsheets. AuditX exists to make that book provable."
+      sub="Reconciliation in emerging markets still runs on printed slips, WhatsApp screenshots and spreadsheets. Wab exists to make that book provable."
     >
       <div className="grid gap-6 md:grid-cols-3">
         {values.map(([t, d], i) => (

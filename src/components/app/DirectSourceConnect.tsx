@@ -63,7 +63,7 @@ function PermissionPrompt({
           <ShieldCheck size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
         </span>
         <div>
-          <p className="text-sm font-semibold">AuditX wants permission to access your data</p>
+          <p className="text-sm font-semibold">Wab wants permission to access your data</p>
           <p className="text-xs" style={{ color: "var(--ink-3)" }}>
             Review what will happen before approving
           </p>
@@ -83,7 +83,7 @@ function PermissionPrompt({
         <div className="rounded-xl p-4 space-y-2"
           style={{ background: "rgba(25,40,55,0.04)", border: "1px solid var(--hairline)" }}>
           <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
-            AuditX will:
+            Wab will:
           </p>
           {req.actions.map((a, i) => (
             <div key={i} className="flex items-start gap-2 text-sm">
@@ -104,7 +104,7 @@ function PermissionPrompt({
         </div>
 
         <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-          AuditX will <strong>never</strong> overwrite your source file.
+          Wab will <strong>never</strong> overwrite your source file.
           Extracted data is written to a separate derived ledger only.
         </p>
       </div>
@@ -452,7 +452,7 @@ export function DirectSourceConnect({
               <div>
                 <p className="text-sm font-semibold">Upload Excel / CSV</p>
                 <p className="mt-0.5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  One-time import. AuditX extracts transactions and writes to your ledger.
+                  One-time import. Wab extracts transactions and writes to your ledger.
                 </p>
               </div>
               <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ok)" }}>
@@ -472,7 +472,7 @@ export function DirectSourceConnect({
               <div>
                 <p className="text-sm font-semibold">Connect Google Sheet</p>
                 <p className="mt-0.5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  Continuous monitoring. AuditX detects changes and syncs automatically.
+                  Continuous monitoring. Wab detects changes and syncs automatically.
                 </p>
               </div>
               <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--color-accent)" }}>
@@ -534,8 +534,8 @@ export function DirectSourceConnect({
             </p>
             <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--ink-3)" }}>
               {mode === "excel"
-                ? "AuditX is extracting your transactions. Check the Activity Feed for progress."
-                : "AuditX will monitor this sheet every 60 seconds and sync changes automatically."}
+                ? "Wab is extracting your transactions. Check the Activity Feed for progress."
+                : "Wab will monitor this sheet every 60 seconds and sync changes automatically."}
             </p>
             {jobId && (
               <a href="/app/activity"

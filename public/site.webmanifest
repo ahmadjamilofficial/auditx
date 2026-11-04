@@ -1,25 +1,24 @@
 {
-  "name": "AuditX — AI-Native Trade Reconciliation",
-  "short_name": "AuditX",
-  "description": "AI-powered financial audit and CGT compliance for PSX and NSE traders.",
+  "name": "Wab \u2014 AI Financial Audit & Compliance",
+  "short_name": "Wab",
+  "description": "AI-powered financial audit and tax compliance for traders.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F2F2EE",
   "theme_color": "#7342E2",
   "orientation": "portrait-primary",
-  "categories": ["finance", "productivity", "business"],
+  "categories": [
+    "finance",
+    "productivity",
+    "business"
+  ],
   "lang": "en",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/favicon.ico",
-      "type": "image/x-icon",
-      "sizes": "48x48"
     }
   ],
   "screenshots": [
@@ -28,14 +27,14 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "AuditX Dashboard — Portfolio Overview"
+      "label": "Wab Dashboard \u2014 Portfolio Overview"
     },
     {
       "src": "/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "AuditX Mobile — Ledger View"
+      "label": "Wab Mobile \u2014 Ledger View"
     }
   ],
   "shortcuts": [
@@ -44,14 +43,24 @@
       "short_name": "Upload",
       "description": "Parse a new trade confirmation",
       "url": "/app/parser",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "any"
+        }
+      ]
     },
     {
       "name": "Tax Center",
       "short_name": "Tax",
       "description": "View your CGT computation",
       "url": "/app/tax",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "any"
+        }
+      ]
     }
   ]
 }

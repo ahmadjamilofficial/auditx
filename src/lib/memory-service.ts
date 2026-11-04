@@ -1,4 +1,4 @@
-// ─── AuditX Memory Service ───────────────────────────────────────────────────────
+// ─── Wab Memory Service ───────────────────────────────────────────────────────
 // Implements three-level memory: working (conversation), persistent (long-term), and historical (retrieval)
 
 import { createClient } from "@supabase/supabase-js";

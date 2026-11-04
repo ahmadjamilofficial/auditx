@@ -174,7 +174,7 @@ function AgentPage() {
             </div>
             <div>
               <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>
-                AuditX AI Agent
+                Wab AI Agent
               </h2>
               <p className="mt-2 text-sm" style={{ color: "var(--ink-2)" }}>
                 Upload any broker slip, contract note, CSV or dividend voucher.

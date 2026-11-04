@@ -24,13 +24,13 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { CommandBarProvider, useCommandBar } from "@/components/intelligence/AuditXCommandBar";
+import { CommandBarProvider, useCommandBar } from "@/components/intelligence/WabCommandBar";
 import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
 
 // ── Persist sidebar state across page loads ───────────────────────────────────
-const SIDEBAR_KEY = "auditx.sidebar.expanded";
+const SIDEBAR_KEY = "wab.sidebar.expanded";
 function readSidebarPref(): boolean {
   if (typeof window === "undefined") return false;
   try { return localStorage.getItem(SIDEBAR_KEY) === "true"; } catch { return false; }
@@ -42,7 +42,7 @@ function writeSidebarPref(v: boolean) {
 
 // ── Nav structure ─────────────────────────────────────────────────────────────
 
-const primaryItem = { label: "Ask AuditX", icon: Sparkles, to: "/app/parser" } as const;
+const primaryItem = { label: "Ask Wab", icon: Sparkles, to: "/app/parser" } as const;
 
 const navGroups = [
   {
@@ -206,7 +206,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             ) : (
               /* When expanded: logo on left, collapse button on right */
               <>
-                <Link to="/app/parser" aria-label="AuditX home">
+                <Link to="/app/parser" aria-label="Wab home">
                   <Logo />
                 </Link>
                 <button
@@ -467,7 +467,7 @@ function InnerShell({ children }: { children: ReactNode }) {
               strokeWidth={1.75}
               style={{ color: "var(--color-accent)" }}
             />
-            <span style={{ color: "var(--ink-3)" }}>Ask AuditX anything…</span>
+            <span style={{ color: "var(--ink-3)" }}>Ask Wab anything…</span>
             <kbd
               className="ml-auto rounded px-2 py-0.5 text-xs"
               style={{ background: "rgba(25,40,55,0.06)", color: "var(--ink-3)" }}

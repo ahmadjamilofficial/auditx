@@ -1,4 +1,4 @@
-// ─── AuditX AI Service — Agentic pipeline on Groq ─────────────────────────────
+// ─── Wab AI Service — Agentic pipeline on Groq ─────────────────────────────
 //
 // MODEL CASCADE (Groq models):
 //   1. llama-3.3-70b-versatile          → primary (fast, strong reasoning)
@@ -74,7 +74,7 @@ function getApiKey(): string {
   const key = (import.meta.env['VITE_GROQ_API_KEY'] as string | undefined) ?? "";
   if (!key || key.length < 10) {
     throw new Error(
-      "AuditX Intelligence: AI API key not configured. Add VITE_GROQ_API_KEY to your .env file. " +
+      "Wab Intelligence: AI API key not configured. Add VITE_GROQ_API_KEY to your .env file. " +
       "Get a free key at https://console.groq.com",
     );
   }
@@ -149,7 +149,7 @@ function safeParseJSON(raw: string): Record<string, unknown> {
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch (e) {
     const error = e as Error;
-    console.error("[AuditX AI] JSON parse failed:", {
+    console.error("[Wab AI] JSON parse failed:", {
       error: error.message,
       rawPreview: cleaned.slice(0, 200),
       fullLength: cleaned.length,
@@ -218,7 +218,7 @@ async function runWithCascade(opts: RunOptions): Promise<string> {
 
         if (isQuotaError(e)) {
           if (attempt < maxRetries) continue;
-          console.warn(`[AuditX AI] Quota exhausted on ${model}, cascading…`);
+          console.warn(`[Wab AI] Quota exhausted on ${model}, cascading…`);
           break;
         }
 

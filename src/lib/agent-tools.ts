@@ -1,5 +1,5 @@
 // @ts-nocheck
-// ─── AuditX Agent Tool Layer ──────────────────────────────────────────────────
+// ─── Wab Agent Tool Layer ──────────────────────────────────────────────────
 // Exposes Supabase read/write operations as callable tools for Gemini.
 // Every write is confirmed by the user before execution.
 
@@ -150,7 +150,7 @@ export async function executeTool(
 
         const { data, error } = await q;
         if (error) {
-          console.error("[AuditX Tool] get_transactions error:", error);
+          console.error("[Wab Tool] get_transactions error:", error);
           return { ok: false, error: `Database error: ${error.message} (code: ${error.code})` };
         }
         return { ok: true, data };
@@ -193,8 +193,8 @@ export async function executeTool(
         }).select().single();
 
         if (error) {
-          console.error("[AuditX Tool] insert_transaction error:", error);
-          console.error("[AuditX Tool] Insert args:", args);
+          console.error("[Wab Tool] insert_transaction error:", error);
+          console.error("[Wab Tool] Insert args:", args);
           return { ok: false, error: `Database error: ${error.message} (code: ${error.code})` };
         }
 
@@ -229,7 +229,7 @@ export async function executeTool(
           .single();
 
         if (error) {
-          console.error("[AuditX Tool] update_transaction error:", error);
+          console.error("[Wab Tool] update_transaction error:", error);
           return { ok: false, error: `Database error: ${error.message} (code: ${error.code})` };
         }
 

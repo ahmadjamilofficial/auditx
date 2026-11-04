@@ -1,4 +1,4 @@
-// ─── AuditX Mission Control Dashboard ────────────────────────────────────────
+// ─── Wab Mission Control Dashboard ────────────────────────────────────────
 // "What is happening in my financial world right now?"
 // Every number is deterministic. AI only explains.
 
@@ -48,7 +48,7 @@ import {
   generateTimelineFromTransactions,
 } from "@/components/intelligence/FinancialTimeline";
 import { InsightCard, InsightCardEmpty } from "@/components/intelligence/InsightCard";
-import { useCommandBar } from "@/components/intelligence/AuditXCommandBar";
+import { useCommandBar } from "@/components/intelligence/WabCommandBar";
 import type { InsightData } from "@/components/intelligence/InsightCard";
 import type { EventSeverity } from "@/lib/financial-intelligence";
 
@@ -119,7 +119,7 @@ function MetricCard({
   );
 }
 
-// ── "AuditX Found Something" ─────────────────────────────────────────────────
+// ── "Wab Found Something" ─────────────────────────────────────────────────
 
 function FoundSomethingSection({
   insights,
@@ -183,7 +183,7 @@ function FoundSomethingSection({
         type: "ANOMALY_DETECTED",
         severity: "HIGH",
         title: `${warnFlags.length} Potential Discrepanc${warnFlags.length > 1 ? "ies" : "y"} Detected`,
-        summary: `AuditX identified ${warnFlags.length} transactions with reconciliation warnings that may affect your financial records.`,
+        summary: `Wab identified ${warnFlags.length} transactions with reconciliation warnings that may affect your financial records.`,
         confidence: 0.88,
         evidenceCount: warnFlags.length,
         actionLabel: "Review",
@@ -203,7 +203,7 @@ function FoundSomethingSection({
             <Sparkles size={15} style={{ color: "var(--color-accent)" }} />
           </div>
           <div>
-            <h2 className="text-sm font-bold">AuditX Found Something</h2>
+            <h2 className="text-sm font-bold">Wab Found Something</h2>
             <p className="text-xs" style={{ color: "var(--ink-3)" }}>
               Proactively surfaced findings from your financial data
             </p>
@@ -317,7 +317,7 @@ function MissionControl() {
           No transactions yet
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-          Upload your first broker statement and AuditX will extract and reconcile it.
+          Upload your first broker statement and Wab will extract and reconcile it.
         </p>
         <Link
           to="/app/parser"
@@ -409,7 +409,7 @@ function MissionControl() {
             <div>
               <h2 className="text-sm font-bold">Requires Attention</h2>
               <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                AuditX-prioritised issues for your review
+                Wab-prioritised issues for your review
               </p>
             </div>
             <Link
@@ -428,9 +428,9 @@ function MissionControl() {
         </div>
       )}
 
-      {/* AuditX Found Something + Portfolio Charts */}
+      {/* Wab Found Something + Portfolio Charts */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* AuditX Found Something */}
+        {/* Wab Found Something */}
         <div className="lg:col-span-2">
           <FoundSomethingSection insights={insights} flags={flags} currency={currency} />
         </div>

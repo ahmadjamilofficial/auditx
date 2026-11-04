@@ -35,7 +35,7 @@ export function LandingNavbar() {
         }}
       >
         {/* Logo */}
-        <Link to="/" aria-label="AuditX home" className="shrink-0">
+        <Link to="/" aria-label="Wab home" className="shrink-0">
           <Logo />
         </Link>
 
@@ -57,7 +57,7 @@ export function LandingNavbar() {
         <div className="hidden items-center gap-3 md:flex">
           <button
             type="button"
-            onClick={() => window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank")}
+            onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
             title="Open Source on GitHub"
             style={{ color: "var(--ink-2)" }}
@@ -162,7 +162,7 @@ export function LandingNavbar() {
                 >
                   <button
                     type="button"
-                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/auditx", "_blank"); }}
+                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/wab", "_blank"); }}
                     className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-black/5"
                   >
                     <Github size={18} strokeWidth={1.75} />

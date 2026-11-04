@@ -1,4 +1,4 @@
-// ─── AuditX Investigations ────────────────────────────────────────────────────
+// ─── Wab Investigations ────────────────────────────────────────────────────
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -275,7 +275,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-accent)" }}>
-                  AuditX Intelligence Report
+                  Wab Intelligence Report
                 </p>
               </div>
               <div
@@ -398,8 +398,8 @@ function Investigations() {
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://auditx.app",
-          "X-Title": "AuditX",
+          "HTTP-Referer": "https://psxl.live",
+          "X-Title": "Wab",
         },
         body: JSON.stringify({
           model: "nvidia/nemotron-3-ultra-550b-a55b:free",
