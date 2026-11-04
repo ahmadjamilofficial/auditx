@@ -10,7 +10,7 @@ import wabLogoBlack from "@/assets/wab-logo-black.png.asset.json";
  */
 
 /** Mark only (no wordmark) — sidebar rail, compact spots. */
-export function LogoIcon({ size = 28, className, fill: _fill }: { size?: number; className?: string; fill?: string }) {
+export function LogoIcon({ size = 28, className, fill: _fill }: { size?: number; className?: string | undefined; fill?: string | undefined }) {
   return (
     <span className={`inline-flex shrink-0 ${className ?? ""}`} style={{ width: size, height: size }}>
       <img src={wabLogoWhite.url} alt="Wab" className="hidden dark:block" style={{ width: size, height: size, objectFit: "contain" }} />
