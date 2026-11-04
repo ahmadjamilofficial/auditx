@@ -4,9 +4,9 @@
 
 # Wab
 
-### AI-Native Financial Audit & Compliance Agent for Regional Exchange Traders
+### AI-Native Financial Operations & Audit Platform
 
-**Reconcile every trade with audit-grade precision.**
+**Your entire financial world, understood, monitored, and managed by AI.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-0B0C0E.svg?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -19,8 +19,8 @@
 
 ---
 
-> Wab turns messy PSX and NSE trade slips into a clean, reconciled, tax-accurate ledger
-> using multimodal AI extraction and deterministic FIFO tax computation —
+> Wab turns messy financial records into a clean, reconciled, audit-ready ledger
+> using multimodal AI extraction and deterministic computation —
 > replacing days of manual spreadsheet work with minutes.
 
 </div>
@@ -39,6 +39,7 @@
 - [Project Structure](#-project-structure)
 - [AI Pipeline](#-ai-pipeline)
 - [Tax Engine](#-tax-engine)
+- [Pricing](#-pricing)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -47,15 +48,15 @@
 
 ## Why Wab
 
-Most accounting software is built for Western markets. **PSX, NSE, and regional exchange traders** face unique challenges:
+Modern financial software is either too generic or too complex. **Traders, financiers, and individuals** need:
 
-| Pain Point | What Wab Does |
-|---|---|
-| Broker slips in PDF, photo, CSV formats | Multimodal AI extracts every field with confidence scoring |
-| Manual CGT calculation across FIFO lots | Deterministic TypeScript engine — never AI-guessed |
-| Unknown WHT deductions & fee surcharges | Automated reconciliation against PSX/NSE tariff tables |
-| No audit trail for tax filing | Immutable sha256 hash-chained ledger for every mutation |
-| Separate spreadsheets per broker | Single reconciled book across unlimited broker accounts |
+|| Pain Point | What Wab Does |
+||---|---|
+|| Broker slips in PDF, photo, CSV formats | Multimodal AI extracts every field with confidence scoring |
+|| Manual tax calculation across FIFO lots | Deterministic TypeScript engine — never AI-guessed |
+|| Unknown fee deductions & reconciliation | Automated reconciliation against broker records |
+|| No audit trail for tax filing | Immutable sha256 hash-chained ledger for every mutation |
+|| Separate spreadsheets per broker | Single reconciled book across unlimited broker accounts |
 
 ---
 
@@ -64,23 +65,23 @@ Most accounting software is built for Western markets. **PSX, NSE, and regional 
 ### Multimodal Statement Parser
 Drop a **PDF, photo, CSV, or XLSX** broker export. Gemini 2.0 Flash extracts:
 - Transaction date, ticker symbol, action (BUY/SELL/DIV)
-- Execution price, quantity, brokerage fees, WHT
+- Execution price, quantity, brokerage fees, fees
 - Reference ID, broker name, exchange
 
 Every field gets a **confidence score** (0–1). Anything below `0.75` routes to a review queue instead of auto-posting — the model never silently guesses.
 
 ### Discrepancy & Anomaly Detector
 A deterministic rule engine (no AI) diffs your ledger against broker statements:
-- Fee surcharges above SECP/NSE tariff rates
-- WHT mismatches between filer/non-filer status
+- Fee surcharges above expected rates
+- Fee mismatches between different sources
 - Duplicate reference IDs, unmatched fills
 - Gemini AI explains each flag in plain English on demand
 
 ### Real-Time Tax Optimizer
 Full **FIFO lot matching** engine in TypeScript:
-- Holding-period tiers (Short < 12m → 15%, Mid 12-24m → 12.5%, Long > 24m → 0% for PSX)
-- NSE STCG (20%) / LTCG (12.5%) computation per Finance Act 2024
-- Dividend WHT tracking (filer 10% / non-filer 12.5%)
+- Holding-period tiers (configurable per jurisdiction)
+- Multiple tax jurisdiction support
+- Dividend fee tracking
 - AI-ranked tax-loss harvesting suggestions validated against real positions
 - Exportable PDF + CSV tax summary reports
 
@@ -88,10 +89,10 @@ Full **FIFO lot matching** engine in TypeScript:
 Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + payload)` row. The chain can be verified client-side — any tampering breaks it instantly.
 
 ### Multi-Broker, Multi-Jurisdiction
-- **PSX Pakistan** — CGT slabs, WHT rates, filer/non-filer status
-- **NSE India** — STCG/LTCG per Budget 2024 rules
+- **Multiple Exchanges** — tax slabs, fee rates, jurisdiction-specific rules
 - Add unlimited broker accounts per organisation
 - Configurable tax profiles per jurisdiction
+- Support for any global exchange
 
 ### Team Roles & Multi-Tenancy
 - Owner / Admin / Analyst / Viewer roles
@@ -135,22 +136,22 @@ Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + pa
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend Framework | React 19 + TanStack Start (SSR) |
-| Routing | TanStack Router (file-based) |
-| Styling | Tailwind CSS v4 + custom design tokens |
-| Animation | Framer Motion |
-| Data Fetching | TanStack Query |
-| Forms | React Hook Form + Zod |
-| Charts | Recharts |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth (email + Google OAuth) |
-| Storage | Supabase Storage |
-| AI / ML | Google Gemini 2.0 Flash (`@google/genai` v2) |
-| Build Tool | Vite 8 + Rolldown |
-| Type Safety | TypeScript 5.8 |
-| Icons | Lucide React |
+|| Layer | Technology |
+||---|---|
+|| Frontend Framework | React 19 + TanStack Start (SSR) |
+|| Routing | TanStack Router (file-based) |
+|| Styling | Tailwind CSS v4 + custom design tokens |
+|| Animation | Framer Motion |
+|| Data Fetching | TanStack Query |
+|| Forms | React Hook Form + Zod |
+|| Charts | Recharts |
+|| Database | Supabase (PostgreSQL) |
+|| Auth | Supabase Auth (email + Google OAuth) |
+|| Storage | Supabase Storage |
+|| AI / ML | Google Gemini 2.0 Flash (`@google/genai` v2) |
+|| Build Tool | Vite 8 + Rolldown |
+|| Type Safety | TypeScript 5.8 |
+|| Icons | Lucide React |
 
 ---
 
@@ -182,7 +183,7 @@ cp .env.example .env
 Open your Supabase project → **SQL Editor** → **New query**.
 Paste the entire contents of `supabase/schema.sql` and click **Run**.
 
-This creates all 13 tables, RLS policies, the storage bucket, and the auto-provision trigger.
+This creates all tables, RLS policies, the storage bucket, and the auto-provision trigger.
 
 ### 4. Enable Google OAuth (optional)
 
@@ -216,9 +217,12 @@ Create a `.env` file at the project root (copy from `.env.example`):
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
-# OpenRouter — https://openrouter.ai/keys
-# For production: move to server-side env only (remove VITE_ prefix)
-VITE_OPENROUTER_API_KEY=your-openrouter-api-key-here
+# AI Providers (at least one required)
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.0-flash-exp
+LOVABLE_API_KEY=your-lovable-key
+OPENROUTER_API_KEY=your-openrouter-key
+GROQ_API_KEY=your-groq-key
 
 # Google OAuth Client ID
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
@@ -226,9 +230,8 @@ VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 # App URL
 VITE_APP_URL=http://localhost:8080
 
-# Stripe (optional)
-# VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-# STRIPE_SECRET_KEY=sk_test_...
+# Tool approval secret
+TOOL_APPROVAL_SECRET=wab-tool-approval
 ```
 
 > **Security note:** `.env` is in `.gitignore`. Never commit real keys. For production deployments, inject secrets via your host's environment variable panel.
@@ -240,7 +243,7 @@ VITE_APP_URL=http://localhost:8080
 The single file `supabase/schema.sql` is a **full reset + rebuild** script:
 
 1. Drops all existing tables, triggers, and functions (safe to re-run)
-2. Creates 13 tables in dependency order
+2. Creates all tables in dependency order
 3. Enables Row Level Security on every table
 4. Creates `user_org_ids()` and `user_role_in_org()` RLS helper functions
 5. Sets up the private `trade-documents` storage bucket
@@ -251,17 +254,22 @@ The single file `supabase/schema.sql` is a **full reset + rebuild** script:
 ```
 organizations          — multi-tenant root
 profiles               — user ↔ org membership + role
-tax_profiles           — per-jurisdiction CGT/WHT rules
-broker_accounts        — PSX / NSE broker connections
+tax_profiles           — per-jurisdiction tax/fee rules
+broker_accounts        — broker/exchange connections
 documents              — uploaded statement files
 transactions           — parsed + posted trade records
 ledger_entries         — double-entry cash movements
 reconciliation_flags   — detected discrepancies
-tax_computations       — FIFO CGT computation results
+tax_computations       — FIFO tax computation results
 tax_loss_harvest_suggestions
 audit_log              — immutable hash-chained event log
-subscriptions          — Stripe billing plan
+subscriptions          — billing plan
 notifications          — in-app alert feed
+chat_threads           — AI conversation threads
+chat_messages          — chat messages
+financial_events       — financial events
+financial_insights     — AI-generated insights
+financial_investigations — investigation records
 ```
 
 ---
@@ -272,51 +280,32 @@ notifications          — in-app alert feed
 wab/
 ├── public/
 │   ├── favicon.png          # Wab logo
+│   ├── favicon.svg          # Modern SVG favicon
 │   ├── dark-logo.png        # Dark theme logo
 │   ├── light-logo.png       # Light theme logo
 │   └── robots.txt
 ├── src/
 │   ├── components/
-│   │   ├── app/
-│   │   │   └── AppShell.tsx       # Dashboard sidebar + topbar
-│   │   ├── brand/
-│   │   │   └── Logo.tsx           # SVG logo mark + wordmark
-│   │   ├── site/
-│   │   │   ├── Navbar.tsx         # Marketing nav
-│   │   │   ├── Footer.tsx
-│   │   │   └── PageShell.tsx
-│   │   ├── ui/                    # shadcn/ui primitives
-│   │   └── kit.tsx                # Btn, Panel, StatusPill, Reveal…
+│   │   ├── app/            # App shell and dashboard components
+│   │   ├── agent/          # AI agent UI components
+│   │   ├── ai-elements/    # AI SDK components
+│   │   ├── brand/          # Logo components
+│   │   ├── intelligence/   # Financial intelligence UI
+│   │   ├── notifications/  # Notification center
+│   │   ├── site/           # Landing page components
+│   │   └── ui/             # shadcn/ui primitives
 │   ├── lib/
-│   │   ├── supabase.ts            # Supabase client + auth helpers
-│   │   ├── auth-context.tsx       # React auth context (real session)
-│   │   ├── ai-service.ts          # Gemini 2.0 Flash integration
-│   │   ├── tax.ts                 # Deterministic FIFO tax engine
-│   │   ├── data-hooks.ts          # TanStack Query hooks → Supabase
-│   │   ├── demo-data.ts           # Fallback demo transactions
-│   │   └── database.types.ts      # Supabase type stubs
-│   ├── routes/
-│   │   ├── index.tsx              # / — Marketing homepage
-│   │   ├── signin.tsx             # /signin
-│   │   ├── signup.tsx             # /signup
-│   │   ├── forgot-password.tsx    # /forgot-password
-│   │   ├── app.tsx                # /app — Auth guard + layout
-│   │   ├── app.overview.tsx       # /app/overview
-│   │   ├── app.ledger.tsx         # /app/ledger
-│   │   ├── app.parser.tsx         # /app/parser — AI extraction
-│   │   ├── app.reconciliation.tsx # /app/reconciliation
-│   │   ├── app.tax.tsx            # /app/tax — FIFO engine
-│   │   ├── app.audit-trail.tsx    # /app/audit-trail
-│   │   ├── app.reports.tsx        # /app/reports
-│   │   ├── app.settings.tsx       # /app/settings
-│   │   ├── app.billing.tsx        # /app/billing
-│   │   ├── pricing.tsx            # /pricing
-│   │   ├── security.tsx           # /security
-│   │   └── …                      # about, contact, help, news
-│   └── styles.css                 # Design tokens + Tailwind config
+│   │   ├── agent-*.ts      # Agent services, queue, tools
+│   │   ├── ai-*.ts         # AI service integration
+│   │   ├── integrations/   # External provider integrations
+│   │   ├── *.ts            # Tax, financial intelligence, policy engine
+│   ├── routes/             # TanStack Router file-based routes
+│   │   ├── api/            # API endpoints
+│   │   └── *.tsx           # Page routes
+│   └── styles.css          # Design tokens + Tailwind config
 ├── supabase/
-│   └── schema.sql                 # Full reset + rebuild schema
-├── .env.example                   # Safe-to-commit env template
+│   └── schema.sql         # Full reset + rebuild schema
+├── .env.example           # Safe-to-commit env template
 └── README.md
 ```
 
@@ -330,7 +319,7 @@ Wab uses Google Gemini 2.0 Flash for three distinct, bounded tasks:
 ```
 User uploads PDF/image/CSV
         ↓
-Gemini extracts 10 fields as structured JSON
+Gemini extracts fields as structured JSON
         ↓
 Zod validates schema server-side
         ↓
@@ -352,15 +341,11 @@ FIFO math runs entirely in TypeScript (`src/lib/tax.ts`). Gemini is called after
 
 The FIFO engine in `src/lib/tax.ts` supports:
 
-**PSX — Pakistan (Finance Act 2024)**
-- Short-term (< 365 days): **15% CGT**
-- Mid-term (365–730 days): **12.5% CGT**
-- Long-term (> 730 days): **0% CGT**
-- Dividend WHT: **10% Filer / 12.5% Non-Filer**
-
-**NSE — India (Budget 2024)**
-- Short-term (< 365 days): **20% STCG**
-- Long-term (≥ 365 days): **12.5% LTCG**
+**Configurable Jurisdictions:**
+- Holding-period tiers (configurable per jurisdiction)
+- Multiple tax rate tables
+- Dividend fee tracking
+- Configurable tax profiles
 
 The engine is a pure function with zero side effects — fully unit-testable and auditable.
 
@@ -368,29 +353,33 @@ The engine is a pure function with zero side effects — fully unit-testable and
 
 ## Pricing
 
-| Plan | Price | Transactions | Key Features |
-|---|---|---|---|
-| **Free** | $0 / mo | 50 / month | CSV export, 1 tax profile |
-| **Pro** | $9.99 / mo | Unlimited | PDF reports, anomaly detection, tax-loss harvesting |
-| **Enterprise** | $49 / mo | Unlimited | Multi-client, team roles, API access, priority support |
+**7-Day Free Trial, Then Paid:**
+
+| Plan | Price | Trial | Transactions | Key Features |
+|---|---|---|---|---|
+| **Trial** | FREE | 7 days | Unlimited | Full access to all features |
+| **Standard** | $3/mo | - | Unlimited | Core audit tools, notifications, basic reports |
+| **Pro** | $5/mo | - | Unlimited | Advanced agents, PDF reports, anomaly detection, tax-loss harvesting |
+
+After the 7-day trial, users must choose a paid plan to continue using Wab.
 
 ---
 
 ## Roadmap
 
 - [x] Multimodal statement parser (PDF, image, CSV)
-- [x] FIFO tax engine (PSX + NSE)
+- [x] FIFO tax engine (multi-jurisdiction)
 - [x] Immutable hash-chained audit log
 - [x] Supabase Auth + Google OAuth
 - [x] Multi-tenant RLS isolation
 - [x] Tax-loss harvesting suggestions
 - [x] Gemini AI anomaly explanations
-- [ ] Stripe billing integration
-- [ ] Scheduled PDF digest emails
-- [ ] Broker API connections (CDC, CDSL)
-- [ ] SECP / SEBI regulatory update webhooks
+- [x] Theme toggle (light/dark)
+- [x] Improved favicon
+- [ ] Exchange broker API connections
+- [ ] Regulatory update webhooks
 - [ ] Mobile app (React Native)
-- [ ] Saudi Tadawul + SGX jurisdiction profiles
+- [ ] Additional jurisdiction profiles
 - [ ] Batch import via email parsing
 
 ---
@@ -430,7 +419,7 @@ Wab does not provide tax or legal advice. All computations are indicative only. 
 
 <div align="center">
 
-**Built for PSX · NSE · and every regional exchange trader who deserves better tooling.**
+**Built for traders, financiers, and individuals who deserve better financial tooling.**
 
 [Website](https://psxl.live) · [Twitter](https://twitter.com/wabapp) · [LinkedIn](https://linkedin.com/company/wab)
 

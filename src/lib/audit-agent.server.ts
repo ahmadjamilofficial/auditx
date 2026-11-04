@@ -5,6 +5,7 @@
 
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { LanguageModel } from "ai";
 
 export const AI_MODEL = "openai/gpt-6-astra";
@@ -25,7 +26,7 @@ const LOVABLE_PROVIDER_OPTIONS = {
 export const AI_PROVIDER_OPTIONS = LOVABLE_PROVIDER_OPTIONS;
 
 export interface ResolvedModel {
-  provider: "lovable" | "openrouter" | "groq";
+  provider: "lovable" | "gemini" | "openrouter" | "groq";
   modelId: string;
   model: LanguageModel;
   /** Per-provider options — use resolved.providerOptions, never the constant, on fallback providers. */
@@ -45,7 +46,7 @@ function readEnv(name: string, env?: Record<string, unknown>): string | undefine
 }
 
 /**
- * Lovable AI is primary. Falls back to OpenRouter, then GROQ_API_KEY, for
+ * Lovable AI is primary. Falls back to Gemini, then OpenRouter, then GROQ_API_KEY, for
  * deployments that run outside Lovable hosting.
  */
 export async function resolveAgentModel(env?: Record<string, unknown>): Promise<ResolvedModel | null> {
@@ -63,6 +64,22 @@ export async function resolveAgentModel(env?: Record<string, unknown>): Promise<
       model,
       providerOptions: LOVABLE_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
       cascade: [{ id: AI_MODEL, model }],
+    };
+  }
+
+  const geminiKey = readEnv("GEMINI_API_KEY", env);
+  if (geminiKey) {
+    const modelId = readEnv("GEMINI_MODEL", env) ?? "gemini-2.0-flash-exp";
+    const provider = createGoogleGenerativeAI({
+      apiKey: geminiKey,
+    });
+    const model = provider(modelId) as unknown as LanguageModel;
+    return {
+      provider: "gemini",
+      modelId,
+      model,
+      providerOptions: {},
+      cascade: [{ id: modelId, model }],
     };
   }
 

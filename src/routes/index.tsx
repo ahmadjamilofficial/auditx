@@ -28,15 +28,15 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Wab — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
+      { title: "Wab — AI-Native Financial Operations & Audit Platform" },
       {
         name: "description",
         content:
-          "Upload contract notes, broker statements, CSVs, PDFs, or trade records. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger.",
+          "Upload financial records, statements, CSVs, PDFs, or trade data. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable audit-ready ledger.",
       },
-      { name: "keywords", content: "PSX CGT calculator, NSE STCG LTCG, trade reconciliation, broker slip parser, capital gains tax Pakistan India, FIFO tax engine, Wab" },
-      { property: "og:title", content: "Wab — Turn Broker Records into a Reconciled, Tax-Ready Ledger" },
-      { property: "og:description", content: "Upload contract notes, broker statements, CSVs, PDFs, or trade records. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable tax-ready ledger." },
+      { name: "keywords", content: "financial operations, trade reconciliation, broker slip parser, capital gains tax, FIFO tax engine, audit trail, Wab" },
+      { property: "og:title", content: "Wab — AI-Native Financial Operations & Audit Platform" },
+      { property: "og:description", content: "Upload financial records, statements, CSVs, PDFs, or trade data. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable audit-ready ledger." },
       { property: "og:url", content: "https://psxl.live/" },
     ],
   }),

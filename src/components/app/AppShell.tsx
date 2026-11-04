@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Moon,
   PanelLeft,
   PanelRight,
   Plug,
@@ -18,6 +19,7 @@ import {
   Settings,
   Shield,
   Sparkles,
+  Sun,
   Upload,
   User,
   X,
@@ -29,6 +31,7 @@ import { CommandBarProvider, useCommandBar } from "@/components/intelligence/Aud
 import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
+import { useTheme } from "@/lib/theme-context";
 
 // ── Persist sidebar state across page loads ───────────────────────────────────
 const SIDEBAR_KEY = "wab.sidebar.expanded";
@@ -138,6 +141,7 @@ function InnerShell({ children }: { children: ReactNode }) {
   const routerState  = useRouterState();
   const currentPath  = routerState.location.pathname;
   const { setOpen: setCommandBarOpen } = useCommandBar();
+  const { theme, setTheme, actualTheme } = useTheme();
 
   // Desktop sidebar: expanded state persisted in localStorage
   const [expanded,     setExpanded]     = useState(() => readSidebarPref());
@@ -479,6 +483,21 @@ function InnerShell({ children }: { children: ReactNode }) {
           </button>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Theme toggle */}
+            <button
+              type="button"
+              onClick={() => setTheme(actualTheme === "dark" ? "light" : "dark")}
+              className="hidden items-center justify-center rounded-xl p-2 transition-colors hover:bg-black/5 sm:flex"
+              title={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              style={{ color: "var(--ink-2)" }}
+            >
+              {actualTheme === "dark" ? (
+                <Sun size={18} strokeWidth={1.75} />
+              ) : (
+                <Moon size={18} strokeWidth={1.75} />
+              )}
+            </button>
+
             {/* Upload shortcut */}
             <Link
               to="/app/parser"

@@ -296,6 +296,7 @@ export const Route = createFileRoute("/api/chat")({
           try {
             resolved = await resolveAgentModel(env);
           } catch (e) {
+            console.error("[Wab Chat] AI Model Resolution Error:", e);
             return new Response(
               JSON.stringify({
                 code: "ai_resolution_error",
@@ -308,6 +309,7 @@ export const Route = createFileRoute("/api/chat")({
 
           if (!resolved) {
             // Key is missing or placeholder — tell the operator exactly what to do
+            console.error("[Wab Chat] AI Not Configured - No valid API key found");
             return new Response(
               JSON.stringify({
                 code: "ai_not_configured",
@@ -318,6 +320,8 @@ export const Route = createFileRoute("/api/chat")({
               { status: 503, headers: { "Content-Type": "application/json" } },
             );
           }
+
+          console.log("[Wab Chat] AI Model Resolved:", { provider: resolved.provider, modelId: resolved.modelId });
           const model = resolved.model;
 
           const supabase = createClient<Database>(url, key, {
@@ -956,8 +960,19 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
           originalMessages: body.messages as UIMessage[],
           onError: (e) => {
             const st = (e as { statusCode?: number })?.statusCode;
+            const errorMessage = (e as { message?: string })?.message;
+            console.error("[Wab Chat] AI Stream Error:", { statusCode: st, message: errorMessage, error: e });
+
             if (st === 402) return "AI credits are used up. Add credits in your workspace settings to continue.";
             if (st === 429) return "Wab AI is busy right now. Please try again in a moment.";
+            if (st === 403) return "AI access is blocked for this workspace. Please check your settings.";
+            if (st === 401) return "AI authentication failed. Please check your API key configuration.";
+
+            // More detailed error message for debugging
+            if (errorMessage) {
+              return `Wab AI encountered an error: ${errorMessage}. Your data was not changed. Please try again.`;
+            }
+
             return "Wab AI hit an error. Your data was not changed — please try again.";
           },
           onFinish: async ({ messages }) => {
@@ -992,6 +1007,9 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
       } catch (error) {
         // Return more detailed error for debugging
         const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        console.error("[Wab Chat] Internal Error:", { message: errorMessage, stack: errorStack, error });
+
         return new Response(
           JSON.stringify({
             code: "internal_error",
