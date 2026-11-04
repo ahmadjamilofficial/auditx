@@ -54,7 +54,6 @@ import { takePendingFiles, takePendingPrompt } from "@/lib/chat-session";
 import { supabase } from "@/lib/supabase";
 import { withTimeout } from "@/lib/utils";
 import {
-  useAiUsageToday,
   useDeleteChatThread,
   AI_PLAN_DAILY_LIMITS,
 } from "@/lib/data-hooks";
