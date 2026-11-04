@@ -109,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Replace hours of manual ledger work with Wab. Upload any PSX or NSE broker slip — Gemini AI extracts every field, FIFO math computes your CGT, and an immutable audit trail keeps you filing-ready.",
+          "Replace hours of manual ledger work with Wab. Upload any PSX or NSE broker slip — AI extracts every field, FIFO math computes your CGT, and an immutable audit trail keeps you filing-ready.",
       },
       { property: "og:image",        content: "https://psxl.live/og-image.png" },
       { property: "og:image:width",  content: "1200" },
@@ -125,7 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "twitter:description",
         content:
-          "Upload your PSX/NSE broker slips. Gemini AI extracts the data, FIFO math computes your capital gains tax, and an immutable audit trail keeps you filing-ready.",
+          "Upload your PSX/NSE broker slips. AI extracts the data, FIFO math computes your capital gains tax, and an immutable audit trail keeps you filing-ready.",
       },
       { name: "twitter:image",       content: "https://psxl.live/og-image.png" },
       { name: "twitter:image:alt",   content: "Wab — AI-powered trade reconciliation dashboard" },
