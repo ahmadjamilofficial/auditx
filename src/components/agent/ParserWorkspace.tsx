@@ -586,6 +586,14 @@ function Chat({
     if (status === "ready") { setCurrentStage(null); textareaRef.current?.focus(); }
   }, [status]);
 
+  // Restore the unsent draft after reload so typed text survives navigation.
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const draft = loadComposerDraft(threadId);
+    if (draft && !ta.value) ta.value = draft;
+  }, [threadId]);
+
   useEffect(() => {
     if (status !== "streaming") { setCurrentStage(null); return; }
     const lastMsg = [...messages].reverse().find((m) => m.role === "assistant");
