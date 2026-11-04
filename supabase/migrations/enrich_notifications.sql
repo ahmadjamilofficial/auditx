@@ -1,4 +1,4 @@
--- ─── AuditX: Enrich notifications table ─────────────────────────────────────
+-- ─── Wab: Enrich notifications table ─────────────────────────────────────
 -- Run in Supabase Dashboard → SQL Editor
 -- Adds title, link, severity, and metadata columns to existing notifications.
 -- Safe to run multiple times.

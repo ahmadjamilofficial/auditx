@@ -1,4 +1,4 @@
--- ─── AuditX: Memory Architecture ────────────────────────────────────────────────
+-- ─── Wab: Memory Architecture ────────────────────────────────────────────────
 -- Implements three-level memory system: working, persistent, and historical
 -- Run in Supabase Dashboard → SQL Editor. Safe to run multiple times.
 

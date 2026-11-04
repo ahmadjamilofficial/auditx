@@ -79,8 +79,8 @@ function ApprovalCard({
       exit={{ opacity: 0, y: -8 }}
       className="overflow-hidden rounded-2xl"
       style={{
-        border: `1px solid ${isStop ? "rgba(214,69,69,0.25)" : "rgba(115,66,226,0.18)"}`,
-        background: isStop ? "rgba(214,69,69,0.03)" : "#fff",
+        border: `1px solid ${isStop ? "color-mix(in srgb, var(--bad) 25%, transparent)" : "var(--accent-18)"}`,
+        background: isStop ? "color-mix(in srgb, var(--bad) 3%, transparent)" : "#fff",
       }}
     >
       {/* Header */}
@@ -91,7 +91,7 @@ function ApprovalCard({
         <span
           className="flex size-8 shrink-0 items-center justify-center rounded-xl"
           style={{
-            background: isStop ? "rgba(214,69,69,0.1)" : "rgba(115,66,226,0.1)",
+            background: isStop ? "color-mix(in srgb, var(--bad) 10%, transparent)" : "var(--accent-10)",
           }}
         >
           {isStop
@@ -114,7 +114,7 @@ function ApprovalCard({
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
           style={{
-            background: isStop ? "rgba(214,69,69,0.1)" : "rgba(115,66,226,0.1)",
+            background: isStop ? "color-mix(in srgb, var(--bad) 10%, transparent)" : "var(--accent-10)",
             color: isStop ? "var(--bad)" : "var(--color-accent)",
           }}
         >
@@ -167,7 +167,7 @@ function ApprovalCard({
       {/* Action bar */}
       <div
         className="flex items-center justify-end gap-2 border-t px-4 py-3"
-        style={{ borderColor: "var(--hairline)", background: "rgba(25,40,55,0.02)" }}
+        style={{ borderColor: "var(--hairline)", background: "var(--accent-2)" }}
       >
         <button
           type="button"
@@ -187,7 +187,7 @@ function ApprovalCard({
           onClick={() => void handle("rejected")}
           disabled={!!deciding}
           className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-40"
-          style={{ borderColor: "rgba(214,69,69,0.3)", color: "var(--bad)" }}
+          style={{ borderColor: "color-mix(in srgb, var(--bad) 30%, transparent)", color: "var(--bad)" }}
         >
           {deciding === "rejected"
             ? <Loader2 size={11} className="animate-spin" />

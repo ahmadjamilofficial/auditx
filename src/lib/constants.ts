@@ -3,7 +3,7 @@
 export const SUPPORT_EMAIL = "ahmadjamildhami@gmail.com";
 export const WHATSAPP_NUMBER = "03338188722";
 export const WHATSAPP_LINK = "https://wa.me/923338188722";
-export const GITHUB_URL = "https://github.com/Ahmadjamil888/auditx";
+export const GITHUB_URL = "https://github.com/Ahmadjamilofficial/wab";
 
 export function mailto(subject: string, body: string) {
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

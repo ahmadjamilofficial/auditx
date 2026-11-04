@@ -74,7 +74,7 @@ export function Navbar() {
           <>
             <motion.div
               className="fixed inset-0 z-40"
-              style={{ background: "rgba(25,40,55,0.35)", backdropFilter: "blur(4px)" }}
+              style={{ background: "var(--scrim)", backdropFilter: "blur(4px)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -86,7 +86,7 @@ export function Navbar() {
                 width: "min(88vw, 360px)",
                 height: "100dvh",
                 background: "var(--color-sheet)",
-                boxShadow: "-12px 0 48px rgba(25,40,55,0.18)",
+                boxShadow: "-12px 0 48px var(--accent-18)",
               }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -99,7 +99,7 @@ export function Navbar() {
                   <X size={24} strokeWidth={1.75} />
                 </button>
               </div>
-              <div className="my-5 h-px" style={{ background: "rgba(25,40,55,0.15)" }} />
+              <div className="my-5 h-px" style={{ background: "var(--accent-15)" }} />
               <nav className="flex flex-col gap-1">
                 {links.map((l, i) => (
                   <motion.div

@@ -1,5 +1,5 @@
-# AuditX — robots.txt
-# https://auditx.app
+# Wab — robots.txt
+# https://psxl.live
 
 User-agent: *
 Allow: /
@@ -17,7 +17,7 @@ Allow: /help
 Allow: /news
 
 # Sitemap
-Sitemap: https://auditx.app/sitemap.xml
+Sitemap: https://psxl.live/sitemap.xml
 
 # Crawl delay (be nice to servers)
 Crawl-delay: 10

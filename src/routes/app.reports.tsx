@@ -59,7 +59,7 @@ function Reports() {
 
       {/* Saved reports — empty state until reports are generated */}
       <div
-        className="overflow-hidden rounded-2xl bg-white"
+        className="overflow-hidden rounded-2xl bg-surface"
         style={{ border: "1px solid var(--hairline)" }}
       >
         <div className="border-b px-5 py-4" style={{ borderColor: "var(--hairline)" }}>

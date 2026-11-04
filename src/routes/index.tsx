@@ -195,7 +195,7 @@ function Home() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 10%, rgba(115,66,226,0.08) 0%, transparent 70%)",
+              "radial-gradient(ellipse 80% 60% at 50% 10%, var(--accent-8) 0%, transparent 70%)",
           }}
         />
 
@@ -259,7 +259,7 @@ function Home() {
       </section>
 
       {/* ─── TRUST STRIP ─────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", borderTop: "1px solid var(--hairline)", borderBottom: "1px solid var(--hairline)" }}>
+      <section style={{ background: "var(--surface)", borderTop: "1px solid var(--hairline)", borderBottom: "1px solid var(--hairline)" }}>
         <Container className="py-8">
           <p className="text-center text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
             Designed for traders across
@@ -294,12 +294,12 @@ function Home() {
             {features.map((f, i) => (
               <Reveal key={f.title} i={i}>
                 <div
-                  className="h-full rounded-2xl bg-white p-6 transition-shadow hover:shadow-md"
+                  className="h-full rounded-2xl bg-surface p-6 transition-shadow hover:shadow-md"
                   style={{ border: "1px solid var(--hairline)" }}
                 >
                   <div
                     className="mb-4 flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: "rgba(115,66,226,0.08)" }}
+                    style={{ background: "var(--accent-8)" }}
                   >
                     <f.icon size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
                   </div>
@@ -315,7 +315,7 @@ function Home() {
       </section>
 
       {/* ─── PRODUCT DEMO ───────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff" }}>
+      <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
@@ -336,14 +336,14 @@ function Home() {
           </div>
           <Reveal>
             <div
-              className="mx-auto max-w-3xl rounded-2xl bg-white p-8"
+              className="mx-auto max-w-3xl rounded-2xl bg-surface p-8"
               style={{ border: "1px solid var(--hairline)" }}
             >
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className="flex size-10 items-center justify-center rounded-lg"
-                    style={{ background: "rgba(115,66,226,0.1)" }}
+                    style={{ background: "var(--accent-10)" }}
                   >
                     <FileSearch size={18} style={{ color: "var(--color-accent)" }} />
                   </div>
@@ -369,17 +369,17 @@ function Home() {
               </div>
 
               <div className="mb-6 grid grid-cols-3 gap-4">
-                <div className="rounded-xl p-4" style={{ background: "rgba(251,146,60,0.08)", border: "1px solid rgba(251,146,60,0.2)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "#FB923C" }}>Needs review</p>
+                <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--warn) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--warn) 20%, transparent)" }}>
+                  <p className="text-xs font-semibold" style={{ color: "var(--warn)" }}>Needs review</p>
                   <p className="tnum mt-1 text-2xl font-bold">11</p>
                   <p className="text-xs" style={{ color: "var(--ink-2)" }}>low confidence</p>
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "rgba(214,69,69,0.08)", border: "1px solid rgba(214,69,69,0.2)" }}>
+                <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)" }}>
                   <p className="text-xs font-semibold" style={{ color: "#D64545" }}>Discrepancies</p>
                   <p className="tnum mt-1 text-2xl font-bold">6</p>
                   <p className="text-xs" style={{ color: "var(--ink-2)" }}>flagged</p>
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "rgba(115,66,226,0.08)", border: "1px solid rgba(115,66,226,0.2)" }}>
+                <div className="rounded-xl p-4" style={{ background: "var(--accent-8)", border: "1px solid var(--accent-20)" }}>
                   <p className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>Tax calculation</p>
                   <p className="tnum mt-1 text-2xl font-bold">FIFO</p>
                   <p className="text-xs" style={{ color: "var(--ink-2)" }}>deterministic</p>
@@ -407,7 +407,7 @@ function Home() {
       </section>
 
       {/* ─── HOW IT WORKS ────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff" }}>
+      <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
@@ -433,9 +433,9 @@ function Home() {
                 <div
                   className="mb-4 flex size-11 items-center justify-center rounded-full text-sm font-bold"
                   style={{
-                    background: "rgba(115,66,226,0.08)",
+                    background: "var(--accent-8)",
                     color: "var(--color-accent)",
-                    border: "1px solid rgba(115,66,226,0.2)",
+                    border: "1px solid var(--accent-20)",
                   }}
                 >
                   {s.n}
@@ -488,7 +488,7 @@ function Home() {
 
           <Reveal i={1}>
             <div
-              className="rounded-2xl bg-white p-6"
+              className="rounded-2xl bg-surface p-6"
               style={{ border: "1px solid var(--hairline)" }}
             >
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
@@ -529,7 +529,7 @@ function Home() {
       </section>
 
       {/* ─── BUILT FOR MESSY REALITY ───────────────────────────────────────────── */}
-      <section style={{ background: "#fff" }}>
+      <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
@@ -556,12 +556,12 @@ function Home() {
             ].map((item, i) => (
               <Reveal key={item.title} i={i}>
                 <div
-                  className="h-full rounded-2xl bg-white p-6"
+                  className="h-full rounded-2xl bg-surface p-6"
                   style={{ border: "1px solid var(--hairline)" }}
                 >
                   <div
                     className="mb-4 flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: "rgba(115,66,226,0.08)" }}
+                    style={{ background: "var(--accent-8)" }}
                   >
                     <ScanSearch size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
                   </div>
@@ -600,10 +600,10 @@ function Home() {
             {tiers.map((t, i) => (
               <Reveal key={t.name} i={i}>
                 <div
-                  className="relative h-full rounded-2xl bg-white p-6 transition-shadow hover:shadow-lg"
+                  className="relative h-full rounded-2xl bg-surface p-6 transition-shadow hover:shadow-lg"
                   style={{
                     border: t.popular ? "2px solid var(--color-accent)" : "1px solid var(--hairline)",
-                    boxShadow: t.popular ? "0 4px 24px rgba(115,66,226,0.12)" : undefined,
+                    boxShadow: t.popular ? "var(--shadow-accent)" : undefined,
                   }}
                 >
                   {t.popular && (
@@ -660,7 +660,7 @@ function Home() {
       </section>
 
       {/* ─── FAQ ─────────────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff" }}>
+      <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-10 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
@@ -711,7 +711,7 @@ function Home() {
           <Link to={ctaTo}>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-surface px-7 py-3.5 text-sm font-semibold transition-opacity hover:opacity-90"
               style={{ color: "var(--color-accent)" }}
             >
               {session ? "Go to Dashboard" : "Start your first audit"}

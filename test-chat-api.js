@@ -1,4 +1,4 @@
-// Test script for AuditX Chat API
+// Test script for Wab Chat API
 // Note: This API requires authentication. For testing, use the actual UI at http://localhost:8080
 console.log('The chat API requires authentication with a Bearer token.');
 console.log('To test the chat functionality:');

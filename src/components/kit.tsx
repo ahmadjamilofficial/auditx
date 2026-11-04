@@ -57,11 +57,11 @@ export function Btn({
     primary: {
       background: "var(--color-accent)",
       color: "#fff",
-      boxShadow: "0 4px 24px rgba(115,66,226,0.28)",
+      boxShadow: "var(--shadow-accent)",
     },
     secondary: { background: "var(--color-login-bg)", color: "var(--color-text)" },
     ghost: { background: "transparent", color: "var(--color-text)" },
-    inverse: { background: "#fff", color: "var(--color-accent)" },
+    inverse: { background: "var(--surface)", color: "var(--color-accent)" },
   };
   return (
     <motion.button
@@ -89,7 +89,7 @@ export function Panel({
 }) {
   return (
     <div
-      className={`rounded-2xl bg-white p-6 ${className}`}
+      className={`rounded-2xl bg-surface p-6 ${className}`}
       style={{
         border: "1px solid var(--hairline)",
         boxShadow: "var(--shadow-card)",

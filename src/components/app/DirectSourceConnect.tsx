@@ -53,13 +53,13 @@ function PermissionPrompt({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className="overflow-hidden rounded-2xl"
-      style={{ border: "1px solid rgba(115,66,226,0.25)", background: "rgba(115,66,226,0.03)" }}
+      style={{ border: "1px solid var(--accent-25)", background: "var(--accent-3)" }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 border-b px-5 py-4"
-        style={{ borderColor: "rgba(115,66,226,0.15)" }}>
+        style={{ borderColor: "var(--accent-15)" }}>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "rgba(115,66,226,0.12)" }}>
+          style={{ background: "var(--accent-12)" }}>
           <ShieldCheck size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
         </span>
         <div>
@@ -81,7 +81,7 @@ function PermissionPrompt({
         </div>
 
         <div className="rounded-xl p-4 space-y-2"
-          style={{ background: "rgba(25,40,55,0.04)", border: "1px solid var(--hairline)" }}>
+          style={{ background: "var(--accent-4)", border: "1px solid var(--hairline)" }}>
           <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
             Wab will:
           </p>
@@ -94,7 +94,7 @@ function PermissionPrompt({
         </div>
 
         <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs"
-          style={{ background: "rgba(31,157,99,0.08)", border: "1px solid rgba(31,157,99,0.2)" }}>
+          style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)" }}>
           <Lock size={11} style={{ color: "var(--ok)", flexShrink: 0 }} />
           <span style={{ color: "var(--ok)" }}>
             {req.reversible
@@ -186,7 +186,7 @@ function ExcelPickStep({
         className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed py-10 transition-colors"
         style={{
           borderColor: dragging ? "var(--color-accent)" : "var(--hairline)",
-          background:  dragging ? "rgba(115,66,226,0.04)" : "rgba(25,40,55,0.02)",
+          background:  dragging ? "var(--accent-4)" : "var(--accent-2)",
         }}
       >
         <input
@@ -444,9 +444,9 @@ export function DirectSourceConnect({
             <button type="button"
               onClick={() => { setMode("excel"); setStep("excel-pick"); }}
               className="flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition-shadow hover:shadow-md"
-              style={{ border: "1px solid var(--hairline)", background: "#fff" }}>
+              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}>
               <span className="flex size-10 items-center justify-center rounded-xl"
-                style={{ background: "rgba(31,157,99,0.1)" }}>
+                style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
                 <FileSpreadsheet size={18} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
               </span>
               <div>
@@ -464,9 +464,9 @@ export function DirectSourceConnect({
             <button type="button"
               onClick={() => { setMode("sheets"); setStep("sheet-url"); }}
               className="flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition-shadow hover:shadow-md"
-              style={{ border: "1px solid var(--hairline)", background: "#fff" }}>
+              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}>
               <span className="flex size-10 items-center justify-center rounded-xl"
-                style={{ background: "rgba(115,66,226,0.1)" }}>
+                style={{ background: "var(--accent-10)" }}>
                 <Sheet size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
               </span>
               <div>
@@ -526,7 +526,7 @@ export function DirectSourceConnect({
             initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center py-10 text-center">
             <span className="flex size-14 items-center justify-center rounded-2xl"
-              style={{ background: "rgba(31,157,99,0.1)" }}>
+              style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
               <CheckCircle2 size={28} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
             </span>
             <p className="mt-4 text-sm font-semibold">
@@ -557,7 +557,7 @@ export function DirectSourceConnect({
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
             className="flex flex-col items-center justify-center py-10 text-center">
             <span className="flex size-14 items-center justify-center rounded-2xl"
-              style={{ background: "rgba(214,69,69,0.1)" }}>
+              style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}>
               <X size={28} strokeWidth={1.75} style={{ color: "var(--bad)" }} />
             </span>
             <p className="mt-4 text-sm font-semibold" style={{ color: "var(--bad)" }}>Something went wrong</p>

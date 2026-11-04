@@ -171,7 +171,7 @@ export function NotificationCenter({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: -8 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed right-4 top-14 z-50 flex w-[360px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="fixed right-4 top-14 z-50 flex w-[360px] flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl"
             style={{ border: "1px solid var(--hairline)", maxHeight: "calc(100vh - 80px)" }}
           >
             {/* Header */}
@@ -216,7 +216,7 @@ export function NotificationCenter({
             {permission === "default" && (
               <div
                 className="flex items-center gap-3 border-b px-4 py-3"
-                style={{ borderColor: "var(--hairline)", background: "rgba(115,66,226,0.04)" }}
+                style={{ borderColor: "var(--hairline)", background: "var(--accent-4)" }}
               >
                 <Monitor size={14} style={{ color: "var(--color-accent)", flexShrink: 0 }} />
                 <p className="flex-1 text-xs" style={{ color: "var(--ink-2)" }}>
@@ -243,7 +243,7 @@ export function NotificationCenter({
                 <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
                   <div
                     className="flex size-12 items-center justify-center rounded-2xl"
-                    style={{ background: "rgba(115,66,226,0.08)" }}
+                    style={{ background: "var(--accent-8)" }}
                   >
                     <Sparkles size={20} style={{ color: "var(--color-accent)" }} />
                   </div>

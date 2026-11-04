@@ -160,7 +160,7 @@ function SignIn() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleGoogleSignIn}
-            className="flex w-full items-center justify-center gap-3 rounded-full border bg-white px-6 py-3 text-sm font-medium transition-shadow hover:shadow-md disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-3 rounded-full border bg-surface px-6 py-3 text-sm font-medium transition-shadow hover:shadow-md disabled:opacity-60"
             style={{ borderColor: "var(--hairline)" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -185,7 +185,7 @@ function SignIn() {
                 type="email"
                 placeholder="you@example.com"
                 {...register("email")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none transition-shadow focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none transition-shadow focus:ring-2"
                 style={{
                   borderColor: errors.email ? "var(--bad)" : "var(--hairline)",
                   // @ts-expect-error css variable
@@ -211,7 +211,7 @@ function SignIn() {
                   type={showPw ? "text" : "password"}
                   placeholder="••••••••"
                   {...register("password")}
-                  className="w-full rounded-[10px] border bg-white px-4 py-3 pr-11 text-sm outline-none transition-shadow focus:ring-2"
+                  className="w-full rounded-[10px] border bg-surface px-4 py-3 pr-11 text-sm outline-none transition-shadow focus:ring-2"
                   style={{
                     borderColor: errors.password ? "var(--bad)" : "var(--hairline)",
                     // @ts-expect-error css variable
@@ -238,7 +238,7 @@ function SignIn() {
             {serverErr && (
               <div
                 className="rounded-[10px] px-4 py-3 text-sm"
-                style={{ background: "rgba(214,69,69,0.08)", color: "var(--bad)" }}
+                style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)", color: "var(--bad)" }}
               >
                 {serverErr}
               </div>
@@ -252,7 +252,7 @@ function SignIn() {
               className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
               style={{
                 background: "var(--color-accent)",
-                boxShadow: "0 4px 24px rgba(115,66,226,0.28)",
+                boxShadow: "var(--shadow-accent)",
               }}
             >
               {isSubmitting ? "Signing in…" : "Sign in"}

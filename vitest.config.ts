@@ -16,6 +16,7 @@ export default defineConfig({
       "src/lib/agent-queue.test.ts",
       "src/lib/tax.test.ts",
       "src/lib/policy-learner.test.ts",
+      "src/lib/integrations/integrations.test.ts",
     ],
     coverage: {
       provider: "v8",

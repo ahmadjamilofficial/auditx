@@ -129,7 +129,7 @@ function TxFormModal({
   }
 
   const fieldClass =
-    "w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none transition-shadow focus:shadow-[0_0_0_2px_rgba(115,66,226,0.25)]";
+    "w-full rounded-xl border bg-surface px-3 py-2.5 text-sm outline-none transition-shadow focus:shadow-[0_0_0_2px_var(--accent-25)]";
 
   const labelClass = "block text-xs font-semibold mb-1.5";
 
@@ -147,7 +147,7 @@ function TxFormModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 16 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl bg-surface shadow-2xl"
         style={{ border: "1px solid var(--hairline)" }}
       >
         {/* Header */}
@@ -158,7 +158,7 @@ function TxFormModal({
           <div className="flex items-center gap-2.5">
             <span
               className="flex size-8 items-center justify-center rounded-xl"
-              style={{ background: "rgba(115,66,226,0.1)" }}
+              style={{ background: "var(--accent-10)" }}
             >
               {mode === "add" ? (
                 <Plus size={16} style={{ color: "var(--color-accent)" }} />
@@ -214,7 +214,7 @@ function TxFormModal({
                       borderColor:
                         form.action === a ? "var(--color-accent)" : "var(--hairline)",
                       background:
-                        form.action === a ? "rgba(115,66,226,0.08)" : "white",
+                        form.action === a ? "var(--accent-8)" : "white",
                       color:
                         form.action === a ? "var(--color-accent)" : "var(--ink-2)",
                     }}
@@ -445,12 +445,12 @@ function DeleteConfirmModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 16 }}
         transition={{ duration: 0.18 }}
-        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-surface p-6 shadow-2xl"
         style={{ border: "1px solid var(--hairline)" }}
       >
         <div
           className="mb-4 flex size-10 items-center justify-center rounded-xl"
-          style={{ background: "rgba(214,69,69,0.1)" }}
+          style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}
         >
           <AlertTriangle size={18} style={{ color: "var(--bad)" }} />
         </div>
@@ -535,7 +535,7 @@ function BrokerPanel({
   }
 
   const fieldClass =
-    "w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none transition-shadow focus:shadow-[0_0_0_2px_rgba(115,66,226,0.25)]";
+    "w-full rounded-xl border bg-surface px-3 py-2 text-sm outline-none transition-shadow focus:shadow-[0_0_0_2px_var(--accent-25)]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end p-4 sm:items-start sm:pt-16 sm:pr-6">
@@ -551,7 +551,7 @@ function BrokerPanel({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 40 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl"
         style={{ border: "1px solid var(--hairline)", maxHeight: "80vh" }}
       >
         {/* Header */}
@@ -861,7 +861,7 @@ function ImportPanel({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 16 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl bg-surface shadow-2xl"
         style={{ border: "1px solid var(--hairline)" }}
       >
         {/* Header */}
@@ -872,7 +872,7 @@ function ImportPanel({
           <div className="flex items-center gap-2.5">
             <span
               className="flex size-8 items-center justify-center rounded-xl"
-              style={{ background: "rgba(115,66,226,0.1)" }}
+              style={{ background: "var(--accent-10)" }}
             >
               <Upload size={15} style={{ color: "var(--color-accent)" }} />
             </span>
@@ -899,7 +899,7 @@ function ImportPanel({
                 className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors"
                 style={{
                   borderColor: dragging ? "var(--color-accent)" : "var(--hairline)",
-                  background: dragging ? "rgba(115,66,226,0.04)" : "var(--color-login-bg)",
+                  background: dragging ? "var(--accent-4)" : "var(--color-login-bg)",
                 }}
               >
                 <Paperclip
@@ -975,7 +975,7 @@ function ImportPanel({
               {error && (
                 <div
                   className="mt-3 flex items-start gap-2 rounded-xl px-3 py-3 text-xs"
-                  style={{ background: "rgba(214,69,69,0.06)", color: "var(--bad)" }}
+                  style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)", color: "var(--bad)" }}
                 >
                   <AlertTriangle size={13} className="mt-0.5 shrink-0" />
                   {error}
@@ -1088,7 +1088,7 @@ function ImportPanel({
           {/* ── Done ── */}
           {status === "done" && (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <div className="flex size-12 items-center justify-center rounded-2xl" style={{ background: "rgba(31,157,99,0.1)" }}>
+              <div className="flex size-12 items-center justify-center rounded-2xl" style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
                 <Check size={22} style={{ color: "var(--ok)" }} />
               </div>
               <p className="text-sm font-semibold">Import complete!</p>
@@ -1264,7 +1264,7 @@ function Ledger() {
           <button
             type="button"
             onClick={() => setBrokerOpen(true)}
-            className="flex items-center gap-2 rounded-full border bg-white px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
+            className="flex items-center gap-2 rounded-full border bg-surface px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
             style={{ borderColor: "var(--hairline)" }}
           >
             <Building2 size={14} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
@@ -1272,7 +1272,7 @@ function Ledger() {
             {brokers.length > 0 && (
               <span
                 className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                style={{ background: "rgba(115,66,226,0.1)", color: "var(--color-accent)" }}
+                style={{ background: "var(--accent-10)", color: "var(--color-accent)" }}
               >
                 {brokers.length}
               </span>
@@ -1283,7 +1283,7 @@ function Ledger() {
           <button
             type="button"
             onClick={() => setImportOpen(true)}
-            className="flex items-center gap-2 rounded-full border bg-white px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
+            className="flex items-center gap-2 rounded-full border bg-surface px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
             style={{ borderColor: "var(--hairline)" }}
           >
             <Upload size={14} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
@@ -1294,7 +1294,7 @@ function Ledger() {
           <button
             type="button"
             onClick={exportCSV}
-            className="flex items-center gap-2 rounded-full border bg-white px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
+            className="flex items-center gap-2 rounded-full border bg-surface px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
             style={{ borderColor: "var(--hairline)" }}
           >
             <Download size={14} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
@@ -1304,7 +1304,7 @@ function Ledger() {
           <button
             type="button"
             onClick={exportXLSX}
-            className="flex items-center gap-2 rounded-full border bg-white px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
+            className="flex items-center gap-2 rounded-full border bg-surface px-3.5 py-2 text-xs font-medium transition-shadow hover:shadow-md"
             style={{ borderColor: "var(--hairline)" }}
           >
             <Download size={14} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
@@ -1318,7 +1318,7 @@ function Ledger() {
             className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white"
             style={{
               background: "var(--color-accent)",
-              boxShadow: "0 4px 20px rgba(115,66,226,0.3)",
+              boxShadow: "var(--shadow-accent)",
             }}
           >
             <Plus size={14} strokeWidth={2} />
@@ -1332,12 +1332,12 @@ function Ledger() {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center gap-5 rounded-2xl bg-white py-16 text-center"
+          className="flex flex-col items-center justify-center gap-5 rounded-2xl bg-surface py-16 text-center"
           style={{ border: "1px solid var(--hairline)" }}
         >
           <div
             className="flex size-14 items-center justify-center rounded-2xl"
-            style={{ background: "rgba(115,66,226,0.08)" }}
+            style={{ background: "var(--accent-8)" }}
           >
             <BookOpen size={24} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
           </div>
@@ -1371,11 +1371,11 @@ function Ledger() {
       {/* ── Filters ── */}
       {transactions.length > 0 && (
         <div
-          className="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4"
+          className="flex flex-wrap items-center gap-3 rounded-2xl bg-surface p-4"
           style={{ border: "1px solid var(--hairline)" }}
         >
           <div
-            className="flex flex-1 items-center gap-2 rounded-xl border bg-white px-3 py-2"
+            className="flex flex-1 items-center gap-2 rounded-xl border bg-surface px-3 py-2"
             style={{ borderColor: "var(--hairline)", minWidth: 200 }}
           >
             <Search size={14} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
@@ -1451,7 +1451,7 @@ function Ledger() {
       {/* ── Table ── */}
       {!isLoading && transactions.length > 0 && (
         <div
-          className="overflow-hidden rounded-2xl bg-white"
+          className="overflow-hidden rounded-2xl bg-surface"
           style={{ border: "1px solid var(--hairline)" }}
         >
           <div className="overflow-x-auto">
@@ -1563,7 +1563,7 @@ function Ledger() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -4 }}
                             transition={{ duration: 0.12 }}
-                            className="absolute right-3 top-full z-20 mt-1 w-36 overflow-hidden rounded-xl bg-white shadow-lg"
+                            className="absolute right-3 top-full z-20 mt-1 w-36 overflow-hidden rounded-xl bg-surface shadow-lg"
                             style={{ border: "1px solid var(--hairline)" }}
                           >
                             <button

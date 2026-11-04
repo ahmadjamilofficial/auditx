@@ -1,35 +1,71 @@
-import wabLogoWhite from "@/assets/wab-logo-white.png.asset.json";
-import wabLogoBlack from "@/assets/wab-logo-black.png.asset.json";
-
 /**
- * Wab brand mark. Two uploaded variants:
- *  - white monogram → shown in dark theme
- *  - black monogram → shown in light theme
- * The legacy `fill` prop is accepted for old call sites but ignored: the
- * correct variant is chosen by theme, not color.
+ * WAB brand mark — a monochrome geometric "WAB" monogram.
+ *
+ * Two uploaded variants, each meant for the surface it sits on:
+ *  - light-logo.png: solid ink mark on white  → light theme
+ *  - dark-logo.png : white mark, transparent   → dark theme
+ *
+ * The mark is never recoloured: it is black or white, exactly like the
+ * brand source art. The legacy `fill` prop is accepted for old call sites
+ * but ignored, because choosing by colour would break that rule.
  */
 
+const WORDMARK = "WAB";
+
 /** Mark only (no wordmark) — sidebar rail, compact spots. */
-export function LogoIcon({ size = 28, className, fill: _fill }: { size?: number; className?: string; fill?: string }) {
+export function LogoIcon({
+  size = 28,
+  className,
+}: {
+  size?: number;
+  className?: string | undefined;
+  fill?: string | undefined;
+}) {
   return (
-    <span className={`inline-flex shrink-0 ${className ?? ""}`} style={{ width: size, height: size }}>
-      <img src={wabLogoWhite.url} alt="Wab" className="hidden dark:block" style={{ width: size, height: size, objectFit: "contain" }} />
-      <img src={wabLogoBlack.url} alt="Wab" className="block dark:hidden" style={{ width: size, height: size, objectFit: "contain" }} />
+    <span
+      className={`inline-flex shrink-0 items-center justify-center ${className ?? ""}`}
+      style={{ width: size, height: size }}
+    >
+      <img
+        src="/light-logo.png"
+        alt="WAB"
+        className="block size-full object-contain dark:hidden"
+        draggable={false}
+      />
+      <img
+        src="/dark-logo.png"
+        alt="WAB"
+        className="hidden size-full object-contain dark:block"
+        draggable={false}
+      />
     </span>
   );
 }
 
-/** Full logo: mark + lowercase wordmark. */
-export function Logo({ size = 28, fill: _fill }: { size?: number; fill?: string }) {
+/** Full lockup: monogram + uppercase wordmark set in tight, wide-tracked type. */
+export function Logo({ size = 26, fill: _fill }: { size?: number; fill?: string }) {
   return (
-    <span className="flex items-center gap-2">
+    <span className="flex items-center gap-2.5">
       <LogoIcon size={size} />
-      <span className="text-lg font-semibold lowercase tracking-tight">wab</span>
+      <span
+        className="text-[0.9rem] font-semibold uppercase leading-none"
+        style={{ letterSpacing: "0.16em", color: "var(--color-text)" }}
+      >
+        {WORDMARK}
+      </span>
     </span>
   );
 }
 
 /** Legacy alias — call sites that render a bare mark with a fill color. */
-export function LogoMark({ size = 32, className, fill }: { size?: number; className?: string; fill?: string }) {
+export function LogoMark({
+  size = 32,
+  className,
+  fill,
+}: {
+  size?: number;
+  className?: string | undefined;
+  fill?: string | undefined;
+}) {
   return <LogoIcon size={size} className={className} fill={fill} />;
 }

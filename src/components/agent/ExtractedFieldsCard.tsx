@@ -118,7 +118,7 @@ export function ExtractedFieldsCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--hairline)" }}>
+    <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -160,7 +160,7 @@ export function ExtractedFieldsCard({
                     transition={{ delay: Math.min(i * 0.03, 0.3) }}
                     style={{
                       borderTop: "1px solid var(--hairline)",
-                      background: f.confidence < 0.75 ? "rgba(214,69,69,0.04)" : "transparent",
+                      background: f.confidence < 0.75 ? "color-mix(in srgb, var(--bad) 4%, transparent)" : "transparent",
                     }}
                   >
                     <td className="px-4 py-2.5 text-xs font-medium whitespace-nowrap" style={{ color: "var(--ink-2)" }}>
@@ -196,7 +196,7 @@ export function ExtractedFieldsCard({
                 onClick={postToLedger}
                 disabled={posting}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
-                style={{ background: "var(--color-accent)", boxShadow: "0 4px 24px rgba(115,66,226,0.28)" }}
+                style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
               >
                 {posting ? (
                   <><Loader2 size={14} strokeWidth={2} className="animate-spin" /> Saving…</>

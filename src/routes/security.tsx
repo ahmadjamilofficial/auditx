@@ -84,7 +84,7 @@ function Security() {
               <div
                 className="rounded-xl px-4 py-3 text-xs font-medium"
                 style={{
-                  background: i === 3 ? "rgba(115,66,226,0.1)" : "var(--color-login-bg)",
+                  background: i === 3 ? "var(--accent-10)" : "var(--color-login-bg)",
                   color: i === 3 ? "var(--color-accent)" : "var(--ink-2)",
                 }}
               >

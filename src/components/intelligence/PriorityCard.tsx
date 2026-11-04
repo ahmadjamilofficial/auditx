@@ -13,37 +13,37 @@ interface Props {
 const SEVERITY_CONFIG = {
   CRITICAL: {
     icon: AlertCircle,
-    bg: "rgba(214,69,69,0.06)",
-    border: "rgba(214,69,69,0.18)",
+    bg: "color-mix(in srgb, var(--bad) 6%, transparent)",
+    border: "color-mix(in srgb, var(--bad) 18%, transparent)",
     iconColor: "var(--bad)",
-    badge: "rgba(214,69,69,0.1)",
+    badge: "color-mix(in srgb, var(--bad) 10%, transparent)",
     badgeText: "var(--bad)",
     dot: "var(--bad)",
   },
   HIGH: {
     icon: AlertTriangle,
-    bg: "rgba(201,138,26,0.06)",
-    border: "rgba(201,138,26,0.18)",
+    bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+    border: "color-mix(in srgb, var(--warn) 18%, transparent)",
     iconColor: "var(--warn)",
-    badge: "rgba(201,138,26,0.1)",
+    badge: "color-mix(in srgb, var(--warn) 10%, transparent)",
     badgeText: "var(--warn)",
     dot: "var(--warn)",
   },
   MEDIUM: {
     icon: Info,
-    bg: "rgba(59,111,209,0.06)",
-    border: "rgba(59,111,209,0.18)",
+    bg: "color-mix(in srgb, var(--info) 6%, transparent)",
+    border: "color-mix(in srgb, var(--info) 18%, transparent)",
     iconColor: "var(--info)",
-    badge: "rgba(59,111,209,0.1)",
+    badge: "color-mix(in srgb, var(--info) 10%, transparent)",
     badgeText: "var(--info)",
     dot: "var(--info)",
   },
   LOW: {
     icon: CheckCircle,
-    bg: "rgba(31,157,99,0.06)",
-    border: "rgba(31,157,99,0.18)",
+    bg: "color-mix(in srgb, var(--ok) 6%, transparent)",
+    border: "color-mix(in srgb, var(--ok) 18%, transparent)",
     iconColor: "var(--ok)",
-    badge: "rgba(31,157,99,0.1)",
+    badge: "color-mix(in srgb, var(--ok) 10%, transparent)",
     badgeText: "var(--ok)",
     dot: "var(--ok)",
   },
@@ -115,7 +115,7 @@ export function PriorityCardSkeleton() {
   return (
     <div
       className="rounded-xl p-4"
-      style={{ border: "1px solid var(--hairline)", background: "#fff" }}
+      style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
     >
       <div className="flex items-start gap-3">
         <div className="size-8 animate-pulse rounded-lg" style={{ background: "var(--hairline)" }} />

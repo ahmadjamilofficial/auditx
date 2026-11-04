@@ -31,10 +31,10 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 const TIER_BG: Record<string, string> = {
-  AUTO:   "rgba(31,157,99,0.1)",
-  NOTIFY: "rgba(201,138,26,0.1)",
-  REVIEW: "rgba(115,66,226,0.1)",
-  STOP:   "rgba(214,69,69,0.1)",
+  AUTO:   "color-mix(in srgb, var(--ok) 10%, transparent)",
+  NOTIFY: "color-mix(in srgb, var(--warn) 10%, transparent)",
+  REVIEW: "var(--accent-10)",
+  STOP:   "color-mix(in srgb, var(--bad) 10%, transparent)",
 };
 
 const STATUS_ICON: Record<string, React.FC<{ size?: number; style?: React.CSSProperties }>> = {
@@ -106,7 +106,7 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       className="overflow-hidden rounded-2xl"
-      style={{ border: "1px solid var(--hairline)", background: "#fff" }}
+      style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
     >
       <div className="flex items-start gap-3 p-4">
         {/* Status icon */}
@@ -114,10 +114,10 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
           className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl"
           style={{
             background: isFailed
-              ? "rgba(214,69,69,0.08)"
+              ? "color-mix(in srgb, var(--bad) 8%, transparent)"
               : job.status === "done"
-              ? "rgba(31,157,99,0.08)"
-              : "rgba(115,66,226,0.08)",
+              ? "color-mix(in srgb, var(--ok) 8%, transparent)"
+              : "var(--accent-8)",
           }}
         >
           <Icon
@@ -159,10 +159,10 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
             className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
             style={{
               background: isFailed
-                ? "rgba(214,69,69,0.1)"
+                ? "color-mix(in srgb, var(--bad) 10%, transparent)"
                 : job.status === "done"
-                ? "rgba(31,157,99,0.1)"
-                : "rgba(115,66,226,0.1)",
+                ? "color-mix(in srgb, var(--ok) 10%, transparent)"
+                : "var(--accent-10)",
               color: isFailed ? "var(--bad)" : job.status === "done" ? "var(--ok)" : "var(--color-accent)",
             }}
           >

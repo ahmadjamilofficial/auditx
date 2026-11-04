@@ -220,7 +220,7 @@ function Billing() {
 
       <div
         className="flex items-start gap-2.5 rounded-2xl px-5 py-4 text-sm"
-        style={{ background: "rgba(115,66,226,0.06)", border: "1px solid rgba(115,66,226,0.15)" }}
+        style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
       >
         <ArrowUpRight size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }} />
         <p style={{ color: "var(--ink-2)" }}>

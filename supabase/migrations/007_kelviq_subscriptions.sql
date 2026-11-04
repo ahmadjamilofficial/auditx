@@ -1,4 +1,4 @@
--- ─── AuditX: Kelviq Subscription System ─────────────────────────────────────────
+-- ─── Wab: Kelviq Subscription System ─────────────────────────────────────────
 -- Implements subscription-based access with Kelviq payment integration
 -- Replaces credit system with Standard ($3/mo) and Pro ($5/mo) plans
 -- Run in Supabase Dashboard → SQL Editor. Safe to run multiple times.

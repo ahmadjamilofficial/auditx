@@ -44,7 +44,7 @@ function ResetPassword() {
           value={pw}
           onChange={(e) => setPw(e.target.value)}
           placeholder="New password"
-          className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none"
+          className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
           style={{ borderColor: "var(--hairline)" }}
         />
         {err && <p className="text-sm" style={{ color: "var(--bad)" }}>{err}</p>}

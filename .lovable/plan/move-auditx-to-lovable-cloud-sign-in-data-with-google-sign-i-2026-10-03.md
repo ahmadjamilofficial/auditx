@@ -1,8 +1,8 @@
-# Move AuditX to Lovable Cloud (sign-in + data) with Google sign-in
+# Move Wab to Lovable Cloud (sign-in + data) with Google sign-in
 
 ## What you get
 - Sign-in, sign-up, password reset and **Continue with Google** all run on Lovable Cloud.
-- All AuditX data (organisations, profiles, plans, transactions, ledger, flags, audit trail, chats, brokers, notifications) is stored in Lovable Cloud.
+- All Wab data (organisations, profiles, plans, transactions, ledger, flags, audit trail, chats, brokers, notifications) is stored in Lovable Cloud.
 - The AI chat, ledger, tax center, audit trail, imports and every current page keep working the same way.
 - Your app works fully once published on Lovable (AI included). The Vercel site would need to be retired or pointed at the Lovable-published app.
 
@@ -11,10 +11,10 @@ Accounts and records in your current external database are **not copied over**. 
 
 ## Steps
 1. Turn on Lovable Cloud.
-2. Recreate the full AuditX data structure from the existing schema, with access rules so each user only sees their own organisation's data, plus automatic organisation/profile/free-plan creation on first sign-up.
+2. Recreate the full Wab data structure from the existing schema, with access rules so each user only sees their own organisation's data, plus automatic organisation/profile/free-plan creation on first sign-up.
 3. Switch the app to the Lovable Cloud connection everywhere (sign-in pages, data hooks, AI chat server, imports, Ask why, insights).
 4. Enable email/password and Google sign-in; Google uses Lovable's managed setup (no Google keys needed from you).
-5. Add a proper reset-password page and make sure Google sign-in returns to the AuditX chat.
+5. Add a proper reset-password page and make sure Google sign-in returns to the Wab chat.
 6. Finish open items: ledger add/delete buttons, keep unsent chat text after reload, move Investigations/Agent pages off OpenRouter.
 7. Test end to end while signed in: sign up, Google button, chat with AI, ledger add/delete, import, sign out.
 

@@ -1,4 +1,4 @@
-// ─── AuditX Sheets Poller — Supabase Edge Function ───────────────────────────
+// ─── Wab Sheets Poller — Supabase Edge Function ───────────────────────────
 // Polls every connected Google Sheet for content changes.
 // Uses SHA-256 hash diff — only enqueues a job when content actually changes.
 // Loop prevention: skips sheets whose latest hash was produced by an agent run.

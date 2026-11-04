@@ -1,4 +1,4 @@
-// ─── AuditX Agent Runner — Supabase Edge Function ────────────────────────────
+// ─── Wab Agent Runner — Supabase Edge Function ────────────────────────────
 // Deno runtime. Dequeues one job, runs it, handles retries and invariant checks.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -63,8 +63,8 @@ async function callLLM(
     headers: {
       Authorization:  `Bearer ${OPENROUTER_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://auditx.app",
-      "X-Title":      "AuditX",
+      "HTTP-Referer": "https://psxl.live",
+      "X-Title":      "Wab",
     },
     body: JSON.stringify(body),
   });

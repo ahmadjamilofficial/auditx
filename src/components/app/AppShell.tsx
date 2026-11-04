@@ -13,6 +13,7 @@ import {
   Menu,
   PanelLeft,
   PanelRight,
+  Plug,
   Radio,
   Settings,
   Shield,
@@ -24,7 +25,7 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { CommandBarProvider, useCommandBar } from "@/components/intelligence/WabCommandBar";
+import { CommandBarProvider, useCommandBar } from "@/components/intelligence/AuditXCommandBar";
 import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
@@ -51,6 +52,7 @@ const navGroups = [
       { label: "Portfolio",    icon: LayoutDashboard, to: "/app/overview"       },
       { label: "Ledger",       icon: BookOpen,        to: "/app/ledger"          },
       { label: "Exceptions",   icon: GitFork,         to: "/app/reconciliation"  },
+      { label: "Integrations", icon: Plug,            to: "/app/integrations"    },
       { label: "Tax Center",   icon: BarChart3,       to: "/app/tax"             },
       { label: "Reports",      icon: FileText,        to: "/app/reports"         },
       { label: "Audit Trail",  icon: Shield,          to: "/app/audit-trail"     },
@@ -102,7 +104,7 @@ function NavItem({
         collapsed ? "size-10 justify-center" : "gap-3 px-3 py-2.5"
       }`}
       style={{
-        background: active || accent ? "rgba(115,66,226,0.1)" : "transparent",
+        background: active || accent ? "var(--accent-10)" : "transparent",
         color: active || accent ? "var(--color-accent)" : "var(--ink-2)",
       }}
     >
@@ -199,9 +201,9 @@ function InnerShell({ children }: { children: ReactNode }) {
                 aria-label="Expand navigation"
                 onClick={() => (onClose ? onClose() : setExpanded(true))}
                 className="flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-black/5"
-                style={{ background: "var(--color-accent)" }}
+                style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
               >
-                <LogoMark size={20} fill="#fff" />
+                <LogoMark size={20} />
               </button>
             ) : (
               /* When expanded: logo on left, collapse button on right */
@@ -226,7 +228,7 @@ function InnerShell({ children }: { children: ReactNode }) {
           {!collapsed && (
             <div
               className="mt-4 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs"
-              style={{ background: "rgba(25,40,55,0.04)", border: "1px solid var(--hairline)" }}
+              style={{ background: "var(--accent-4)", border: "1px solid var(--hairline)" }}
             >
               <div className="min-w-0">
                 <p className="truncate font-semibold">{orgName}</p>
@@ -324,7 +326,7 @@ function InnerShell({ children }: { children: ReactNode }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.97 }}
                 transition={{ duration: 0.16 }}
-                className="absolute bottom-full z-50 mb-1 overflow-hidden rounded-2xl bg-white p-2"
+                className="absolute bottom-full z-50 mb-1 overflow-hidden rounded-2xl bg-surface p-2"
                 style={{
                   border: "1px solid var(--hairline)",
                   boxShadow: "var(--shadow-hover)",
@@ -394,7 +396,7 @@ function InnerShell({ children }: { children: ReactNode }) {
         animate={{ width: expanded ? 248 : 64 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
         className="relative hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
-        style={{ background: "#fff", borderRight: "1px solid var(--hairline)" }}
+        style={{ background: "var(--surface)", borderRight: "1px solid var(--hairline)" }}
       >
         <SidebarContent collapsed={!expanded} />
 
@@ -405,7 +407,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             aria-label="Expand navigation"
             onClick={() => setExpanded(true)}
             title="Expand sidebar"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 flex size-5 items-center justify-center rounded-full border bg-white shadow-sm transition-shadow hover:shadow-md"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 flex size-5 items-center justify-center rounded-full border bg-surface shadow-sm transition-shadow hover:shadow-md"
             style={{ borderColor: "var(--hairline)" }}
           >
             <PanelRight size={11} strokeWidth={2} style={{ color: "var(--ink-3)" }} />
@@ -419,14 +421,14 @@ function InnerShell({ children }: { children: ReactNode }) {
           <>
             <motion.div
               className="fixed inset-0 z-40 lg:hidden"
-              style={{ background: "rgba(25,40,55,0.35)", backdropFilter: "blur(4px)" }}
+              style={{ background: "var(--scrim)", backdropFilter: "blur(4px)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed left-0 top-0 z-50 h-full w-72 overflow-hidden bg-white shadow-2xl lg:hidden"
+              className="fixed left-0 top-0 z-50 h-full w-72 overflow-hidden bg-surface shadow-2xl lg:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -443,7 +445,7 @@ function InnerShell({ children }: { children: ReactNode }) {
         {/* Top header */}
         <header
           className="flex shrink-0 items-center gap-3 border-b px-4 py-3 sm:px-6"
-          style={{ background: "#fff", borderColor: "var(--hairline)" }}
+          style={{ background: "var(--surface)", borderColor: "var(--hairline)" }}
         >
           {/* Mobile hamburger */}
           <button
@@ -458,7 +460,7 @@ function InnerShell({ children }: { children: ReactNode }) {
           {/* Command bar trigger */}
           <button
             type="button"
-            className="hidden flex-1 items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm sm:flex"
+            className="hidden flex-1 items-center gap-2 rounded-xl border bg-surface px-3 py-2 text-sm sm:flex"
             style={{ borderColor: "var(--hairline)", maxWidth: 380 }}
             onClick={() => setCommandBarOpen(true)}
           >
@@ -470,7 +472,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             <span style={{ color: "var(--ink-3)" }}>Ask Wab anything…</span>
             <kbd
               className="ml-auto rounded px-2 py-0.5 text-xs"
-              style={{ background: "rgba(25,40,55,0.06)", color: "var(--ink-3)" }}
+              style={{ background: "var(--accent-6)", color: "var(--ink-3)" }}
             >
               ⌘K
             </kbd>
@@ -483,7 +485,7 @@ function InnerShell({ children }: { children: ReactNode }) {
               className="hidden items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white sm:flex"
               style={{
                 background: "var(--color-accent)",
-                boxShadow: "0 4px 24px rgba(115,66,226,0.28)",
+                boxShadow: "var(--shadow-accent)",
               }}
             >
               <Upload size={14} strokeWidth={2} />

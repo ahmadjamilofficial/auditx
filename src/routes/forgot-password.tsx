@@ -65,7 +65,7 @@ function ForgotPassword() {
                   type="email"
                   placeholder="you@example.com"
                   {...register("email")}
-                  className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                  className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                   style={{
                     borderColor: errors.email ? "var(--bad)" : "var(--hairline)",
                     // @ts-expect-error css variable
@@ -85,7 +85,7 @@ function ForgotPassword() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold text-white disabled:opacity-60"
-                style={{ background: "var(--color-accent)", boxShadow: "0 4px 24px rgba(115,66,226,0.28)" }}
+                style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
               >
                 <Mail size={16} strokeWidth={1.75} />
                 {isSubmitting ? "Sending…" : "Send reset link"}
@@ -97,12 +97,12 @@ function ForgotPassword() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
-            className="rounded-2xl bg-white p-8 text-center"
+            className="rounded-2xl bg-surface p-8 text-center"
             style={{ border: "1px solid var(--hairline)", boxShadow: "var(--shadow-card)" }}
           >
             <div
               className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full"
-              style={{ background: "rgba(31,157,99,0.1)" }}
+              style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}
             >
               <Mail size={22} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
             </div>

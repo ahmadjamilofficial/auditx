@@ -93,10 +93,10 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
 
 function SeverityBadge({ level }: { level: "CRITICAL" | "WARNING" | "OPPORTUNITY" | "INFO" }) {
   const styles = {
-    CRITICAL:    { bg: "rgba(214,69,69,0.1)",   text: "var(--bad)",          label: "CRITICAL" },
-    WARNING:     { bg: "rgba(201,138,26,0.1)",  text: "var(--warn)",         label: "WARNING" },
-    OPPORTUNITY: { bg: "rgba(31,157,99,0.1)",   text: "var(--ok)",           label: "OPPORTUNITY" },
-    INFO:        { bg: "rgba(59,111,209,0.1)",  text: "var(--info)",         label: "INFO" },
+    CRITICAL:    { bg: "color-mix(in srgb, var(--bad) 10%, transparent)",   text: "var(--bad)",          label: "CRITICAL" },
+    WARNING:     { bg: "color-mix(in srgb, var(--warn) 10%, transparent)",  text: "var(--warn)",         label: "WARNING" },
+    OPPORTUNITY: { bg: "color-mix(in srgb, var(--ok) 10%, transparent)",   text: "var(--ok)",           label: "OPPORTUNITY" },
+    INFO:        { bg: "color-mix(in srgb, var(--info) 10%, transparent)",  text: "var(--info)",         label: "INFO" },
   };
   const s = styles[level];
   return (
@@ -138,12 +138,12 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className="overflow-hidden rounded-2xl"
-      style={{ border: "1px solid var(--hairline)", background: "#fff" }}
+      style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
     >
       {/* Header */}
       <div
         className="flex items-center gap-4 p-5"
-        style={{ borderBottom: "1px solid var(--hairline)", background: "rgba(25,40,55,0.015)" }}
+        style={{ borderBottom: "1px solid var(--hairline)", background: "var(--accent-2)" }}
       >
         <div
           className="flex size-10 items-center justify-center rounded-xl"
@@ -193,7 +193,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
                 { label: "Health Score",  value: `${result.healthScore}/100` },
                 { label: "Critical Issues", value: result.criticalFlags.toString() },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-white p-4 text-center">
+                <div key={label} className="bg-surface p-4 text-center">
                   <p className="tnum text-lg font-bold" style={{ color: "var(--color-text)" }}>
                     {value}
                   </p>
@@ -209,7 +209,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               {result.unreconciledCount > 0 && (
                 <div
                   className="rounded-xl p-3"
-                  style={{ background: "rgba(201,138,26,0.06)", border: "1px solid rgba(201,138,26,0.15)" }}
+                  style={{ background: "color-mix(in srgb, var(--warn) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--warn) 15%, transparent)" }}
                 >
                   <AlertTriangle size={14} style={{ color: "var(--warn)" }} />
                   <p className="tnum mt-1.5 text-lg font-bold" style={{ color: "var(--warn)" }}>
@@ -221,7 +221,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               {result.criticalFlags > 0 && (
                 <div
                   className="rounded-xl p-3"
-                  style={{ background: "rgba(214,69,69,0.06)", border: "1px solid rgba(214,69,69,0.15)" }}
+                  style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--bad) 15%, transparent)" }}
                 >
                   <AlertCircle size={14} style={{ color: "var(--bad)" }} />
                   <p className="tnum mt-1.5 text-lg font-bold" style={{ color: "var(--bad)" }}>
@@ -234,8 +234,8 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
                 <div
                   className="rounded-xl p-3"
                   style={{
-                    background: result.totalGain > 0 ? "rgba(31,157,99,0.06)" : "rgba(214,69,69,0.06)",
-                    border: `1px solid ${result.totalGain > 0 ? "rgba(31,157,99,0.15)" : "rgba(214,69,69,0.15)"}`,
+                    background: result.totalGain > 0 ? "color-mix(in srgb, var(--ok) 6%, transparent)" : "color-mix(in srgb, var(--bad) 6%, transparent)",
+                    border: `1px solid ${result.totalGain > 0 ? "color-mix(in srgb, var(--ok) 15%, transparent)" : "color-mix(in srgb, var(--bad) 15%, transparent)"}`,
                   }}
                 >
                   {result.totalGain > 0 ? (
@@ -258,7 +258,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               {result.taxLiability > 0 && (
                 <div
                   className="rounded-xl p-3"
-                  style={{ background: "rgba(115,66,226,0.06)", border: "1px solid rgba(115,66,226,0.15)" }}
+                  style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
                 >
                   <Lightbulb size={14} style={{ color: "var(--color-accent)" }} />
                   <p className="tnum mt-1.5 text-sm font-bold" style={{ color: "var(--color-accent)" }}>
@@ -280,7 +280,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               </div>
               <div
                 className="rounded-xl p-4 text-sm leading-relaxed"
-                style={{ background: "rgba(115,66,226,0.03)", border: "1px solid rgba(115,66,226,0.1)", color: "var(--ink-2)" }}
+                style={{ background: "var(--accent-3)", border: "1px solid var(--accent-10)", color: "var(--ink-2)" }}
               >
                 {result.aiReport.split("\n").map((line, i) => {
                   if (line.startsWith("## "))
@@ -555,7 +555,7 @@ function Investigations() {
                   onClick={() => void runInvestigation(config)}
                   disabled={running}
                   className="group w-full rounded-2xl p-5 text-left transition-all disabled:opacity-50 hover:shadow-md"
-                  style={{ background: "#fff", border: "1px solid var(--hairline)" }}
+                  style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div
@@ -662,7 +662,7 @@ function Investigations() {
         <Panel className="py-12 text-center">
           <div
             className="mx-auto flex size-14 items-center justify-center rounded-2xl"
-            style={{ background: "rgba(115,66,226,0.08)" }}
+            style={{ background: "var(--accent-8)" }}
           >
             <Search size={24} style={{ color: "var(--color-accent)" }} />
           </div>

@@ -34,7 +34,7 @@ function Contact() {
               <div className="flex items-center gap-3">
                 <div
                   className="flex size-10 items-center justify-center rounded-xl"
-                  style={{ background: "rgba(115,66,226,0.08)" }}
+                  style={{ background: "var(--accent-8)" }}
                 >
                   <Mail size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
                 </div>
@@ -58,7 +58,7 @@ function Contact() {
               <div className="flex items-center gap-3">
                 <div
                   className="flex size-10 items-center justify-center rounded-xl"
-                  style={{ background: "rgba(115,66,226,0.08)" }}
+                  style={{ background: "var(--accent-8)" }}
                 >
                   <Phone size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
                 </div>

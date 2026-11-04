@@ -5,27 +5,33 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * WAB design system — "inked".
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * The WAB mark is a pure black-on-white geometric monogram: no hue, sharp
+ * angles, high contrast. The system is built from exactly that: a neutral
+ * ink scale, white surfaces, hairline borders, and a single brand accent that
+ * IS the ink itself (white in dark mode). Colour is reserved for meaning —
+ * status, risk, money movement — never for decoration.
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
+ * Rules:
+ * 1. Never hardcode a brand hex or rgba() tint in a component. Use a token.
+ * 2. Tints are derived with color-mix from --color-accent, so every subtle
+ *    wash, chip background and focus glow flips correctly between themes.
+ * 3. All colors use oklch (or color-mix over oklch), per project convention.
  *
- * To add a new semantic color:
+ * To add a semantic color:
  * 1. Add the variable to :root (light value) and .dark (dark value)
  * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 14px);
+  --radius-4xl: calc(var(--radius) + 18px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -62,92 +68,201 @@
 }
 
 :root {
-  --font-heading: "Helvetica Now Display Bold", "Inter", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --color-text: #192837;
-  --color-accent: #7342e2;
-  --color-accent-hover: #8f63ea;
-  --color-accent-pressed: #5b2fc0;
-  --color-login-bg: #f2f2ee;
-  --color-sheet: #cfc8c5;
-  --hairline: rgba(25, 40, 55, 0.08);
-  --ink-2: rgba(25, 40, 55, 0.65);
-  --ink-3: rgba(25, 40, 55, 0.4);
-  --ok: #1f9d63;
-  --warn: #c98a1a;
-  --bad: #d64545;
-  --info: #3b6fd1;
-  --shadow-card: 0 2px 12px rgba(25, 40, 55, 0.06);
-  --shadow-hover: 0 4px 24px rgba(115, 66, 226, 0.12);
-  --radius: 0.625rem;
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+  --font-heading: "Helvetica Now Display Bold", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  /* ── Ink ──────────────────────────────────────────────────────────────── */
+  --color-text: oklch(0.16 0.005 265);
+  --ink-2: oklch(0.16 0.005 265 / 64%);
+  --ink-3: oklch(0.16 0.005 265 / 44%);
+  --hairline: oklch(0.16 0.005 265 / 10%);
+  --hairline-strong: oklch(0.16 0.005 265 / 18%);
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --canvas: oklch(0.968 0.001 100);
+  --color-login-bg: var(--canvas);
+  --surface: oklch(1 0 0);
+  --surface-sunken: oklch(0.985 0.001 100);
+  --surface-glass: oklch(0.968 0.001 100 / 0.82);
+  --color-sheet: oklch(0.928 0.002 100);
+
+  /* ── Brand accent = the ink itself ────────────────────────────────────── */
+  --color-accent: oklch(0.16 0.005 265);
+  --color-accent-hover: oklch(0.26 0.006 265);
+  --color-accent-pressed: oklch(0 0 0);
+  --accent-fg: oklch(1 0 0);
+
+  /*
+   * Wash scale — replaces every hardcoded rgba tint in the app.
+   * Written as explicit alpha values (not color-mix): Lightning CSS would
+   * otherwise emit a full-opacity fallback and paint solid ink blocks on any
+   * browser without color-mix support.
+   */
+  --accent-2: oklch(0.16 0.005 265 / 2%);
+  --accent-3: oklch(0.16 0.005 265 / 3%);
+  --accent-4: oklch(0.16 0.005 265 / 4%);
+  --accent-5: oklch(0.16 0.005 265 / 5%);
+  --accent-6: oklch(0.16 0.005 265 / 6%);
+  --accent-7: oklch(0.16 0.005 265 / 7%);
+  --accent-8: oklch(0.16 0.005 265 / 8%);
+  --accent-9: oklch(0.16 0.005 265 / 9%);
+  --accent-10: oklch(0.16 0.005 265 / 10%);
+  --accent-12: oklch(0.16 0.005 265 / 12%);
+  --accent-14: oklch(0.16 0.005 265 / 14%);
+  --accent-15: oklch(0.16 0.005 265 / 15%);
+  --accent-18: oklch(0.16 0.005 265 / 18%);
+  --accent-20: oklch(0.16 0.005 265 / 20%);
+  --accent-22: oklch(0.16 0.005 265 / 22%);
+  --accent-25: oklch(0.16 0.005 265 / 25%);
+  --accent-28: oklch(0.16 0.005 265 / 28%);
+  --accent-30: oklch(0.16 0.005 265 / 30%);
+  --accent-35: oklch(0.16 0.005 265 / 35%);
+  --accent-40: oklch(0.16 0.005 265 / 40%);
+
+  /* Scrims / overlays for drawers and modals. */
+  --scrim: oklch(0.16 0.005 265 / 32%);
+  --scrim-strong: oklch(0.16 0.005 265 / 45%);
+
+  /* ── Meaning ──────────────────────────────────────────────────────────── */
+  --ok: oklch(0.52 0.105 158);
+  --warn: oklch(0.56 0.115 74);
+  --bad: oklch(0.53 0.17 27);
+  --info: oklch(0.48 0.115 256);
+
+  /* ── Depth — shadows stay neutral, never tinted ───────────────────────── */
+  --shadow-card: 0 1px 2px oklch(0.16 0.005 265 / 5%), 0 12px 28px -18px oklch(0.16 0.005 265 / 18%);
+  --shadow-hover: 0 2px 6px oklch(0.16 0.005 265 / 6%), 0 20px 44px -24px oklch(0.16 0.005 265 / 26%);
+  --shadow-accent: 0 6px 18px -8px oklch(0.16 0.005 265 / 42%);
+
+  --radius: 0.375rem;
+
+  /* ── shadcn bridge ────────────────────────────────────────────────────── */
+  --background: oklch(0.968 0.001 100);
+  --foreground: oklch(0.16 0.005 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.16 0.005 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.16 0.005 265);
+  --primary: oklch(0.16 0.005 265);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.955 0.001 100);
+  --secondary-foreground: oklch(0.16 0.005 265);
+  --muted: oklch(0.955 0.001 100);
+  --muted-foreground: oklch(0.5 0.005 265);
+  --accent: oklch(0.945 0.001 100);
+  --accent-foreground: oklch(0.16 0.005 265);
+  --destructive: oklch(0.53 0.17 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.16 0.005 265 / 10%);
+  --input: oklch(0.16 0.005 265 / 14%);
+  --ring: oklch(0.16 0.005 265 / 45%);
+
+  /* Monochrome data ramp: ink → graphite → two muted signals. */
+  --chart-1: oklch(0.16 0.005 265);
+  --chart-2: oklch(0.38 0.005 265);
+  --chart-3: oklch(0.6 0.004 265);
+  --chart-4: oklch(0.52 0.105 158);
+  --chart-5: oklch(0.48 0.115 256);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.16 0.005 265);
+  --sidebar-primary: oklch(0.16 0.005 265);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.955 0.001 100);
+  --sidebar-accent-foreground: oklch(0.16 0.005 265);
+  --sidebar-border: oklch(0.16 0.005 265 / 10%);
+  --sidebar-ring: oklch(0.16 0.005 265 / 45%);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --color-text: oklch(0.975 0 0);
+  --ink-2: oklch(0.975 0 0 / 62%);
+  --ink-3: oklch(0.975 0 0 / 42%);
+  --hairline: oklch(0.975 0 0 / 12%);
+  --hairline-strong: oklch(0.975 0 0 / 20%);
+
+  --canvas: oklch(0.145 0.004 265);
+  --color-login-bg: var(--canvas);
+  --surface: oklch(0.19 0.004 265);
+  --surface-sunken: oklch(0.17 0.004 265);
+  --surface-glass: oklch(0.145 0.004 265 / 0.82);
+  --color-sheet: oklch(0.24 0.004 265);
+
+  /* In dark mode the mark inverts: the accent becomes white. */
+  --color-accent: oklch(0.975 0 0);
+  --color-accent-hover: oklch(0.9 0 0);
+  --color-accent-pressed: oklch(1 0 0);
+  --accent-fg: oklch(0.145 0.004 265);
+
+  /* Wash scale inverts with the mark: white alphas on near-black surfaces. */
+  --accent-2: oklch(0.975 0 0 / 2%);
+  --accent-3: oklch(0.975 0 0 / 3%);
+  --accent-4: oklch(0.975 0 0 / 4%);
+  --accent-5: oklch(0.975 0 0 / 5%);
+  --accent-6: oklch(0.975 0 0 / 6%);
+  --accent-7: oklch(0.975 0 0 / 7%);
+  --accent-8: oklch(0.975 0 0 / 8%);
+  --accent-9: oklch(0.975 0 0 / 9%);
+  --accent-10: oklch(0.975 0 0 / 10%);
+  --accent-12: oklch(0.975 0 0 / 12%);
+  --accent-14: oklch(0.975 0 0 / 14%);
+  --accent-15: oklch(0.975 0 0 / 15%);
+  --accent-18: oklch(0.975 0 0 / 18%);
+  --accent-20: oklch(0.975 0 0 / 20%);
+  --accent-22: oklch(0.975 0 0 / 22%);
+  --accent-25: oklch(0.975 0 0 / 25%);
+  --accent-28: oklch(0.975 0 0 / 28%);
+  --accent-30: oklch(0.975 0 0 / 30%);
+  --accent-35: oklch(0.975 0 0 / 35%);
+  --accent-40: oklch(0.975 0 0 / 40%);
+
+  --scrim: oklch(0 0 0 / 55%);
+  --scrim-strong: oklch(0 0 0 / 68%);
+
+  --ok: oklch(0.76 0.12 158);
+  --warn: oklch(0.79 0.13 78);
+  --bad: oklch(0.72 0.16 27);
+  --info: oklch(0.74 0.11 256);
+
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 40%), 0 12px 28px -18px oklch(0 0 0 / 60%);
+  --shadow-hover: 0 2px 8px oklch(0 0 0 / 45%), 0 20px 44px -24px oklch(0 0 0 / 70%);
+  --shadow-accent: 0 6px 18px -8px oklch(0 0 0 / 70%);
+
+  --background: oklch(0.145 0.004 265);
+  --foreground: oklch(0.975 0 0);
+  --card: oklch(0.19 0.004 265);
+  --card-foreground: oklch(0.975 0 0);
+  --popover: oklch(0.19 0.004 265);
+  --popover-foreground: oklch(0.975 0 0);
+  --primary: oklch(0.975 0 0);
+  --primary-foreground: oklch(0.145 0.004 265);
+  --secondary: oklch(0.24 0.004 265);
+  --secondary-foreground: oklch(0.975 0 0);
+  --muted: oklch(0.24 0.004 265);
+  --muted-foreground: oklch(0.72 0.004 265);
+  --accent: oklch(0.24 0.004 265);
+  --accent-foreground: oklch(0.975 0 0);
+  --destructive: oklch(0.72 0.16 27);
+  --destructive-foreground: oklch(0.145 0.004 265);
+  --border: oklch(0.975 0 0 / 12%);
+  --input: oklch(0.975 0 0 / 16%);
+  --ring: oklch(0.975 0 0 / 45%);
+
+  --chart-1: oklch(0.975 0 0);
+  --chart-2: oklch(0.78 0.004 265);
+  --chart-3: oklch(0.6 0.004 265);
+  --chart-4: oklch(0.76 0.12 158);
+  --chart-5: oklch(0.74 0.11 256);
+
+  --sidebar: oklch(0.17 0.004 265);
+  --sidebar-foreground: oklch(0.975 0 0);
+  --sidebar-primary: oklch(0.975 0 0);
+  --sidebar-primary-foreground: oklch(0.145 0.004 265);
+  --sidebar-accent: oklch(0.24 0.004 265);
+  --sidebar-accent-foreground: oklch(0.975 0 0);
+  --sidebar-border: oklch(0.975 0 0 / 12%);
+  --sidebar-ring: oklch(0.975 0 0 / 45%);
 }
 
 @layer base {
@@ -155,9 +270,43 @@
     border-color: var(--color-border);
   }
 
+  html {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--accent-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Financial figures must never shift width between renders. */
+  .tnum,
+  table,
+  td,
+  th {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -166,26 +315,16 @@
   --font-body: var(--font-body);
   --color-ink: var(--color-text);
   --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-pressed: var(--color-accent-pressed);
+  --color-accent-fg: var(--accent-fg);
   --color-canvas: var(--color-login-bg);
+  --color-surface: var(--surface);
   --color-sheet: var(--color-sheet);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
   --color-info: var(--info);
-}
-
-@layer base {
-  html {
-    font-family: var(--font-body);
-    color: var(--color-text);
-  }
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-heading);
-    letter-spacing: -0.01em;
-  }
 }
 
 @utility tnum {

@@ -181,7 +181,7 @@ function ChatPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5 }}
               className="flex size-20 items-center justify-center rounded-3xl"
-              style={{ background: "rgba(115,66,226,0.1)" }}
+              style={{ background: "var(--accent-10)" }}
             >
               <Sparkles size={40} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
             </motion.div>

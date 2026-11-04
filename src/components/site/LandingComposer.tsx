@@ -76,13 +76,13 @@ export function LandingComposer() {
       <motion.div
         animate={{
           boxShadow: focused
-            ? "0 0 0 2px rgba(115,66,226,0.25), 0 12px 40px rgba(115,66,226,0.1)"
-            : "0 8px 32px rgba(25,40,55,0.08)",
-          borderColor: focused ? "rgba(115,66,226,0.4)" : "rgba(25,40,55,0.1)",
+            ? "0 0 0 2px var(--accent-25), var(--shadow-accent)"
+            : "0 8px 32px var(--accent-8)",
+          borderColor: focused ? "var(--accent-40)" : "var(--accent-10)",
         }}
         transition={{ duration: 0.2 }}
-        className="overflow-hidden rounded-[24px] bg-white"
-        style={{ border: "1.5px solid rgba(25,40,55,0.1)" }}
+        className="overflow-hidden rounded-[24px] bg-surface"
+        style={{ border: "1.5px solid var(--accent-10)" }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
@@ -116,9 +116,9 @@ export function LandingComposer() {
                   key={`${file.name}-${i}`}
                   className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs"
                   style={{
-                    background: "rgba(115,66,226,0.07)",
+                    background: "var(--accent-7)",
                     color: "var(--color-accent)",
-                    border: "1px solid rgba(115,66,226,0.15)",
+                    border: "1px solid var(--accent-15)",
                   }}
                 >
                   📎 {file.name}
@@ -164,7 +164,7 @@ export function LandingComposer() {
         {/* Bottom toolbar */}
         <div
           className="flex items-center justify-between px-4 py-3"
-          style={{ borderTop: "1px solid rgba(25,40,55,0.06)" }}
+          style={{ borderTop: "1px solid var(--accent-6)" }}
         >
           <div className="flex items-center gap-1">
             <button
@@ -190,7 +190,7 @@ export function LandingComposer() {
             className="flex size-10 items-center justify-center rounded-full text-white transition-all disabled:opacity-30"
             style={{
               background: canSend ? "var(--color-accent)" : "var(--ink-3)",
-              boxShadow: canSend ? "0 4px 16px rgba(115,66,226,0.3)" : "none",
+              boxShadow: canSend ? "var(--shadow-accent)" : "none",
             }}
           >
             <ArrowUp size={18} strokeWidth={2.25} />
@@ -208,7 +208,7 @@ export function LandingComposer() {
               setValue(chip.prompt);
               goToWorkspace(chip.prompt, files);
             }}
-            className="group flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-medium transition-all hover:border-[rgba(115,66,226,0.3)] hover:shadow-sm sm:text-sm"
+            className="group flex items-center gap-1.5 rounded-full bg-surface px-3.5 py-2 text-xs font-medium transition-all hover:border-[var(--accent-30)] hover:shadow-sm sm:text-sm"
             style={{
               border: "1px solid var(--hairline)",
               color: "var(--ink-2)",

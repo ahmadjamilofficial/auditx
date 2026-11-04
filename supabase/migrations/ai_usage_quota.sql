@@ -1,4 +1,4 @@
--- ─── AuditX: AI Usage Quota System ──────────────────────────────────────────
+-- ─── Wab: AI Usage Quota System ──────────────────────────────────────────
 -- Tracks AI inference consumption per user/org, independent of provider limits.
 -- Run in Supabase Dashboard → SQL Editor. Safe to run multiple times.
 
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.ai_usage (
   thread_id           uuid,
   model               text NOT NULL DEFAULT '',
   inference_requests  integer NOT NULL DEFAULT 1,   -- model calls in this turn
-  credits_used        integer NOT NULL DEFAULT 1,   -- AuditX credits consumed
+  credits_used        integer NOT NULL DEFAULT 1,   -- Wab credits consumed
   status              text NOT NULL DEFAULT 'ok',   -- ok | quota_exceeded | provider_error
   provider_error      text,
   created_at          timestamptz NOT NULL DEFAULT now()

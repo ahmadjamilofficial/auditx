@@ -88,7 +88,7 @@ function AuditTrail() {
           >
             <div
               className="flex items-center gap-3 rounded-2xl px-5 py-4"
-              style={{ background: "rgba(31,157,99,0.08)", border: "1px solid rgba(31,157,99,0.2)" }}
+              style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)" }}
             >
               <CheckCircle2 size={18} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
               <div>
@@ -106,7 +106,7 @@ function AuditTrail() {
 
       {/* Search */}
       <div
-        className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3"
+        className="flex items-center gap-2 rounded-2xl bg-surface px-4 py-3"
         style={{ border: "1px solid var(--hairline)" }}
       >
         <Search size={16} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
@@ -121,7 +121,7 @@ function AuditTrail() {
 
       {/* Log table */}
       <div
-        className="overflow-hidden rounded-2xl bg-white"
+        className="overflow-hidden rounded-2xl bg-surface"
         style={{ border: "1px solid var(--hairline)" }}
       >
         {isLoading ? (
@@ -201,7 +201,7 @@ function AuditTrail() {
             Every mutation (parse, post, reconcile, compute-tax) appends a new row with{" "}
             <code
               className="rounded px-1.5 py-0.5 text-xs"
-              style={{ background: "rgba(115,66,226,0.08)", color: "var(--color-accent)" }}
+              style={{ background: "var(--accent-8)", color: "var(--color-accent)" }}
             >
               hash = sha256(prev_hash + payload)
             </code>
@@ -209,7 +209,7 @@ function AuditTrail() {
           </p>
           <p>
             Clicking "Verify chain" recomputes each hash and checks that every{" "}
-            <code className="rounded px-1.5 py-0.5 text-xs" style={{ background: "rgba(115,66,226,0.08)", color: "var(--color-accent)" }}>
+            <code className="rounded px-1.5 py-0.5 text-xs" style={{ background: "var(--accent-8)", color: "var(--color-accent)" }}>
               prev_hash
             </code>{" "}
             matches the previous row's hash. Any tampering with historical records breaks the chain

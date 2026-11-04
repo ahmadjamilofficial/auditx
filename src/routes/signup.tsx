@@ -112,12 +112,12 @@ function SignUp() {
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-sm rounded-2xl bg-white p-10 text-center"
+          className="w-full max-w-sm rounded-2xl bg-surface p-10 text-center"
           style={{ border: "1px solid var(--hairline)", boxShadow: "var(--shadow-card)" }}
         >
           <div
             className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl"
-            style={{ background: "rgba(31,157,99,0.1)" }}
+            style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="2">
               <path d="M20 6L9 17l-5-5" />
@@ -241,7 +241,7 @@ function SignUp() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleGoogleSignUp}
-            className="flex w-full items-center justify-center gap-3 rounded-full border bg-white px-6 py-3 text-sm font-medium transition-shadow hover:shadow-md disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-3 rounded-full border bg-surface px-6 py-3 text-sm font-medium transition-shadow hover:shadow-md disabled:opacity-60"
             style={{ borderColor: "var(--hairline)" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -267,7 +267,7 @@ function SignUp() {
                 type="text"
                 placeholder="Your full name"
                 {...register("full_name")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                 style={{ borderColor: errors.full_name ? "var(--bad)" : "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
               />
               {errors.full_name && <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>{errors.full_name.message}</p>}
@@ -280,7 +280,7 @@ function SignUp() {
                 type="email"
                 placeholder="you@example.com"
                 {...register("email")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                 style={{ borderColor: errors.email ? "var(--bad)" : "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
               />
               {errors.email && <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>{errors.email.message}</p>}
@@ -293,7 +293,7 @@ function SignUp() {
                 type="text"
                 placeholder="My Trading Firm"
                 {...register("org")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                 style={{ borderColor: errors.org ? "var(--bad)" : "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
               />
               {errors.org && <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>{errors.org.message}</p>}
@@ -304,7 +304,7 @@ function SignUp() {
               <label className="mb-1.5 block text-sm font-medium">Default jurisdiction</label>
               <select
                 {...register("jurisdiction")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                 style={{ borderColor: "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
               >
                 <option value="PSX">PSX — Pakistan (CGT + WHT)</option>
@@ -320,7 +320,7 @@ function SignUp() {
                   type={showPw ? "text" : "password"}
                   placeholder="At least 8 characters"
                   {...register("password")}
-                  className="w-full rounded-[10px] border bg-white px-4 py-3 pr-11 text-sm outline-none focus:ring-2"
+                  className="w-full rounded-[10px] border bg-surface px-4 py-3 pr-11 text-sm outline-none focus:ring-2"
                   style={{ borderColor: errors.password ? "var(--bad)" : "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
                 />
                 <button
@@ -342,14 +342,14 @@ function SignUp() {
                 type={showPw ? "text" : "password"}
                 placeholder="Repeat password"
                 {...register("confirm")}
-                className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                 style={{ borderColor: errors.confirm ? "var(--bad)" : "var(--hairline)", ["--tw-ring-color" as string]: "var(--color-accent)" }}
               />
               {errors.confirm && <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>{errors.confirm.message}</p>}
             </div>
 
             {serverErr && (
-              <div className="rounded-[10px] px-4 py-3 text-sm" style={{ background: "rgba(214,69,69,0.08)", color: "var(--bad)" }}>
+              <div className="rounded-[10px] px-4 py-3 text-sm" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)", color: "var(--bad)" }}>
                 {serverErr}
               </div>
             )}
@@ -360,7 +360,7 @@ function SignUp() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
-              style={{ background: "var(--color-accent)", boxShadow: "0 4px 24px rgba(115,66,226,0.28)" }}
+              style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
             >
               {isSubmitting ? "Creating account…" : "Create free account"}
               {!isSubmitting && <ArrowRightCircle size={18} strokeWidth={1.75} />}

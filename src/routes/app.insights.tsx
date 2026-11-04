@@ -185,10 +185,10 @@ function InsightsPage() {
   ];
 
   const summaryTiles = [
-    { icon: AlertCircle,  label: "Critical",      value: counts.CRITICAL, filterVal: "CRITICAL" as FilterLevel, color: "var(--bad)",  bg: "rgba(214,69,69,0.06)",   border: "rgba(214,69,69,0.18)" },
-    { icon: AlertTriangle, label: "High",         value: counts.HIGH,     filterVal: "HIGH"     as FilterLevel, color: "var(--warn)", bg: "rgba(201,138,26,0.06)",  border: "rgba(201,138,26,0.18)" },
-    { icon: Search,        label: "Medium",       value: counts.MEDIUM,   filterVal: "MEDIUM"   as FilterLevel, color: "var(--info)", bg: "rgba(59,111,209,0.06)",  border: "rgba(59,111,209,0.18)" },
-    { icon: Lightbulb,     label: "Opportunities",value: counts.LOW,      filterVal: "LOW"      as FilterLevel, color: "var(--ok)",   bg: "rgba(31,157,99,0.06)",   border: "rgba(31,157,99,0.18)" },
+    { icon: AlertCircle,  label: "Critical",      value: counts.CRITICAL, filterVal: "CRITICAL" as FilterLevel, color: "var(--bad)",  bg: "color-mix(in srgb, var(--bad) 6%, transparent)",   border: "color-mix(in srgb, var(--bad) 18%, transparent)" },
+    { icon: AlertTriangle, label: "High",         value: counts.HIGH,     filterVal: "HIGH"     as FilterLevel, color: "var(--warn)", bg: "color-mix(in srgb, var(--warn) 6%, transparent)",  border: "color-mix(in srgb, var(--warn) 18%, transparent)" },
+    { icon: Search,        label: "Medium",       value: counts.MEDIUM,   filterVal: "MEDIUM"   as FilterLevel, color: "var(--info)", bg: "color-mix(in srgb, var(--info) 6%, transparent)",  border: "color-mix(in srgb, var(--info) 18%, transparent)" },
+    { icon: Lightbulb,     label: "Opportunities",value: counts.LOW,      filterVal: "LOW"      as FilterLevel, color: "var(--ok)",   bg: "color-mix(in srgb, var(--ok) 6%, transparent)",   border: "color-mix(in srgb, var(--ok) 18%, transparent)" },
   ];
 
   return (
@@ -205,7 +205,7 @@ function InsightsPage() {
         </div>
         <div
           className="flex items-center gap-2 rounded-full px-3 py-1.5"
-          style={{ background: "rgba(115,66,226,0.08)", color: "var(--color-accent)" }}
+          style={{ background: "var(--accent-8)", color: "var(--color-accent)" }}
         >
           <Sparkles size={12} />
           <span className="text-xs font-semibold">Live Intelligence</span>
@@ -241,7 +241,7 @@ function InsightsPage() {
             style={{
               background: activeFilter === value
                 ? `color-mix(in srgb, ${color} 12%, transparent)`
-                : "rgba(25,40,55,0.04)",
+                : "var(--accent-4)",
               color: activeFilter === value ? color : "var(--ink-3)",
               border: `1px solid ${activeFilter === value
                 ? `color-mix(in srgb, ${color} 25%, transparent)`
@@ -281,7 +281,7 @@ function InsightsPage() {
       {/* Philosophy footer */}
       <div
         className="flex items-start gap-3 rounded-xl px-4 py-3 text-xs"
-        style={{ background: "rgba(25,40,55,0.03)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
+        style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
       >
         <CheckCircle2 size={14} style={{ color: "var(--ok)", flexShrink: 0, marginTop: 1 }} />
         <p>

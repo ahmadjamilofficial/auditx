@@ -48,7 +48,7 @@ import {
   generateTimelineFromTransactions,
 } from "@/components/intelligence/FinancialTimeline";
 import { InsightCard, InsightCardEmpty } from "@/components/intelligence/InsightCard";
-import { useCommandBar } from "@/components/intelligence/WabCommandBar";
+import { useCommandBar } from "@/components/intelligence/AuditXCommandBar";
 import type { InsightData } from "@/components/intelligence/InsightCard";
 import type { EventSeverity } from "@/lib/financial-intelligence";
 
@@ -56,7 +56,15 @@ export const Route = createFileRoute("/app/overview")({
   component: MissionControl,
 });
 
-const allocationColors = ["#7342E2", "#8F63EA", "#1F9D63", "#3B6FD1", "#C98A1A", "#CFC8C5"];
+// Monochrome ramp — allocation slices must read as tonal steps, not hues.
+const allocationColors = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--color-sheet)",
+];
 
 // ── Metric Card ───────────────────────────────────────────────────────────────
 
@@ -87,7 +95,7 @@ function MetricCard({
   return (
     <motion.div variants={reveal} custom={i} initial="hidden" animate="visible">
       <div
-        className="group relative overflow-hidden rounded-2xl bg-white p-5 transition-shadow hover:shadow-md"
+        className="group relative overflow-hidden rounded-2xl bg-surface p-5 transition-shadow hover:shadow-md"
         style={{ border: "1px solid var(--hairline)" }}
       >
         <p className="text-xs font-medium" style={{ color: "var(--ink-2)" }}>
@@ -198,7 +206,7 @@ function FoundSomethingSection({
         <div className="flex items-center gap-2.5">
           <div
             className="flex size-8 items-center justify-center rounded-lg"
-            style={{ background: "rgba(115,66,226,0.1)" }}
+            style={{ background: "var(--accent-10)" }}
           >
             <Sparkles size={15} style={{ color: "var(--color-accent)" }} />
           </div>
@@ -306,7 +314,7 @@ function MissionControl() {
       <div className="flex min-h-[80vh] flex-col items-center justify-center p-6 text-center">
         <div
           className="flex size-20 items-center justify-center rounded-3xl"
-          style={{ background: "rgba(115,66,226,0.08)" }}
+          style={{ background: "var(--accent-8)" }}
         >
           <Upload size={36} style={{ color: "var(--color-accent)" }} />
         </div>
@@ -322,7 +330,7 @@ function MissionControl() {
         <Link
           to="/app/parser"
           className="mt-6 flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
-          style={{ background: "var(--color-accent)", boxShadow: "0 4px 24px rgba(115,66,226,0.3)" }}
+          style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
         >
           <Upload size={16} />
           Upload records
@@ -508,8 +516,8 @@ function MissionControl() {
             <AreaChart data={pnlData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7342E2" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#7342E2" stopOpacity={0.01} />
+                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -535,7 +543,7 @@ function MissionControl() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#7342E2"
+                stroke="var(--chart-1)"
                 strokeWidth={2}
                 fill="url(#pnlGrad)"
                 dot={false}
@@ -583,7 +591,7 @@ function MissionControl() {
             <Link
               key={label}
               to={to}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-white py-5 text-center text-xs font-medium transition-shadow hover:shadow-md"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-surface py-5 text-center text-xs font-medium transition-shadow hover:shadow-md"
               style={{ border: "1px solid var(--hairline)" }}
             >
               <span

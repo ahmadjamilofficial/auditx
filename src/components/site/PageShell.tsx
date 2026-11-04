@@ -22,7 +22,7 @@ export function PageShell({
           <SectionHead eyebrow={eyebrow} title={title} {...(sub ? { sub } : {})} />
         </Container>
       </div>
-      <div style={{ background: "#fff" }}>
+      <div style={{ background: "var(--surface)" }}>
         <Container className="py-16">{children}</Container>
       </div>
       <Footer />

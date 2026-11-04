@@ -139,8 +139,8 @@ function ErrorBanner({
     quota: {
       icon: Zap,
       color: "var(--bad)",
-      bg: "rgba(214,69,69,0.06)",
-      border: "rgba(214,69,69,0.2)",
+      bg: "color-mix(in srgb, var(--bad) 6%, transparent)",
+      border: "color-mix(in srgb, var(--bad) 20%, transparent)",
       title: plan === "free" ? "You've reached today's AI limit" : "Daily AI limit reached",
       body:
         plan === "free"
@@ -152,8 +152,8 @@ function ErrorBanner({
     credits: {
       icon: Zap,
       color: "var(--warn)",
-      bg: "rgba(201,138,26,0.06)",
-      border: "rgba(201,138,26,0.2)",
+      bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+      border: "color-mix(in srgb, var(--warn) 20%, transparent)",
       title: "AI service needs more credits",
       body: "The AI provider ran out of free credits for this request. This is a temporary limit — try again in a few minutes or ask a simpler question.",
       cta: "Try again",
@@ -162,8 +162,8 @@ function ErrorBanner({
     rate_limit: {
       icon: Clock,
       color: "var(--warn)",
-      bg: "rgba(201,138,26,0.06)",
-      border: "rgba(201,138,26,0.2)",
+      bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+      border: "color-mix(in srgb, var(--warn) 20%, transparent)",
       title: "Wab is temporarily busy",
       body: "The AI service has reached its current request limit. Your data is safe and no changes were made. Try again in a few minutes.",
       cta: "Try again",
@@ -172,8 +172,8 @@ function ErrorBanner({
     timeout: {
       icon: AlertTriangle,
       color: "var(--warn)",
-      bg: "rgba(201,138,26,0.06)",
-      border: "rgba(201,138,26,0.2)",
+      bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+      border: "color-mix(in srgb, var(--warn) 20%, transparent)",
       title: "Wab is taking longer than expected",
       body: "The AI service didn't respond in time. Your financial data hasn't been changed.",
       cta: "Try again",
@@ -182,8 +182,8 @@ function ErrorBanner({
     provider: {
       icon: AlertTriangle,
       color: "var(--warn)",
-      bg: "rgba(201,138,26,0.06)",
-      border: "rgba(201,138,26,0.2)",
+      bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+      border: "color-mix(in srgb, var(--warn) 20%, transparent)",
       title: "Wab is temporarily unavailable",
       body: "The AI service didn't respond. Your financial data was not changed. This is usually resolved in seconds.",
       cta: "Try again",
@@ -192,8 +192,8 @@ function ErrorBanner({
     generic: {
       icon: AlertTriangle,
       color: "var(--bad)",
-      bg: "rgba(214,69,69,0.06)",
-      border: "rgba(214,69,69,0.2)",
+      bg: "color-mix(in srgb, var(--bad) 6%, transparent)",
+      border: "color-mix(in srgb, var(--bad) 20%, transparent)",
       title: "Something went wrong",
       body: message,
       cta: "Try again",
@@ -264,13 +264,13 @@ function AgentProgressBar({ stage, visible }: { stage: string | null; visible: b
           transition={{ duration: 0.25 }}
           className="mx-auto mb-3 flex max-w-3xl items-center gap-3 rounded-2xl px-4 py-3"
           style={{
-            background: "rgba(115,66,226,0.06)",
-            border: "1px solid rgba(115,66,226,0.14)",
+            background: "var(--accent-6)",
+            border: "1px solid var(--accent-14)",
           }}
         >
           <span
             className="flex size-7 shrink-0 items-center justify-center rounded-full"
-            style={{ background: "rgba(115,66,226,0.12)" }}
+            style={{ background: "var(--accent-12)" }}
           >
             <Loader2 size={14} strokeWidth={2} className="animate-spin" style={{ color: "var(--color-accent)" }} />
           </span>
@@ -333,7 +333,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="my-3 overflow-hidden rounded-2xl"
-        style={{ border: "1px solid rgba(115,66,226,0.2)", background: "rgba(115,66,226,0.04)" }}
+        style={{ border: "1px solid var(--accent-20)", background: "var(--accent-4)" }}
       >
         <div className="flex items-center gap-2 px-4 py-3">
           <Sparkles size={14} style={{ color: "var(--color-accent)" }} />
@@ -348,7 +348,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
               <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "var(--ink-2)" }}>
                 <span
                   className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
-                  style={{ background: "rgba(115,66,226,0.14)", color: "var(--color-accent)" }}
+                  style={{ background: "var(--accent-14)", color: "var(--color-accent)" }}
                 >
                   {i + 1}
                 </span>
@@ -370,7 +370,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="my-3 overflow-hidden rounded-2xl"
-        style={{ border: "1px solid rgba(31,157,99,0.25)", background: "rgba(31,157,99,0.05)" }}
+        style={{ border: "1px solid color-mix(in srgb, var(--ok) 25%, transparent)", background: "color-mix(in srgb, var(--ok) 5%, transparent)" }}
       >
         <div className="flex items-center gap-3 px-4 py-3.5">
           <Download size={16} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
@@ -402,7 +402,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         type="button"
         onClick={() => setOpen(!open)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium"
-        style={{ background: "rgba(25,40,55,0.03)" }}
+        style={{ background: "var(--accent-3)" }}
       >
         {running ? (
           <Loader2 size={14} className="animate-spin" style={{ color: "var(--color-accent)" }} />
@@ -445,7 +445,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
       {needsApproval && onApprove && (
         <div
           className="flex items-center gap-3 border-t px-4 py-3"
-          style={{ borderColor: "var(--hairline)", background: "rgba(201,138,26,0.05)" }}
+          style={{ borderColor: "var(--hairline)", background: "color-mix(in srgb, var(--warn) 5%, transparent)" }}
         >
           <AlertTriangle size={14} style={{ color: "var(--warn)", flexShrink: 0 }} />
           <p className="mr-auto text-xs" style={{ color: "var(--ink-2)" }}>
@@ -490,10 +490,10 @@ function DeleteChatModal({ onClose, onConfirm, deleting }: { onClose: () => void
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 16 }}
         transition={{ duration: 0.18 }}
-        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-surface p-6 shadow-2xl"
         style={{ border: "1px solid var(--hairline)" }}
       >
-        <div className="mb-4 flex size-10 items-center justify-center rounded-xl" style={{ background: "rgba(214,69,69,0.1)" }}>
+        <div className="mb-4 flex size-10 items-center justify-center rounded-xl" style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}>
           <Trash2 size={18} style={{ color: "var(--bad)" }} />
         </div>
         <h3 className="mb-1 text-sm font-bold">Delete this conversation?</h3>
@@ -647,7 +647,7 @@ function Chat({
         style={{ borderColor: "var(--hairline)", background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}
       >
         <div className="flex items-center gap-2">
-          <div className="flex size-6 items-center justify-center rounded-lg" style={{ background: "rgba(115,66,226,0.1)" }}>
+          <div className="flex size-6 items-center justify-center rounded-lg" style={{ background: "var(--accent-10)" }}>
             <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
           </div>
           <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>Wab</span>
@@ -675,7 +675,7 @@ function Chat({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl bg-white shadow-lg"
+                  className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl bg-surface shadow-lg"
                   style={{ border: "1px solid var(--hairline)" }}
                 >
                   <button
@@ -704,7 +704,7 @@ function Chat({
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="flex min-h-[46vh] flex-col items-center justify-center text-center"
             >
-              <div className="mb-5 flex size-14 items-center justify-center rounded-2xl" style={{ background: "rgba(115,66,226,0.1)" }}>
+              <div className="mb-5 flex size-14 items-center justify-center rounded-2xl" style={{ background: "var(--accent-10)" }}>
                 <Sparkles size={26} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
               </div>
               <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem,3vw,2rem)" }}>
@@ -785,7 +785,7 @@ function Chat({
                   key={s}
                   type="button"
                   onClick={() => void sendMessage({ text: s })}
-                  className="rounded-full bg-white px-3 py-1.5 text-xs transition-all hover:shadow-md"
+                  className="rounded-full bg-surface px-3 py-1.5 text-xs transition-all hover:shadow-md"
                   style={{ border: "1px solid var(--hairline)", color: "var(--ink-2)" }}
                 >
                   {s}

@@ -249,7 +249,7 @@ function Reconciliation() {
           <div>
             <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Broker</label>
             <select value={brokerFilter} onChange={(e) => setBrokerFilter(e.target.value)}
-              className="w-full rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+              className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
               style={{ borderColor: "var(--hairline)" }}>
               {brokerOptions.map((b) => <option key={b} value={b}>{b}</option>)}
             </select>
@@ -257,13 +257,13 @@ function Reconciliation() {
           <div>
             <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Date from</label>
             <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+              className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
               style={{ borderColor: "var(--hairline)" }} />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Date to</label>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-              className="w-full rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+              className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
               style={{ borderColor: "var(--hairline)" }} />
           </div>
           <div className="flex items-end">
@@ -297,7 +297,7 @@ function Reconciliation() {
             </div>
 
             {active.length > 0 ? (
-              <div className="overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--hairline)" }}>
+              <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
                 <div className="border-b px-5 py-4" style={{ borderColor: "var(--hairline)" }}>
                   <p className="text-sm font-semibold">Open Issues ({active.length})</p>
                 </div>
@@ -330,11 +330,11 @@ function Reconciliation() {
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="border-t px-5 pb-5 pt-4"
-                              style={{ borderColor: "var(--hairline)", background: "rgba(25,40,55,0.015)" }}>
+                              style={{ borderColor: "var(--hairline)", background: "var(--accent-2)" }}>
                               <p className="text-sm" style={{ color: "var(--ink-2)" }}>{flag.description}</p>
 
                               <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div className="rounded-xl p-3" style={{ background: "rgba(31,157,99,0.06)" }}>
+                                <div className="rounded-xl p-3" style={{ background: "color-mix(in srgb, var(--ok) 6%, transparent)" }}>
                                   <p className="text-xs font-medium" style={{ color: "var(--ok)" }}>Expected</p>
                                   <p className="tnum mt-1 text-lg font-semibold">
                                     {typeof flag.expected === "number"
@@ -342,7 +342,7 @@ function Reconciliation() {
                                       : String(flag.expected)}
                                   </p>
                                 </div>
-                                <div className="rounded-xl p-3" style={{ background: "rgba(214,69,69,0.06)" }}>
+                                <div className="rounded-xl p-3" style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)" }}>
                                   <p className="text-xs font-medium" style={{ color: "var(--bad)" }}>Actual</p>
                                   <p className="tnum mt-1 text-lg font-semibold">
                                     {typeof flag.actual === "number"
@@ -352,7 +352,7 @@ function Reconciliation() {
                                 </div>
                               </div>
 
-                              <div className="mt-4 rounded-xl p-3 text-sm" style={{ background: "rgba(115,66,226,0.06)" }}>
+                              <div className="mt-4 rounded-xl p-3 text-sm" style={{ background: "var(--accent-6)" }}>
                                 <span className="font-medium" style={{ color: "var(--color-accent)" }}>Suggested: </span>
                                 <span style={{ color: "var(--ink-2)" }}>{flag.suggested_resolution}</span>
                               </div>
@@ -360,7 +360,7 @@ function Reconciliation() {
                               <div className="mt-3">
                                 {aiExplanations[flag.id] ? (
                                   <div className="rounded-xl px-4 py-3 text-sm"
-                                    style={{ background: "rgba(115,66,226,0.04)", border: "1px solid rgba(115,66,226,0.12)" }}>
+                                    style={{ background: "var(--accent-4)", border: "1px solid var(--accent-12)" }}>
                                     <div className="flex items-center gap-1.5 mb-1">
                                       <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
                                       <span className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>Wab AI</span>
@@ -412,7 +412,7 @@ function Reconciliation() {
         allDbFlags.length > 0 ? (
           <div>
             <p className="mb-3 text-sm font-semibold">Open Flags from Previous Runs ({allDbFlags.length})</p>
-            <div className="overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--hairline)" }}>
+            <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
               <div className="divide-y" style={{ borderColor: "var(--hairline)" }}>
                 {allDbFlags.filter((f) => !resolved.has(f.id)).map((flag) => (
                   <div key={flag.id} className="flex items-center justify-between px-5 py-3">

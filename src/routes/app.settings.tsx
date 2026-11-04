@@ -228,7 +228,7 @@ function Settings() {
 
       <div className="flex gap-6">
         <nav
-          className="hidden w-44 shrink-0 rounded-2xl bg-white p-2 lg:block"
+          className="hidden w-44 shrink-0 rounded-2xl bg-surface p-2 lg:block"
           style={{ border: "1px solid var(--hairline)", alignSelf: "start" }}
         >
           {TABS.map(({ id, label, icon: Ic }) => (
@@ -238,7 +238,7 @@ function Settings() {
               onClick={() => setTab(id)}
               className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
               style={{
-                background: tab === id ? "rgba(115,66,226,0.1)" : "transparent",
+                background: tab === id ? "var(--accent-10)" : "transparent",
                 color: tab === id ? "var(--color-accent)" : "var(--ink-2)",
               }}
             >
@@ -281,7 +281,7 @@ function Settings() {
                       type="text"
                       value={orgName}
                       onChange={(e) => setOrgName(e.target.value)}
-                      className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:ring-2"
+                      className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
                       style={{ borderColor: "var(--hairline)", maxWidth: 400, ["--tw-ring-color" as string]: "var(--color-accent)" }}
                     />
                   </div>
@@ -292,7 +292,7 @@ function Settings() {
                     <select
                       value={jurisdiction}
                       onChange={(e) => setJurisdiction(e.target.value)}
-                      className="w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none"
+                      className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)", maxWidth: 400 }}
                     >
                       <option value="PSX">PSX — Pakistan</option>
@@ -310,7 +310,7 @@ function Settings() {
                 </div>
               </Panel>
 
-              <Panel style={{ border: "1px solid rgba(214,69,69,0.2)" }}>
+              <Panel style={{ border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)" }}>
                 <p className="mb-2 text-sm font-semibold" style={{ color: "var(--bad)" }}>
                   Danger Zone
                 </p>
@@ -323,7 +323,7 @@ function Settings() {
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
                   placeholder={`Type "${profile?.org_name ?? ""}" to confirm`}
-                  className="mb-3 w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none"
+                  className="mb-3 w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
                   style={{ borderColor: "var(--hairline)", maxWidth: 400 }}
                 />
                 <Btn
@@ -359,8 +359,8 @@ function Settings() {
                         key={p.name}
                         className="flex items-center justify-between rounded-xl px-4 py-3"
                         style={{
-                          background: isActive ? "rgba(115,66,226,0.06)" : "var(--color-login-bg)",
-                          border: `1px solid ${isActive ? "rgba(115,66,226,0.2)" : "transparent"}`,
+                          background: isActive ? "var(--accent-6)" : "var(--color-login-bg)",
+                          border: `1px solid ${isActive ? "var(--accent-20)" : "transparent"}`,
                         }}
                       >
                         <div>
@@ -404,7 +404,7 @@ function Settings() {
                       value={brokerForm.broker_name}
                       onChange={(e) => setBrokerForm({ ...brokerForm, broker_name: e.target.value })}
                       placeholder="Broker name (e.g. AKD Securities)"
-                      className="rounded-[10px] border bg-white px-3.5 py-2.5 text-sm outline-none"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)" }}
                     />
                     <input
@@ -412,13 +412,13 @@ function Settings() {
                       value={brokerForm.name}
                       onChange={(e) => setBrokerForm({ ...brokerForm, name: e.target.value })}
                       placeholder="Account label (optional)"
-                      className="rounded-[10px] border bg-white px-3.5 py-2.5 text-sm outline-none"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)" }}
                     />
                     <select
                       value={brokerForm.exchange}
                       onChange={(e) => setBrokerForm({ ...brokerForm, exchange: e.target.value })}
-                      className="rounded-[10px] border bg-white px-3.5 py-2.5 text-sm outline-none"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)" }}
                     >
                       <option value="PSX">PSX</option>
@@ -427,7 +427,7 @@ function Settings() {
                     <select
                       value={brokerForm.currency}
                       onChange={(e) => setBrokerForm({ ...brokerForm, currency: e.target.value })}
-                      className="rounded-[10px] border bg-white px-3.5 py-2.5 text-sm outline-none"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)" }}
                     >
                       <option value="PKR">PKR</option>
@@ -439,7 +439,7 @@ function Settings() {
                       value={brokerForm.external_ref}
                       onChange={(e) => setBrokerForm({ ...brokerForm, external_ref: e.target.value })}
                       placeholder="Account / client code (optional)"
-                      className="rounded-[10px] border bg-white px-3.5 py-2.5 text-sm outline-none sm:col-span-2"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none sm:col-span-2"
                       style={{ borderColor: "var(--hairline)" }}
                     />
                     <div className="sm:col-span-2">
@@ -481,7 +481,7 @@ function Settings() {
                         <div className="flex items-center gap-2">
                           <span
                             className="rounded-full px-2.5 py-1 text-xs font-medium"
-                            style={{ background: "rgba(31,157,99,0.1)", color: "var(--ok)" }}
+                            style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)", color: "var(--ok)" }}
                           >
                             Connected
                           </span>
@@ -539,7 +539,7 @@ function Settings() {
                     </div>
                     <span
                       className="rounded-full px-2.5 py-1 text-xs font-medium"
-                      style={{ background: "rgba(115,66,226,0.1)", color: "var(--color-accent)" }}
+                      style={{ background: "var(--accent-10)", color: "var(--color-accent)" }}
                     >
                       Owner
                     </span>

@@ -101,7 +101,7 @@ function FinancialTimelinePage() {
               background:
                 filter === value
                   ? `color-mix(in srgb, ${color} 12%, transparent)`
-                  : "rgba(25,40,55,0.04)",
+                  : "var(--accent-4)",
               color: filter === value ? color : "var(--ink-3)",
               border: `1px solid ${filter === value ? `color-mix(in srgb, ${color} 25%, transparent)` : "var(--hairline)"}`,
             }}
@@ -137,7 +137,7 @@ function FinancialTimelinePage() {
       {rawEntries.length > 0 && (
         <div
           className="flex flex-wrap items-center gap-4 rounded-xl px-4 py-3 text-xs"
-          style={{ background: "rgba(25,40,55,0.03)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
+          style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
         >
           <span className="font-semibold">Event types:</span>
           {[

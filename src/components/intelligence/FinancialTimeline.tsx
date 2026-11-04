@@ -202,7 +202,7 @@ export function FinancialTimeline({ entries, isLoading, showEmpty = true }: Prop
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div
           className="flex size-12 items-center justify-center rounded-2xl"
-          style={{ background: "rgba(115,66,226,0.08)" }}
+          style={{ background: "var(--accent-8)" }}
         >
           <Zap size={20} style={{ color: "var(--color-accent)" }} />
         </div>

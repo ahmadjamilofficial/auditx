@@ -1,4 +1,4 @@
-// ─── AuditX OneDrive Poller — Supabase Edge Function ─────────────────────────
+// ─── Wab OneDrive Poller — Supabase Edge Function ─────────────────────────
 // Polls connected OneDrive sources for file changes using Microsoft Graph.
 // Uses eTag / SHA-256 hash diff — only enqueues a job when content changes.
 

@@ -281,7 +281,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           >
             <div
-              className="mx-4 overflow-hidden rounded-2xl bg-white shadow-2xl"
+              className="mx-4 overflow-hidden rounded-2xl bg-surface shadow-2xl"
               style={{ border: "1px solid var(--hairline)", boxShadow: "0 24px 80px rgba(10,18,28,0.18)" }}
             >
               {/* Search input */}
@@ -324,7 +324,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                   type="button"
                   onClick={onClose}
                   className="flex size-6 items-center justify-center rounded-md text-xs"
-                  style={{ background: "rgba(25,40,55,0.07)", color: "var(--ink-3)" }}
+                  style={{ background: "var(--accent-7)", color: "var(--ink-3)" }}
                 >
                   Esc
                 </button>
@@ -334,7 +334,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
               {loadingState && (
                 <div
                   className="flex items-center gap-3 px-5 py-3"
-                  style={{ borderBottom: "1px solid var(--hairline)", background: "rgba(115,66,226,0.04)" }}
+                  style={{ borderBottom: "1px solid var(--hairline)", background: "var(--accent-4)" }}
                 >
                   <Loader2 size={14} className="animate-spin" style={{ color: "var(--color-accent)" }} />
                   <span className="text-xs" style={{ color: "var(--ink-2)" }}>{loadingState}</span>
@@ -400,7 +400,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                       type="button"
                       onClick={handleSubmit}
                       className="mt-2 flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors hover:bg-black/4"
-                      style={{ color: "var(--color-accent)", border: "1px solid rgba(115,66,226,0.2)", background: "rgba(115,66,226,0.04)" }}
+                      style={{ color: "var(--color-accent)", border: "1px solid var(--accent-20)", background: "var(--accent-4)" }}
                     >
                       <Sparkles size={14} />
                       Ask: "{query}"
@@ -417,7 +417,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                     type="button"
                     onClick={handleSubmit}
                     className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-                    style={{ color: "var(--color-accent)", background: "rgba(115,66,226,0.06)", border: "1px solid rgba(115,66,226,0.15)" }}
+                    style={{ color: "var(--color-accent)", background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
                   >
                     <Sparkles size={14} />
                     Ask Wab: "{query.slice(0, 60)}{query.length > 60 ? "…" : ""}"
@@ -429,7 +429,7 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
               {/* Footer */}
               <div
                 className="flex items-center justify-between border-t px-5 py-2.5"
-                style={{ borderColor: "var(--hairline)", background: "rgba(25,40,55,0.02)" }}
+                style={{ borderColor: "var(--hairline)", background: "var(--accent-2)" }}
               >
                 <span className="text-[11px]" style={{ color: "var(--ink-3)" }}>
                   Powered by Wab Intelligence · Numbers from your ledger

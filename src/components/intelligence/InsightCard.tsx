@@ -50,43 +50,43 @@ function severityStyle(severity: EventSeverity) {
   switch (severity) {
     case "CRITICAL":
       return {
-        bg: "rgba(214,69,69,0.05)",
-        border: "rgba(214,69,69,0.15)",
+        bg: "color-mix(in srgb, var(--bad) 5%, transparent)",
+        border: "color-mix(in srgb, var(--bad) 15%, transparent)",
         accent: "var(--bad)",
-        badge: "rgba(214,69,69,0.1)",
+        badge: "color-mix(in srgb, var(--bad) 10%, transparent)",
         label: "CRITICAL",
       };
     case "HIGH":
       return {
-        bg: "rgba(201,138,26,0.05)",
-        border: "rgba(201,138,26,0.15)",
+        bg: "color-mix(in srgb, var(--warn) 5%, transparent)",
+        border: "color-mix(in srgb, var(--warn) 15%, transparent)",
         accent: "var(--warn)",
-        badge: "rgba(201,138,26,0.1)",
+        badge: "color-mix(in srgb, var(--warn) 10%, transparent)",
         label: "WARNING",
       };
     case "MEDIUM":
       return {
-        bg: "rgba(59,111,209,0.05)",
-        border: "rgba(59,111,209,0.15)",
+        bg: "color-mix(in srgb, var(--info) 5%, transparent)",
+        border: "color-mix(in srgb, var(--info) 15%, transparent)",
         accent: "var(--info)",
-        badge: "rgba(59,111,209,0.1)",
+        badge: "color-mix(in srgb, var(--info) 10%, transparent)",
         label: "NOTICE",
       };
     case "LOW":
     case "SUCCESS":
       return {
-        bg: "rgba(31,157,99,0.05)",
-        border: "rgba(31,157,99,0.15)",
+        bg: "color-mix(in srgb, var(--ok) 5%, transparent)",
+        border: "color-mix(in srgb, var(--ok) 15%, transparent)",
         accent: "var(--ok)",
-        badge: "rgba(31,157,99,0.1)",
+        badge: "color-mix(in srgb, var(--ok) 10%, transparent)",
         label: "OPPORTUNITY",
       };
     default:
       return {
-        bg: "rgba(25,40,55,0.03)",
+        bg: "var(--accent-3)",
         border: "var(--hairline)",
         accent: "var(--color-accent)",
-        badge: "rgba(115,66,226,0.1)",
+        badge: "var(--accent-10)",
         label: "INSIGHT",
       };
   }
@@ -208,11 +208,11 @@ export function InsightCardEmpty() {
   return (
     <div
       className="flex flex-col items-center justify-center rounded-2xl p-8 text-center"
-      style={{ border: "1px dashed var(--hairline)", background: "rgba(25,40,55,0.02)" }}
+      style={{ border: "1px dashed var(--hairline)", background: "var(--accent-2)" }}
     >
       <div
         className="flex size-10 items-center justify-center rounded-xl"
-        style={{ background: "rgba(115,66,226,0.08)" }}
+        style={{ background: "var(--accent-8)" }}
       >
         <Search size={18} style={{ color: "var(--color-accent)" }} />
       </div>

@@ -1,8 +1,8 @@
-# AuditX Implementation Guide
+# Wab Implementation Guide
 
 ## Overview
 
-This guide covers the complete transformation of AuditX from a dashboard with chatbot to an intelligent financial colleague with an entire financial operating system behind it.
+This guide covers the complete transformation of Wab from a dashboard with chatbot to an intelligent financial colleague with an entire financial operating system behind it.
 
 ## What Has Been Completed
 
@@ -190,7 +190,7 @@ VITE_KELVIQ_CHECKOUT_URL=https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   AuditX Interface                     │
+│                   Wab Interface                     │
 │  Conversation · Dashboard · Integrations · Settings   │
 └─────────────────────────────────────────────────────────┘
                           │

@@ -1,25 +1,25 @@
 <div align="center">
 
-<img src="public/favicon.svg" width="64" height="64" alt="AuditX Logo" />
+<img src="public/favicon.png" width="64" height="64" alt="Wab Logo" />
 
-# AuditX
+# Wab
 
 ### AI-Native Financial Audit & Compliance Agent for Regional Exchange Traders
 
 **Reconcile every trade with audit-grade precision.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-7342E2.svg?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0B0C0E.svg?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E.svg?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Gemini AI](https://img.shields.io/badge/Google-Gemini_2.0-4285F4.svg?style=flat-square&logo=google&logoColor=white)](https://aistudio.google.com/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF.svg?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-[**Live Demo**](https://psxl.live) · [**Documentation**](#-documentation) · [**Quick Start**](#-quick-start) · [**Report a Bug**](https://github.com/Ahmadjamil888/auditx/issues)
+[**Live Demo**](https://psxl.live) · [**Documentation**](#-documentation) · [**Quick Start**](#-quick-start) · [**Report a Bug**](https://github.com/Ahmadjamilofficial/wab/issues)
 
 ---
 
-> AuditX turns messy PSX and NSE trade slips into a clean, reconciled, tax-accurate ledger
+> Wab turns messy PSX and NSE trade slips into a clean, reconciled, tax-accurate ledger
 > using multimodal AI extraction and deterministic FIFO tax computation —
 > replacing days of manual spreadsheet work with minutes.
 
@@ -29,7 +29,7 @@
 
 ## Table of Contents
 
-- [Why AuditX](#-why-auditx)
+- [Why Wab](#-why-wab)
 - [Features](#-features)
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
@@ -45,11 +45,11 @@
 
 ---
 
-## Why AuditX
+## Why Wab
 
 Most accounting software is built for Western markets. **PSX, NSE, and regional exchange traders** face unique challenges:
 
-| Pain Point | What AuditX Does |
+| Pain Point | What Wab Does |
 |---|---|
 | Broker slips in PDF, photo, CSV formats | Multimodal AI extracts every field with confidence scoring |
 | Manual CGT calculation across FIFO lots | Deterministic TypeScript engine — never AI-guessed |
@@ -165,8 +165,8 @@ Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + pa
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/Ahmadjamil888/auditx.git
-cd auditx
+git clone https://github.com/Ahmadjamilofficial/wab.git
+cd wab
 npm install
 ```
 
@@ -269,9 +269,11 @@ notifications          — in-app alert feed
 ## Project Structure
 
 ```
-auditx/
+wab/
 ├── public/
-│   ├── favicon.svg          # AuditX geometric mark (purple)
+│   ├── favicon.png          # Wab logo
+│   ├── dark-logo.png        # Dark theme logo
+│   ├── light-logo.png       # Light theme logo
 │   └── robots.txt
 ├── src/
 │   ├── components/
@@ -322,7 +324,7 @@ auditx/
 
 ## AI Pipeline
 
-AuditX uses Google Gemini 2.0 Flash for three distinct, bounded tasks:
+Wab uses Google Gemini 2.0 Flash for three distinct, bounded tasks:
 
 ### Document Parsing
 ```
@@ -416,13 +418,13 @@ Please follow the existing code style (Prettier + ESLint config included).
 
 ## License
 
-MIT © AuditX Contributors
+MIT © Wab Contributors
 
 ---
 
 ## Disclaimer
 
-AuditX does not provide tax or legal advice. All computations are indicative only. Always consult a qualified tax professional before filing your returns.
+Wab does not provide tax or legal advice. All computations are indicative only. Always consult a qualified tax professional before filing your returns.
 
 ---
 
@@ -430,6 +432,6 @@ AuditX does not provide tax or legal advice. All computations are indicative onl
 
 **Built for PSX · NSE · and every regional exchange trader who deserves better tooling.**
 
-[Website](https://auditx.app) · [Twitter](https://twitter.com/auditxapp) · [LinkedIn](https://linkedin.com/company/auditx)
+[Website](https://psxl.live) · [Twitter](https://twitter.com/wabapp) · [LinkedIn](https://linkedin.com/company/wab)
 
 </div>

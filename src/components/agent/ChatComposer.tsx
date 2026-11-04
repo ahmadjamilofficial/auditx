@@ -13,7 +13,7 @@ export function AttachmentChip({
 }) {
   return (
     <span
-      className="inline-flex max-w-full items-center gap-2 rounded-xl border bg-white px-2.5 py-1.5 text-xs"
+      className="inline-flex max-w-full items-center gap-2 rounded-xl border bg-surface px-2.5 py-1.5 text-xs"
       style={{ borderColor: "var(--hairline)" }}
     >
       <FileText size={13} strokeWidth={1.75} style={{ color: "var(--color-accent)", flexShrink: 0 }} />
@@ -60,7 +60,7 @@ export function ChatComposer({
 
   return (
     <div
-      className="rounded-2xl bg-white transition-shadow"
+      className="rounded-2xl bg-surface transition-shadow"
       style={{ border: "1px solid var(--hairline)", boxShadow: "var(--shadow-card)" }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {

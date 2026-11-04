@@ -1,4 +1,4 @@
--- ─── AuditX: Ledger CRUD RLS ──────────────────────────────────────────────────
+-- ─── Wab: Ledger CRUD RLS ──────────────────────────────────────────────────
 -- Ensures broker_accounts and ledger_entries have full CRUD RLS for org members.
 -- Also adds broker_account_id + notes columns to transactions for richer manual entry.
 -- Safe to run multiple times (uses IF NOT EXISTS / DO blocks).

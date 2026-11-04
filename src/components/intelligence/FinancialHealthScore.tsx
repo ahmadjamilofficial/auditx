@@ -26,7 +26,7 @@ function ScoreRing({ value, size = 120 }: { value: number; size?: number }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="rgba(25,40,55,0.07)"
+        stroke="var(--accent-7)"
         strokeWidth={8}
       />
       <motion.circle
@@ -73,7 +73,7 @@ function BreakdownBar({
       </div>
       <div
         className="h-1.5 overflow-hidden rounded-full"
-        style={{ background: "rgba(25,40,55,0.08)" }}
+        style={{ background: "var(--accent-8)" }}
       >
         <motion.div
           className="h-full rounded-full"
@@ -102,7 +102,7 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
     return (
       <div
         className="rounded-2xl p-6"
-        style={{ background: "#fff", border: "1px solid var(--hairline)" }}
+        style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
       >
         <div className="h-24 w-full animate-pulse rounded-xl" style={{ background: "var(--hairline)" }} />
       </div>
@@ -112,7 +112,7 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: "#fff", border: "1px solid var(--hairline)" }}
+      style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
     >
       <div className="flex items-center justify-between">
         <div>

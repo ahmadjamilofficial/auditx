@@ -194,7 +194,7 @@ function renderBlock(block: Block, idx: number): React.ReactNode {
       );
     case "table":
       return (
-        <div key={idx} className="mb-4 overflow-x-auto rounded-xl bg-white"
+        <div key={idx} className="mb-4 overflow-x-auto rounded-xl bg-surface"
           style={{ border: "1px solid var(--hairline)", maxWidth: "100%" }}>
           <table className="w-full min-w-full border-collapse text-xs">
             <thead style={{ background: "var(--color-login-bg)" }}>

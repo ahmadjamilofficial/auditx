@@ -33,6 +33,7 @@ import { Route as AppAuditTrailRouteImport } from './routes/app.audit-trail'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppInsightsRouteImport } from './routes/app.insights'
+import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppInvestigationsRouteImport } from './routes/app.investigations'
 import { Route as AppLedgerRouteImport } from './routes/app.ledger'
 import { Route as AppOverviewRouteImport } from './routes/app.overview'
@@ -46,6 +47,7 @@ import { Route as AppTimelineRouteImport } from './routes/app.timeline'
 import { Route as ApiAgentApproveRouteImport } from './routes/api/agent/approve'
 import { Route as ApiAgentHeartbeatRouteImport } from './routes/api/agent/heartbeat'
 import { Route as ApiDocumentsUploadRouteImport } from './routes/api/documents/upload'
+import { Route as ApiIntegrationsActionRouteImport } from './routes/api/integrations/action'
 import { Route as ApiWebhooksEmailRouteImport } from './routes/api/webhooks/email'
 import { Route as ApiWebhooksKelviqRouteImport } from './routes/api/webhooks/kelviq'
 import { Route as AppParserIndexRouteImport } from './routes/app.parser.index'
@@ -175,6 +177,11 @@ const AppInsightsRoute = AppInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AppRoute,
 } as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvestigationsRoute = AppInvestigationsRouteImport.update({
   id: '/investigations',
   path: '/investigations',
@@ -238,6 +245,11 @@ const ApiAgentHeartbeatRoute = ApiAgentHeartbeatRouteImport.update({
 const ApiDocumentsUploadRoute = ApiDocumentsUploadRouteImport.update({
   id: '/api/documents/upload',
   path: '/api/documents/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIntegrationsActionRoute = ApiIntegrationsActionRouteImport.update({
+  id: '/api/integrations/action',
+  path: '/api/integrations/action',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksEmailRoute = ApiWebhooksEmailRouteImport.update({
@@ -305,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/app/billing': typeof AppBillingRoute
   '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/overview': typeof AppOverviewRoute
@@ -319,6 +332,7 @@ export interface FileRoutesByFullPath {
   '/api/agent/approve': typeof ApiAgentApproveRoute
   '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
   '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/integrations/action': typeof ApiIntegrationsActionRoute
   '/api/webhooks/email': typeof ApiWebhooksEmailRoute
   '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
@@ -351,6 +365,7 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingRoute
   '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/overview': typeof AppOverviewRoute
@@ -364,6 +379,7 @@ export interface FileRoutesByTo {
   '/api/agent/approve': typeof ApiAgentApproveRoute
   '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
   '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/integrations/action': typeof ApiIntegrationsActionRoute
   '/api/webhooks/email': typeof ApiWebhooksEmailRoute
   '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
@@ -398,6 +414,7 @@ export interface FileRoutesById {
   '/app/billing': typeof AppBillingRoute
   '/app/chat': typeof AppChatRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
   '/app/investigations': typeof AppInvestigationsRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/overview': typeof AppOverviewRoute
@@ -412,6 +429,7 @@ export interface FileRoutesById {
   '/api/agent/approve': typeof ApiAgentApproveRoute
   '/api/agent/heartbeat': typeof ApiAgentHeartbeatRoute
   '/api/documents/upload': typeof ApiDocumentsUploadRoute
+  '/api/integrations/action': typeof ApiIntegrationsActionRoute
   '/api/webhooks/email': typeof ApiWebhooksEmailRoute
   '/api/webhooks/kelviq': typeof ApiWebhooksKelviqRoute
   '/app/parser/$threadId': typeof AppParserThreadIdRoute
@@ -447,6 +465,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/chat'
     | '/app/insights'
+    | '/app/integrations'
     | '/app/investigations'
     | '/app/ledger'
     | '/app/overview'
@@ -461,6 +480,7 @@ export interface FileRouteTypes {
     | '/api/agent/approve'
     | '/api/agent/heartbeat'
     | '/api/documents/upload'
+    | '/api/integrations/action'
     | '/api/webhooks/email'
     | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
@@ -493,6 +513,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/chat'
     | '/app/insights'
+    | '/app/integrations'
     | '/app/investigations'
     | '/app/ledger'
     | '/app/overview'
@@ -506,6 +527,7 @@ export interface FileRouteTypes {
     | '/api/agent/approve'
     | '/api/agent/heartbeat'
     | '/api/documents/upload'
+    | '/api/integrations/action'
     | '/api/webhooks/email'
     | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
@@ -539,6 +561,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/chat'
     | '/app/insights'
+    | '/app/integrations'
     | '/app/investigations'
     | '/app/ledger'
     | '/app/overview'
@@ -553,6 +576,7 @@ export interface FileRouteTypes {
     | '/api/agent/approve'
     | '/api/agent/heartbeat'
     | '/api/documents/upload'
+    | '/api/integrations/action'
     | '/api/webhooks/email'
     | '/api/webhooks/kelviq'
     | '/app/parser/$threadId'
@@ -584,6 +608,7 @@ export interface RootRouteChildren {
   ApiAgentApproveRoute: typeof ApiAgentApproveRoute
   ApiAgentHeartbeatRoute: typeof ApiAgentHeartbeatRoute
   ApiDocumentsUploadRoute: typeof ApiDocumentsUploadRoute
+  ApiIntegrationsActionRoute: typeof ApiIntegrationsActionRoute
   ApiWebhooksEmailRoute: typeof ApiWebhooksEmailRoute
   ApiWebhooksKelviqRoute: typeof ApiWebhooksKelviqRoute
   ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
@@ -762,6 +787,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInsightsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/investigations': {
       id: '/app/investigations'
       path: '/investigations'
@@ -853,6 +885,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocumentsUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/integrations/action': {
+      id: '/api/integrations/action'
+      path: '/api/integrations/action'
+      fullPath: '/api/integrations/action'
+      preLoaderRoute: typeof ApiIntegrationsActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhooks/email': {
       id: '/api/webhooks/email'
       path: '/api/webhooks/email'
@@ -933,6 +972,7 @@ interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppChatRoute: typeof AppChatRoute
   AppInsightsRoute: typeof AppInsightsRoute
+  AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppInvestigationsRoute: typeof AppInvestigationsRoute
   AppLedgerRoute: typeof AppLedgerRoute
   AppOverviewRoute: typeof AppOverviewRoute
@@ -953,6 +993,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppChatRoute: AppChatRoute,
   AppInsightsRoute: AppInsightsRoute,
+  AppIntegrationsRoute: AppIntegrationsRoute,
   AppInvestigationsRoute: AppInvestigationsRoute,
   AppLedgerRoute: AppLedgerRoute,
   AppOverviewRoute: AppOverviewRoute,
@@ -989,6 +1030,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentApproveRoute: ApiAgentApproveRoute,
   ApiAgentHeartbeatRoute: ApiAgentHeartbeatRoute,
   ApiDocumentsUploadRoute: ApiDocumentsUploadRoute,
+  ApiIntegrationsActionRoute: ApiIntegrationsActionRoute,
   ApiWebhooksEmailRoute: ApiWebhooksEmailRoute,
   ApiWebhooksKelviqRoute: ApiWebhooksKelviqRoute,
   ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,

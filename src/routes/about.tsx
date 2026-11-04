@@ -62,7 +62,7 @@ function About() {
           <Panel key={name} className="flex items-center gap-4">
             <div
               className="flex size-11 items-center justify-center rounded-full text-sm font-semibold"
-              style={{ background: "rgba(115,66,226,0.1)", color: "var(--color-accent)" }}
+              style={{ background: "var(--accent-10)", color: "var(--color-accent)" }}
             >
               {String(name).charAt(0)}
             </div>

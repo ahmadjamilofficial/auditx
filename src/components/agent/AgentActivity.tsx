@@ -77,7 +77,7 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
       className="overflow-hidden rounded-2xl"
       style={{
         border: "1px solid var(--hairline)",
-        background: done ? "rgba(31,157,99,0.04)" : "rgba(115,66,226,0.04)",
+        background: done ? "color-mix(in srgb, var(--ok) 4%, transparent)" : "var(--accent-4)",
       }}
     >
       {/* Header */}
@@ -134,7 +134,7 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
 
       {/* Progress bar */}
       {running && !done && (
-        <div className="h-0.5 w-full overflow-hidden" style={{ background: "rgba(115,66,226,0.08)" }}>
+        <div className="h-0.5 w-full overflow-hidden" style={{ background: "var(--accent-8)" }}>
           <motion.div
             className="h-full"
             style={{ background: "var(--color-accent)" }}
@@ -164,10 +164,10 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
                   <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full"
                     style={{
                       background:
-                        s.status === "done"   ? "rgba(31,157,99,0.12)"  :
-                        s.status === "active" ? "rgba(115,66,226,0.12)" :
-                        s.status === "error"  ? "rgba(214,69,69,0.12)"  :
-                        "rgba(25,40,55,0.06)",
+                        s.status === "done"   ? "color-mix(in srgb, var(--ok) 12%, transparent)"  :
+                        s.status === "active" ? "var(--accent-12)" :
+                        s.status === "error"  ? "color-mix(in srgb, var(--bad) 12%, transparent)"  :
+                        "var(--accent-6)",
                     }}
                   >
                     <StepIcon status={s.status} step={s} />

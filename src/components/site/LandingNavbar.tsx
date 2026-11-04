@@ -29,9 +29,9 @@ export function LandingNavbar() {
       <nav
         className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-6 py-4 sm:px-8"
         style={{
-          background: "rgba(242,242,238,0.85)",
+          background: "var(--surface-glass)",
           backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(25,40,55,0.06)",
+          borderBottom: "1px solid var(--accent-6)",
         }}
       >
         {/* Logo */}
@@ -81,7 +81,7 @@ export function LandingNavbar() {
             className="rounded-full px-5 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
             style={{
               background: "var(--color-accent)",
-              boxShadow: "0 2px 12px rgba(115,66,226,0.25)",
+              boxShadow: "var(--shadow-accent)",
             }}
           >
             {primaryLabel}
@@ -106,7 +106,7 @@ export function LandingNavbar() {
           <>
             <motion.div
               className="fixed inset-0 z-40"
-              style={{ background: "rgba(25,40,55,0.3)", backdropFilter: "blur(4px)" }}
+              style={{ background: "var(--scrim)", backdropFilter: "blur(4px)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -117,7 +117,7 @@ export function LandingNavbar() {
               style={{
                 width: "min(88vw, 340px)",
                 background: "var(--color-login-bg)",
-                boxShadow: "-16px 0 48px rgba(25,40,55,0.14)",
+                boxShadow: "-16px 0 48px var(--accent-14)",
               }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}

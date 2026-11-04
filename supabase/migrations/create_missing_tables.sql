@@ -1,4 +1,4 @@
--- ─── AuditX: Create missing tables ──────────────────────────────────────────
+-- ─── Wab: Create missing tables ──────────────────────────────────────────
 -- Run this in Supabase Dashboard → SQL Editor
 -- Safe to run multiple times (uses IF NOT EXISTS / DO blocks)
 

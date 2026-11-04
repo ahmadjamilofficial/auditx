@@ -63,7 +63,7 @@ function RulesEditor({
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       className="mt-3 overflow-hidden rounded-xl p-4"
-      style={{ background: "rgba(25,40,55,0.03)", border: "1px solid var(--hairline)" }}
+      style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)" }}
     >
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
         Source rules
@@ -171,12 +171,12 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
   return (
     <div
       className="overflow-hidden rounded-2xl"
-      style={{ border: "1px solid var(--hairline)", background: source.paused ? "rgba(25,40,55,0.02)" : "#fff" }}
+      style={{ border: "1px solid var(--hairline)", background: source.paused ? "var(--accent-2)" : "#fff" }}
     >
       <div className="flex items-start gap-3 p-4">
         <span
           className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "rgba(115,66,226,0.08)" }}
+          style={{ background: "var(--accent-8)" }}
         >
           <Icon size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
         </span>
@@ -195,7 +195,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
           style={{
-            background: source.paused ? "rgba(201,138,26,0.1)" : "rgba(31,157,99,0.1)",
+            background: source.paused ? "color-mix(in srgb, var(--warn) 10%, transparent)" : "color-mix(in srgb, var(--ok) 10%, transparent)",
             color:      source.paused ? "var(--warn)" : "var(--ok)",
           }}
         >
@@ -310,7 +310,7 @@ function AgentPolicySection({ orgId }: { orgId: string }) {
   return (
     <div
       className="mt-6 overflow-hidden rounded-2xl p-5"
-      style={{ border: "1px solid var(--hairline)", background: "#fff" }}
+      style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
     >
       <p className="mb-4 text-sm font-semibold">Agent policy</p>
 

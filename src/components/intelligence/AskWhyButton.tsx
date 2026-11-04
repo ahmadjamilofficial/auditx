@@ -129,9 +129,9 @@ export function AskWhyButton({ context, className }: Props) {
         onClick={handleClick}
         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all hover:opacity-90 ${className ?? ""}`}
         style={{
-          background: "rgba(115,66,226,0.08)",
+          background: "var(--accent-8)",
           color: "var(--color-accent)",
-          border: "1px solid rgba(115,66,226,0.15)",
+          border: "1px solid var(--accent-15)",
         }}
         title={`Why is ${context.metric} ${context.value}?`}
       >
@@ -158,7 +158,7 @@ export function AskWhyButton({ context, className }: Props) {
               transition={{ duration: 0.2 }}
             >
               <div
-                className="mx-4 overflow-hidden rounded-2xl bg-white"
+                className="mx-4 overflow-hidden rounded-2xl bg-surface"
                 style={{ border: "1px solid var(--hairline)", boxShadow: "0 20px 60px rgba(10,18,28,0.15)" }}
               >
                 {/* Header */}
@@ -169,7 +169,7 @@ export function AskWhyButton({ context, className }: Props) {
                   <div className="flex items-center gap-2">
                     <div
                       className="flex size-7 items-center justify-center rounded-lg"
-                      style={{ background: "rgba(115,66,226,0.1)" }}
+                      style={{ background: "var(--accent-10)" }}
                     >
                       <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
                     </div>

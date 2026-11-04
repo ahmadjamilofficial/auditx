@@ -123,7 +123,7 @@ function Pricing() {
             {rows.map((r) => (
               <tr key={r[0]} style={{ borderBottom: "1px solid var(--hairline)" }}>
                 <td
-                  className="sticky left-0 bg-white py-3 pr-4 text-sm"
+                  className="sticky left-0 bg-surface py-3 pr-4 text-sm"
                   style={{ color: "var(--ink-2)" }}
                 >
                   {r[0]}

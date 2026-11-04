@@ -1,4 +1,4 @@
-// ─── AuditX Send Notification — Supabase Edge Function ───────────────────────
+// ─── Wab Send Notification — Supabase Edge Function ───────────────────────
 // Triggered via Supabase Database Webhook on notifications INSERT.
 // Sends email for NOTIFY and STOP severity items per user preferences.
 
@@ -26,7 +26,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from:    `AuditX <${FROM_EMAIL}>`,
+      from:    `Wab <${FROM_EMAIL}>`,
       to:      [to],
       subject,
       html,
@@ -56,7 +56,7 @@ Deno.serve(async (req: Request) => {
   const userId   = record["user_id"]  as string | undefined;
   const orgId    = record["org_id"]   as string | undefined;
   const severity = record["severity"] as string | undefined;
-  const title    = record["title"]    as string | undefined ?? "AuditX notification";
+  const title    = record["title"]    as string | undefined ?? "Wab notification";
   const message  = record["message"]  as string | undefined ?? "";
   const link     = record["link"]     as string | undefined;
 
@@ -93,23 +93,23 @@ Deno.serve(async (req: Request) => {
 <body style="font-family:Inter,sans-serif;color:#192837;background:#f5f5f5;margin:0;padding:32px;">
   <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <div style="margin-bottom:24px;">
-      <span style="font-size:22px;font-weight:800;color:#7342E2;">AuditX</span>
+      <span style="font-size:22px;font-weight:800;color:#0B0C0E;">Wab</span>
     </div>
     <h2 style="font-size:16px;font-weight:700;margin:0 0 8px;">${title}</h2>
     <p style="font-size:14px;color:#5a6a7a;margin:0 0 24px;">${message}</p>
     <a href="${actionUrl}"
-       style="display:inline-block;background:#7342E2;color:#fff;text-decoration:none;
+       style="display:inline-block;background:#0B0C0E;color:#fff;text-decoration:none;
               border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;">
-      View in AuditX
+      View in Wab
     </a>
     <p style="font-size:11px;color:#aaa;margin-top:32px;">
-      You received this because you have email notifications enabled for AuditX.
-      <a href="https://auditx.app/app/settings" style="color:#7342E2;">Manage preferences</a>
+      You received this because you have email notifications enabled for Wab.
+      <a href="https://auditx.app/app/settings" style="color:#0B0C0E;">Manage preferences</a>
     </p>
   </div>
 </body>
 </html>`;
 
-  await sendEmail(user.email, `AuditX: ${title}`, html);
+  await sendEmail(user.email, `Wab: ${title}`, html);
   return new Response(JSON.stringify({ sent: true }), { status: 200 });
 });

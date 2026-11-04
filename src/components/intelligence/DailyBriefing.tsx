@@ -18,6 +18,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useDailyBriefing } from "@/lib/financial-intelligence-hooks";
 import { useLedgerContext } from "@/lib/use-ledger-context";
 
+/** Deliberately constant near-black "hud" surface — reads the same in both themes. */
+const HUD_GRADIENT =
+  "linear-gradient(135deg, oklch(0.22 0.004 265) 0%, oklch(0.145 0.004 265) 100%)";
+
 function getGreeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -80,7 +84,7 @@ export function DailyBriefing() {
     return (
       <div
         className="overflow-hidden rounded-2xl"
-        style={{ background: "linear-gradient(135deg, #1a0e3d 0%, #0d1a2e 100%)", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: HUD_GRADIENT, border: "1px solid oklch(1 0 0 / 0.09)" }}
       >
         <div className="p-6">
           <div className="h-6 w-48 animate-pulse rounded" style={{ background: "rgba(255,255,255,0.08)" }} />
@@ -101,7 +105,7 @@ export function DailyBriefing() {
       transition={{ duration: 0.4 }}
       className="overflow-hidden rounded-2xl"
       style={{
-        background: "linear-gradient(135deg, #1a0e3d 0%, #0d1a2e 100%)",
+        background: HUD_GRADIENT,
         border: "1px solid rgba(255,255,255,0.07)",
       }}
     >
@@ -109,7 +113,7 @@ export function DailyBriefing() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Sun size={14} style={{ color: "rgba(255,220,100,0.8)" }} />
+              <Sun size={14} style={{ color: "oklch(1 0 0 / 55%)" }} />
               <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {getDayOfWeek()}
               </p>
@@ -126,10 +130,14 @@ export function DailyBriefing() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Sparkles size={14} style={{ color: "rgba(115,66,226,0.8)" }} />
+            <Sparkles size={14} style={{ color: "oklch(1 0 0 / 60%)" }} />
             <span
               className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
-              style={{ background: "rgba(115,66,226,0.2)", color: "rgba(179,140,255,0.9)", border: "1px solid rgba(115,66,226,0.3)" }}
+              style={{
+                background: "oklch(1 0 0 / 0.10)",
+                color: "oklch(1 0 0 / 0.85)",
+                border: "1px solid oklch(1 0 0 / 0.18)",
+              }}
             >
               Live Intelligence
             </span>
@@ -198,8 +206,8 @@ export function DailyBriefing() {
           <div
             className="mt-4 flex items-center justify-between rounded-xl p-3"
             style={{
-              background: "rgba(214,69,69,0.12)",
-              border: "1px solid rgba(214,69,69,0.25)",
+              background: "color-mix(in srgb, var(--bad) 12%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--bad) 25%, transparent)",
             }}
           >
             <div className="flex items-center gap-2.5">
@@ -216,7 +224,7 @@ export function DailyBriefing() {
             <Link
               to={briefing.topPriority.actionLink}
               className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
-              style={{ background: "rgba(214,69,69,0.2)", color: "#fca5a5", border: "1px solid rgba(214,69,69,0.3)" }}
+              style={{ background: "color-mix(in srgb, var(--bad) 20%, transparent)", color: "#fca5a5", border: "1px solid color-mix(in srgb, var(--bad) 30%, transparent)" }}
             >
               {briefing.topPriority.action}
               <ArrowRight size={11} />
@@ -227,7 +235,7 @@ export function DailyBriefing() {
         {criticalIssues === 0 && !briefing.topPriority && (
           <div
             className="mt-4 flex items-center gap-2.5 rounded-xl p-3"
-            style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.15)" }}
+            style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 15%, transparent)" }}
           >
             <CheckCircle2 size={14} style={{ color: "#4ade80" }} />
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>

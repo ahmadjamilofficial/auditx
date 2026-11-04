@@ -241,7 +241,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
   return (
     <div
       className="flex h-full flex-col overflow-hidden"
-      style={{ background: "#fff", borderLeft: "1px solid var(--hairline)" }}
+      style={{ background: "var(--surface)", borderLeft: "1px solid var(--hairline)" }}
     >
       {/* Header */}
       <div
@@ -251,7 +251,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
         <div className="flex items-center gap-2">
           <div
             className="flex size-7 items-center justify-center rounded-lg"
-            style={{ background: "rgba(115,66,226,0.1)" }}
+            style={{ background: "var(--accent-10)" }}
           >
             <Brain size={13} style={{ color: "var(--color-accent)" }} />
           </div>
@@ -273,7 +273,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
       <div className="px-4 py-3">
         <div
           className="rounded-lg px-3 py-2"
-          style={{ background: "rgba(115,66,226,0.06)", border: "1px solid rgba(115,66,226,0.12)" }}
+          style={{ background: "var(--accent-6)", border: "1px solid var(--accent-12)" }}
         >
           <p className="text-[11px] font-medium" style={{ color: "var(--color-accent)" }}>
             Current context

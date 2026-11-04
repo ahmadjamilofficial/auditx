@@ -80,7 +80,7 @@ function TaxCenter() {
             <select
               value={activeYear}
               onChange={(e) => setTaxYear(e.target.value)}
-              className="rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+              className="rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
               style={{ borderColor: "var(--hairline)" }}
             >
               {[0, 1, 2].map((offset) => {
@@ -94,7 +94,7 @@ function TaxCenter() {
             <select
               value={activeJurisdiction}
               onChange={(e) => setJurisdiction(e.target.value as Jurisdiction)}
-              className="rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+              className="rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
               style={{ borderColor: "var(--hairline)" }}
             >
               <option value="PSX">PSX — Pakistan</option>
@@ -107,7 +107,7 @@ function TaxCenter() {
               <select
                 value={filerStatus}
                 onChange={(e) => setFilerStatus(e.target.value as "Filer" | "Non-Filer")}
-                className="rounded-[10px] border bg-white px-3 py-2.5 text-sm outline-none"
+                className="rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
                 style={{ borderColor: "var(--hairline)" }}
               >
                 <option>Filer</option>
@@ -252,7 +252,7 @@ function TaxCenter() {
               <div
                 key={h.ticker}
                 className="flex items-start justify-between rounded-xl p-4"
-                style={{ background: "rgba(31,157,99,0.05)", border: "1px solid rgba(31,157,99,0.15)" }}
+                style={{ background: "color-mix(in srgb, var(--ok) 5%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 15%, transparent)" }}
               >
                 <div className="flex items-start gap-3">
                   <TrendingDown size={16} strokeWidth={1.75} style={{ color: "var(--bad)", marginTop: 2 }} />
@@ -295,7 +295,7 @@ function TaxCenter() {
       {/* Disclaimer */}
       <div
         className="flex gap-2.5 rounded-2xl px-5 py-4 text-sm"
-        style={{ background: "rgba(59,111,209,0.06)", border: "1px solid rgba(59,111,209,0.15)" }}
+        style={{ background: "color-mix(in srgb, var(--info) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--info) 15%, transparent)" }}
       >
         <AlertCircle size={16} strokeWidth={1.75} style={{ color: "var(--info)", marginTop: 2, flexShrink: 0 }} />
         <p style={{ color: "var(--ink-2)" }}>

@@ -60,7 +60,7 @@ function Help() {
     >
       <div className="mx-auto max-w-2xl">
         <div
-          className="flex items-center gap-3 rounded-xl bg-white px-4 py-3"
+          className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3"
           style={{ border: "1px solid var(--hairline)", boxShadow: "var(--shadow-card)" }}
         >
           <Search size={20} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
@@ -101,7 +101,7 @@ function Help() {
             {filtered.map((p) => (
               <li
                 key={p}
-                className="px-6 py-4 text-sm transition-colors hover:bg-[rgba(115,66,226,0.06)]"
+                className="px-6 py-4 text-sm transition-colors hover:bg-[var(--accent-6)]"
                 style={{ borderBottom: "1px solid var(--hairline)" }}
               >
                 {p}

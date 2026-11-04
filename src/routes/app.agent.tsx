@@ -168,7 +168,7 @@ function AgentPage() {
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 pt-16 text-center">
             <div
               className="flex size-14 items-center justify-center rounded-2xl"
-              style={{ background: "rgba(115,66,226,0.1)" }}
+              style={{ background: "var(--accent-10)" }}
             >
               <Sparkles size={28} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
             </div>
@@ -187,7 +187,7 @@ function AgentPage() {
                   key={s}
                   type="button"
                   onClick={() => { setInput(s); }}
-                  className="rounded-xl border bg-white px-4 py-3 text-left text-sm transition-shadow hover:shadow-md"
+                  className="rounded-xl border bg-surface px-4 py-3 text-left text-sm transition-shadow hover:shadow-md"
                   style={{ borderColor: "var(--hairline)" }}
                 >
                   {s}
@@ -224,7 +224,7 @@ function AgentPage() {
                         )}
                         {msg.attachments.map((a) => (
                           <div key={a.id} className="flex items-center gap-2 text-xs" style={{ color: "var(--ink-2)" }}>
-                            <span className="rounded-lg border bg-white px-2.5 py-1.5" style={{ borderColor: "var(--hairline)" }}>
+                            <span className="rounded-lg border bg-surface px-2.5 py-1.5" style={{ borderColor: "var(--hairline)" }}>
                               📎 {a.name}
                             </span>
                           </div>
@@ -235,7 +235,7 @@ function AgentPage() {
                     <div className="flex items-start gap-3">
                       <div
                         className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                        style={{ background: "rgba(115,66,226,0.1)" }}
+                        style={{ background: "var(--accent-10)" }}
                       >
                         <Bot size={14} strokeWidth={2} style={{ color: "var(--color-accent)" }} />
                       </div>

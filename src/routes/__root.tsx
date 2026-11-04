@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author",       content: "Wab" },
       { name: "robots",       content: "index, follow" },
       { name: "googlebot",    content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" },
-      { name: "theme-color",  content: "#7342E2" },
+      { name: "theme-color",  content: "#0B0C0E" },
       { name: "rating",       content: "general" },
       { name: "revisit-after", content: "7 days" },
       { name: "language",     content: "English" },
@@ -136,7 +136,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "mobile-web-app-capable",    content: "yes" },
-      { name: "msapplication-TileColor",   content: "#7342E2" },
+      { name: "msapplication-TileColor",   content: "#0B0C0E" },
       { name: "msapplication-config",      content: "/browserconfig.xml" },
 
       // ── Structured Data hint ─────────────────────────────────────────────

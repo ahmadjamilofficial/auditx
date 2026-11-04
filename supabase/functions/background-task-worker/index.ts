@@ -1,4 +1,4 @@
-// ─── AuditX Background Task Worker ─────────────────────────────────────────────
+// ─── Wab Background Task Worker ─────────────────────────────────────────────
 // Supabase Edge Function that processes background tasks
 // Triggered by PostgreSQL triggers or scheduled via cron
 
