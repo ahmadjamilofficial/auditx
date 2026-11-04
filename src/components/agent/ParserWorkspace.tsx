@@ -122,66 +122,6 @@ function classifyError(msg: string): "quota" | "credits" | "rate_limit" | "timeo
   return "generic";
 }
 
-// ── AI Usage Indicator ────────────────────────────────────────────────────────
-
-function AiUsageBar({ userId, plan }: { userId: string | undefined; plan: string }) {
-  const { data } = useAiUsageToday(userId);
-  const dailyLimit = AI_PLAN_DAILY_LIMITS[plan] ?? AI_PLAN_DAILY_LIMITS["free"]!;
-  const used = data?.credits_used_today ?? 0;
-  const pct = Math.min((used / dailyLimit) * 100, 100);
-  const remaining = Math.max(dailyLimit - used, 0);
-  const low = pct >= 80;
-  const critical = pct >= 95;
-
-  if (!userId) return null;
-
-  return (
-    <div
-      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs"
-      style={{
-        border: "1px solid var(--hairline)",
-        background: critical ? "rgba(214,69,69,0.05)" : low ? "rgba(201,138,26,0.05)" : "white",
-      }}
-    >
-      <Zap
-        size={13}
-        strokeWidth={1.75}
-        style={{ color: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--ink-3)", flexShrink: 0 }}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span style={{ color: "var(--ink-2)" }}>
-            AI usage · {plan.charAt(0).toUpperCase() + plan.slice(1)}
-          </span>
-          <span
-            className="font-semibold tabular-nums"
-            style={{ color: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--ink-2)" }}
-          >
-            {used} / {dailyLimit}
-          </span>
-        </div>
-        <div
-          className="h-1.5 w-full overflow-hidden rounded-full"
-          style={{ background: "var(--hairline)" }}
-        >
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${pct}%`,
-              background: critical ? "var(--bad)" : low ? "var(--warn)" : "var(--color-accent)",
-            }}
-          />
-        </div>
-        {critical && (
-          <p className="mt-0.5" style={{ color: "var(--bad)" }}>
-            Almost at today's limit — {remaining} request{remaining !== 1 ? "s" : ""} remaining
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Quota / Error banner shown inline in the chat ─────────────────────────────
 
 function ErrorBanner({
