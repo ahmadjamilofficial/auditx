@@ -40,6 +40,23 @@ async function requestJson(
   }
 }
 
+async function fetchText(
+  url: string,
+  signal?: AbortSignal,
+): Promise<{ status: number; text: string }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const onAbort = () => controller.abort();
+  signal?.addEventListener("abort", onAbort);
+  try {
+    const res = await fetch(url, { signal: controller.signal, headers: { accept: "text/csv,text/plain,*/*" } });
+    return { status: res.status, text: await res.text() };
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", onAbort);
+  }
+}
+
 function num(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
   const n = typeof value === "number" ? value : Number(value);
@@ -515,9 +532,203 @@ export const alpacaAdapter: ProviderAdapter = {
   },
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Solana wallet — read-only, public JSON-RPC. Address only, never a seed.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const DEFAULT_SOLANA_RPC = "https://api.mainnet-beta.solana.com";
+
+function isSolanaAddress(address: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+}
+
+async function solanaBalance(address: string, rpc: string, signal?: AbortSignal): Promise<number> {
+  const { status, body } = await requestJson(
+    rpc,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getBalance", params: [address] }),
+    },
+    signal,
+  );
+  const payload = body as { result?: { value?: number }; error?: { message?: string } };
+  if (status !== 200 || payload?.error) {
+    throw new Error(`RPC refused the request: ${payload?.error?.message ?? `HTTP ${status}`}`);
+  }
+  const lamports = payload?.result?.value;
+  if (typeof lamports !== "number") throw new Error("RPC returned an unexpected payload for getBalance.");
+  return lamports / 1e9;
+}
+
+export const solanaWalletAdapter: ProviderAdapter = {
+  id: "solana_wallet",
+  label: "Solana wallet (read-only)",
+  category: "wallet",
+  summary: "Read-only SOL balance over public JSON-RPC.",
+  capabilities: ["Native SOL balance", "No signing, no custody"],
+  requiresCredentials: false,
+  credentialFields: [],
+  configFields: [
+    { key: "address", label: "Wallet address", required: true, placeholder: "Base58 address" },
+    { key: "rpc_url", label: "RPC endpoint", required: false, placeholder: DEFAULT_SOLANA_RPC },
+  ],
+  async test(ctx: AdapterContext): Promise<AdapterTestResult> {
+    const address = (ctx.config["address"] ?? "").trim();
+    if (!isSolanaAddress(address)) {
+      return { ok: false, message: "A valid Base58 Solana address is required. Never paste a recovery phrase." };
+    }
+    try {
+      const balance = await solanaBalance(address, ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC, ctx.signal);
+      return {
+        ok: true,
+        message: `Address is readable — ${balance.toLocaleString(undefined, { maximumFractionDigits: 6 })} SOL.`,
+        permissions: { read: true, trade: false, withdraw: false, sign: false },
+      };
+    } catch (error) {
+      return { ok: false, message: `Could not reach the RPC endpoint: ${(error as Error).message}` };
+    }
+  },
+  async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
+    const address = (ctx.config["address"] ?? "").trim();
+    const balance = await solanaBalance(address, ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC, ctx.signal);
+    return [
+      {
+        externalId: address,
+        accountType: "wallet",
+        currency: "SOL",
+        balance,
+        available: balance,
+        asOf: new Date().toISOString(),
+        sourceRef: `solana:${address}`,
+        raw: { address },
+      },
+    ];
+  },
+  async fetchTransactions(): Promise<NormalizedTransaction[]> {
+    return [];
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Bank account — manual link + statement feed (no money movement possible)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const bankAccountAdapter: ProviderAdapter = {
+  id: "bank_account",
+  label: "Bank account",
+  category: "bank",
+  summary: "Link a bank account and keep it current from a statement feed.",
+  capabilities: [
+    "Track cash balances, deposits and withdrawals",
+    "Re-read a published CSV statement on every sync",
+    "Read-only — Wab can never move money",
+  ],
+  requiresCredentials: true,
+  credentialFields: [
+    {
+      key: "account_number",
+      label: "Account number / IBAN",
+      secret: true,
+      required: true,
+      help: "Stored encrypted. Only the last 4 digits are ever shown back.",
+    },
+    { key: "account_title", label: "Account holder", secret: true, required: false },
+  ],
+  configFields: [
+    { key: "bank_name", label: "Bank", required: true, placeholder: "HBL, Meezan, Chase…" },
+    { key: "currency", label: "Currency", required: true, placeholder: "PKR" },
+    {
+      key: "statement_url",
+      label: "Statement feed URL (CSV)",
+      required: false,
+      help: "Optional https link to a published CSV export (e.g. a shared sheet). Wab re-reads it on every sync to pick up new rows.",
+    },
+    { key: "opening_balance", label: "Opening balance", required: false, placeholder: "0.00" },
+  ],
+  async test(ctx: AdapterContext): Promise<AdapterTestResult> {
+    const account = (ctx.credentials["account_number"] ?? "").replace(/\s+/g, "");
+    const bank = (ctx.config["bank_name"] ?? "").trim();
+    if (!bank) return { ok: false, message: "Enter the bank name." };
+    if (!/^[A-Za-z0-9-]{6,34}$/.test(account)) {
+      return { ok: false, message: "Enter a valid account number or IBAN (6–34 letters, digits or hyphens)." };
+    }
+
+    const url = (ctx.config["statement_url"] ?? "").trim();
+    if (!url) {
+      return {
+        ok: true,
+        message: `${bank} account linked. Import a statement to bring in transactions.`,
+        permissions: { read: true, transfer: false, payment: false },
+        warnings: [
+          "No live bank feed is attached. Wab reads statements you supply — it cannot poll your bank without a licensed open-banking aggregator.",
+        ],
+      };
+    }
+    if (!/^https:\/\//i.test(url)) {
+      return { ok: false, message: "The statement feed URL must start with https://" };
+    }
+    try {
+      const { status, text } = await fetchText(url, ctx.signal);
+      if (status >= 400) return { ok: false, message: `Statement URL returned HTTP ${status}.` };
+      const rows = parseCsv(text);
+      if (!rows.length) return { ok: false, message: "The statement URL did not return CSV rows with a header." };
+      return {
+        ok: true,
+        message: `${bank} account linked — read ${rows.length} statement row${rows.length === 1 ? "" : "s"}.`,
+        permissions: { read: true, transfer: false, payment: false },
+        warnings: ["Statement feeds are pull-based, so balances update on each sync rather than in real time."],
+      };
+    } catch (error) {
+      return { ok: false, message: `Could not fetch the statement URL: ${(error as Error).message}` };
+    }
+  },
+  async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
+    const account = (ctx.credentials["account_number"] ?? "").replace(/\s+/g, "");
+    if (!account) return [];
+    const opening = num(ctx.config["opening_balance"]);
+    const last4 = account.slice(-4);
+    return [
+      {
+        externalId: `bank:${last4}`,
+        accountType: "cash",
+        currency: (ctx.config["currency"] || "PKR").toUpperCase(),
+        balance: opening,
+        available: opening,
+        asOf: new Date().toISOString(),
+        sourceRef: `bank:${last4}`,
+        raw: { bank: ctx.config["bank_name"] ?? "", last4, balanceSource: "opening_balance" },
+      },
+    ];
+  },
+  async fetchTransactions(ctx: AdapterContext, since: string | undefined): Promise<NormalizedTransaction[]> {
+    const url = (ctx.config["statement_url"] ?? "").trim();
+    if (!url) return [];
+    const { status, text } = await fetchText(url, ctx.signal);
+    if (status >= 400) throw new Error(`Statement URL returned HTTP ${status}`);
+
+    const rows = await csvImportAdapter.fetchTransactions(
+      { ...ctx, config: { ...ctx.config, csv: text } },
+      undefined,
+    );
+    const last4 = (ctx.credentials["account_number"] ?? "").replace(/\s+/g, "").slice(-4);
+    return rows
+      .map((row) => ({
+        ...row,
+        // Content hash keeps re-syncs idempotent even when a sheet gains rows.
+        externalId: createHash("sha256").update(`${last4}|${JSON.stringify(row.raw)}`).digest("hex").slice(0, 32),
+        sourceRef: `bank:${last4}`,
+        raw: { ...row.raw, provider: "bank_account", bank: ctx.config["bank_name"] ?? "" },
+      }))
+      .filter((row) => (since ? row.occurredAt >= since : true));
+  },
+};
+
 export const ADAPTERS: Record<string, ProviderAdapter> = {
   csv_import: csvImportAdapter,
   evm_wallet: evmWalletAdapter,
+  solana_wallet: solanaWalletAdapter,
   binance: binanceAdapter,
   alpaca: alpacaAdapter,
+  bank_account: bankAccountAdapter,
 };

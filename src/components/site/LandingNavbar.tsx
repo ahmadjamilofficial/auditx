@@ -4,7 +4,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Github } from "lucide-react";
 import { useState } from "react";
-import { Logo } from "@/components/brand/Logo";
+import { LogoIcon } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 
 const links = [
@@ -36,7 +37,7 @@ export function LandingNavbar() {
       >
         {/* Logo */}
         <Link to="/" aria-label="Wab home" className="shrink-0">
-          <Logo />
+          <LogoIcon size={30} />
         </Link>
 
         {/* Center nav links */}
@@ -59,12 +60,10 @@ export function LandingNavbar() {
             type="button"
             onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
-            title="Open Source on GitHub"
-            style={{ color: "var(--ink-2)" }}
-          >
+            >
             <Github size={18} strokeWidth={1.75} />
-            <span className="hidden sm:inline">Open Source</span>
           </button>
+          <ThemeToggle surface={false} />
           {!isLoggedIn && (
             <button
               type="button"
@@ -78,10 +77,10 @@ export function LandingNavbar() {
           <button
             type="button"
             onClick={() => nav({ to: primaryTo })}
-            className="rounded-full px-5 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
+            className="rounded-full px-5 py-2 text-sm font-semibold transition-all hover:opacity-90"
             style={{
               background: "var(--color-accent)",
-              boxShadow: "var(--shadow-accent)",
+              color: "var(--accent-fg)",
             }}
           >
             {primaryLabel}
@@ -89,15 +88,18 @@ export function LandingNavbar() {
         </div>
 
         {/* Mobile hamburger */}
-        <button
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setOpen(true)}
-          className="flex size-9 items-center justify-center rounded-xl md:hidden"
-          style={{ color: "var(--color-text)" }}
-        >
-          <Menu size={22} strokeWidth={1.75} />
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle surface={false} />
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
+            className="flex size-9 items-center justify-center rounded-xl"
+            style={{ color: "var(--color-text)" }}
+          >
+            <Menu size={22} strokeWidth={1.75} />
+          </button>
+        </div>
       </nav>
 
       {/* Mobile drawer */}
@@ -125,7 +127,7 @@ export function LandingNavbar() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="flex items-center justify-between">
-                <Logo />
+                <LogoIcon size={28} />
                 <button
                   type="button"
                   aria-label="Close menu"
@@ -160,13 +162,8 @@ export function LandingNavbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + links.length * 0.06, duration: 0.35 }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/wab", "_blank"); }}
-                    className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-black/5"
                   >
                     <Github size={18} strokeWidth={1.75} />
-                    Open Source
                   </button>
                 </motion.div>
               </nav>
@@ -175,8 +172,8 @@ export function LandingNavbar() {
                 <button
                   type="button"
                   onClick={() => { setOpen(false); nav({ to: primaryTo }); }}
-                  className="w-full rounded-full py-3 text-sm font-semibold text-white"
-                  style={{ background: "var(--color-accent)" }}
+                  className="w-full rounded-full py-3 text-sm font-semibold"
+                  style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
                 >
                   {primaryLabel}
                 </button>

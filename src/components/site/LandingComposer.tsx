@@ -75,9 +75,7 @@ export function LandingComposer() {
       {/* ── Composer box ──────────────────────────────────────────────────── */}
       <motion.div
         animate={{
-          boxShadow: focused
-            ? "0 0 0 2px var(--accent-25), var(--shadow-accent)"
-            : "0 8px 32px var(--accent-8)",
+          boxShadow: "none",
           borderColor: focused ? "var(--accent-40)" : "var(--accent-10)",
         }}
         transition={{ duration: 0.2 }}
@@ -190,7 +188,7 @@ export function LandingComposer() {
             className="flex size-10 items-center justify-center rounded-full text-white transition-all disabled:opacity-30"
             style={{
               background: canSend ? "var(--color-accent)" : "var(--ink-3)",
-              boxShadow: canSend ? "var(--shadow-accent)" : "none",
+              boxShadow: "none",
             }}
           >
             <ArrowUp size={18} strokeWidth={2.25} />

@@ -92,6 +92,9 @@
   --color-accent-hover: oklch(0.26 0.006 265);
   --color-accent-pressed: oklch(0 0 0);
   --accent-fg: oklch(1 0 0);
+  /* Fixed dark brand panel (auth screens) — identical in both themes. */
+  --brand-panel: oklch(0.205 0.015 265);
+  --brand-panel-fg: oklch(1 0 0);
 
   /*
    * Wash scale — replaces every hardcoded rgba tint in the app.
@@ -194,6 +197,8 @@
   --color-accent-hover: oklch(0.9 0 0);
   --color-accent-pressed: oklch(1 0 0);
   --accent-fg: oklch(0.145 0.004 265);
+  --brand-panel: oklch(0.185 0.012 265);
+  --brand-panel-fg: oklch(1 0 0);
 
   /* Wash scale inverts with the mark: white alphas on near-black surfaces. */
   --accent-2: oklch(0.975 0 0 / 2%);
@@ -268,6 +273,16 @@
 @layer base {
   * {
     border-color: var(--color-border);
+  }
+
+  /*
+   * In dark mode the accent flips to near-white, so `text-white` on an accent
+   * button became white-on-white and the whole label disappeared. Route the
+   * utility to the accent's own foreground instead. Elements that sit on a
+   * fixed dark/red surface set an explicit inline colour, which wins over this.
+   */
+  .dark .text-white {
+    color: var(--accent-fg);
   }
 
   html {

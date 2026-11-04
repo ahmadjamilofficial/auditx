@@ -2,7 +2,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Github } from "lucide-react";
 import { useState } from "react";
-import { Logo } from "@/components/brand/Logo";
+import { LogoIcon } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Btn, Container } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
 
@@ -23,8 +24,8 @@ export function Navbar() {
   return (
     <>
       <Container className="relative z-10 flex items-center justify-between py-4 sm:py-5">
-        <Link to="/" aria-label="Wab home">
-          <Logo />
+        <Link to="/" aria-label="Link home">
+          <LogoIcon size={30} />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -40,14 +41,14 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle surface={false} />
           <button
             onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
             type="button"
-            title="Open Source on GitHub"
+            >
           >
             <Github size={18} strokeWidth={1.75} />
-            <span className="hidden sm:inline">Open Source</span>
           </button>
           <Btn onClick={() => nav({ to: isLoggedIn ? "/app/parser" : "/signup" })}>
             {isLoggedIn ? "Dashboard" : "Start Free Audit"}
@@ -94,7 +95,7 @@ export function Navbar() {
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="flex items-center justify-between">
-                <Logo />
+                <LogoIcon size={28} />
                 <button aria-label="Close menu" onClick={() => setOpen(false)} type="button">
                   <X size={24} strokeWidth={1.75} />
                 </button>
@@ -128,7 +129,7 @@ export function Navbar() {
                     type="button"
                   >
                     <Github size={18} strokeWidth={1.75} />
-                    Open Source
+                    
                   </button>
                 </motion.div>
               </nav>

@@ -3,7 +3,8 @@ import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage }
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { resolveAgentModel } from "@/lib/audit-agent.server";
+import { describeAttempts, resolveAgentModel, selectWorkingModel } from "@/lib/audit-agent.server";
+import { serverEnv, supabaseServerConfig } from "@/lib/env.server";
 import { planOf } from "@/lib/plans";
 import { computeTax } from "@/lib/tax";
 import { computePortfolioSummary } from "@/lib/financial-intelligence";
@@ -228,11 +229,10 @@ export const Route = createFileRoute("/api/chat")({
         const threadId = url2.searchParams.get("threadId");
         if (!threadId) return new Response("threadId is required", { status: 400 });
 
-        const supabaseUrl = process.env["SUPABASE_URL"] ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
-        const supabaseKey = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? ((import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
-        if (!supabaseUrl || !supabaseKey) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+        const supabaseConfig = supabaseServerConfig();
+        if (!supabaseConfig) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
 
-        const db = createClient<Database>(supabaseUrl, supabaseKey, {
+        const db = createClient<Database>(supabaseConfig.url, supabaseConfig.key, {
           global: { headers: { Authorization: authorization } },
           auth: { persistSession: false, autoRefreshToken: false },
         });
@@ -282,15 +282,14 @@ export const Route = createFileRoute("/api/chat")({
             return new Response("A thread id and messages are required", { status: 400 });
           }
 
-          const url = process.env["SUPABASE_URL"] ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
-          const key =
-            process.env["SUPABASE_PUBLISHABLE_KEY"] ??
-            ((import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
-          const approvalSecret = process.env["TOOL_APPROVAL_SECRET"] ?? "wab-tool-approval";
-          if (!url || !key) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+          const supabaseConfig = supabaseServerConfig();
+          const approvalSecret = serverEnv("TOOL_APPROVAL_SECRET") ?? "wab-tool-approval";
+          if (!supabaseConfig) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+          const url = supabaseConfig.url;
+          const key = supabaseConfig.key;
 
-          // Get env from global storage (set in server.ts)
-          const env = (globalThis as any).__VERCEL_ENV__;
+          // Provider env comes from the Worker runtime, process.env or Vite's env.
+          const env = (globalThis as { __VERCEL_ENV__?: Record<string, unknown> }).__VERCEL_ENV__;
 
           let resolved;
           try {
@@ -313,14 +312,29 @@ export const Route = createFileRoute("/api/chat")({
             return new Response(
               JSON.stringify({
                 code: "ai_not_configured",
-                message:
-                  "AI is not configured on this server. " +
-                  "Add GEMINI_API_KEY (or OPENROUTER_API_KEY, LOVABLE_API_KEY, GROQ_API_KEY) to your hosting environment variables and redeploy.",
+                message: describeAttempts([]),
               }),
               { status: 503, headers: { "Content-Type": "application/json" } },
             );
           }
 
+          // Prove a provider really answers before streaming, otherwise the user
+          // gets a generic failure on every single prompt.
+          const selected = await selectWorkingModel(resolved);
+          if (!selected.model) {
+            const detail = describeAttempts(selected.attempts);
+            console.error("[Wab Chat] No AI provider answered:", detail);
+            return new Response(
+              JSON.stringify({
+                code: "ai_provider_unavailable",
+                message: `Wab AI could not reach its model provider. ${detail}`,
+                attempts: selected.attempts,
+              }),
+              { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+          }
+
+          resolved = selected.model;
           console.log("[Wab Chat] AI Model Resolved:", { provider: resolved.provider, modelId: resolved.modelId });
           const model = resolved.model;
 
@@ -846,6 +860,49 @@ export const Route = createFileRoute("/api/chat")({
               return { csv: csv.slice(0, 60000), truncated: csv.length > 60000 };
             },
           }),
+          get_live_balances: tool({
+            description:
+              "Read live balances from connected sources (Binance, wallets, bank accounts) plus the latest synced movements. Use for questions about balances, portfolio value or what changed since the last sync.",
+            inputSchema: z.object({ limit: z.number().nullable() }),
+            execute: async ({ limit }) => {
+              // These tables are newer than the generated Database type.
+              const db = supabase as unknown as {
+                from: (table: string) => {
+                  select: (columns: string) => {
+                    eq: (column: string, value: string) => {
+                      order: (column: string, opts: { ascending: boolean }) => {
+                        limit: (n: number) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+                      };
+                    };
+                  };
+                };
+              };
+              const [accounts, movements] = await Promise.all([
+                db
+                  .from("provider_accounts")
+                  .select("connection_id,external_id,account_type,currency,balance,available,as_of,raw")
+                  .eq("org_id", thread.org_id)
+                  .order("as_of", { ascending: false })
+                  .limit(50),
+                db
+                  .from("provider_transactions")
+                  .select("connection_id,kind,side,instrument,quantity,price,amount,fees,currency,occurred_at")
+                  .eq("org_id", thread.org_id)
+                  .order("occurred_at", { ascending: false })
+                  .limit(Math.min(Math.max(limit ?? 25, 1), 100)),
+              ]);
+              if (accounts.error) throw new Error(accounts.error.message);
+              if (movements.error) throw new Error(movements.error.message);
+              return {
+                accounts: accounts.data ?? [],
+                recent_movements: movements.data ?? [],
+                note:
+                  (accounts.data ?? []).length === 0
+                    ? "No live source is connected yet. Connect one in Connections, then sync."
+                    : "Balances are as of the last sync. Bank accounts update from their statement feed.",
+              };
+            },
+          }),
           // ── get_broker_accounts: read broker accounts ─────────────────────
           get_broker_accounts: tool({
             description: "Read the user's connected broker accounts.",
@@ -907,6 +964,7 @@ The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transacti
 - Account/profile/plan/organisation → get_account_overview
 - Ledger rows → get_transactions; totals → get_ledger_summary; holdings/portfolio → get_portfolio_analysis
 - Tax → get_tax_computation; issues → get_open_flags; incomplete rows → get_unfinished_records; brokers → get_broker_accounts
+- Connected exchanges/wallets/banks, live balances or “what changed” → get_live_balances
 - Google Sheets link in the message → read_google_sheet, then analyse or import the rows
 - Uploaded Excel/CSV files arrive as text tables in the message — read them directly.
 - Use calculate for material numbers. Never guess ledger contents.

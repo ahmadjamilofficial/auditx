@@ -386,7 +386,7 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
               type="button"
               onClick={() => triggerCsvDownload(String(out["filename"] ?? "export.csv"), String(out["csv"]))}
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white"
-              style={{ background: "var(--ok)" }}
+              style={{ background: "var(--ok)", color: "#fff" }}
             >
               <Download size={12} /> Download
             </button>
@@ -514,7 +514,7 @@ function DeleteChatModal({ onClose, onConfirm, deleting }: { onClose: () => void
             onClick={onConfirm}
             disabled={deleting}
             className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            style={{ background: "var(--bad)" }}
+            style={{ background: "var(--bad)", color: "#fff" }}
           >
             {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
             Delete chat

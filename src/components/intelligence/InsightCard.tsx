@@ -181,7 +181,7 @@ export function InsightCard({ insight, index = 0 }: Props) {
             <Link
               to={insight.actionLink}
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-90"
-              style={{ background: style.accent, color: "#fff" }}
+              style={{ background: style.accent, color: "var(--accent-fg)" }}
             >
               {insight.actionLabel}
               <ArrowRight size={11} />

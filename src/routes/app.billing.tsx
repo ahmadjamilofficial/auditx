@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowUpRight, BadgeCheck, CreditCard, Download, Zap } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { ArrowUpRight, BadgeCheck, CreditCard, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Btn, Panel, StatusPill, reveal } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/app/billing")({
   component: Billing,
@@ -51,26 +52,72 @@ const plans = [
   },
 ];
 
-const invoices: Array<{ id: string; date: string; amount: string; status: string }> = [];
+interface PlanLimits {
+  plan: string;
+  status: string;
+  can_use_ai: boolean;
+  can_use_background_tasks: boolean;
+  can_use_advanced_integrations: boolean;
+  trial_ends_at: string | null;
+}
+
+const CHECKOUT_FALLBACK =
+  "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+
+function daysLeft(iso: string | null | undefined): number | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms)) return null;
+  return Math.max(0, Math.ceil(ms / 86_400_000));
+}
 
 function Billing() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { profile } = useAuth();
+  const [limits, setLimits] = useState<PlanLimits | null>(null);
 
-  const kelviqCheckoutUrl = import.meta.env['VITE_KELVIQ_CHECKOUT_URL'] || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+  const checkoutUrl = import.meta.env["VITE_KELVIQ_CHECKOUT_URL"] || CHECKOUT_FALLBACK;
+  const portalUrl = import.meta.env["VITE_KELVIQ_PORTAL_URL"] as string | undefined;
+
+  // Real subscription state from the database, not a client-side guess.
+  useEffect(() => {
+    let alive = true;
+    const orgId = profile?.org_id;
+    if (!orgId) return;
+    void (async () => {
+      const { data } = await supabase.rpc("get_user_plan_limits", { org_id_param: orgId });
+      if (!alive) return;
+      const row = (Array.isArray(data) ? data[0] : data) as PlanLimits | null;
+      if (row) setLimits(row);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [profile?.org_id]);
+
+  const currentPlan = (limits?.plan ?? profile?.plan ?? "standard").toLowerCase();
+  const status = limits?.status ?? profile?.plan_status ?? "trialing";
+  const trialDays = daysLeft(limits?.trial_ends_at ?? null);
+  const onTrial = status === "trialing" && (trialDays === null || trialDays > 0);
+  const trialExpired = status === "trialing" && trialDays === 0;
+
+  function urlFor(plan: (typeof plans)[number]) {
+    return checkoutUrl.replace(/plan_identifier=[a-z-]+/, `plan_identifier=${plan.kelviqPlan}`);
+  }
 
   function handleManagePayment() {
-    toast.info("Payment management would open Kelviq Customer Portal in production");
+    if (portalUrl) {
+      window.open(portalUrl, "_blank", "noopener");
+      return;
+    }
+    // No customer-portal URL configured: send the user to the checkout page
+    // where Kelviq lets them manage the existing subscription.
+    window.open(urlFor(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!), "_blank", "noopener");
+    toast.info("Opened Kelviq checkout — manage or cancel your subscription there.");
   }
 
-  function handleStartTrial(plan: typeof plans[0]) {
-    const checkoutUrl = kelviqCheckoutUrl.replace("plan_identifier=pro-plan", `plan_identifier=${plan.kelviqPlan}`);
-    window.open(checkoutUrl, "_blank");
-    toast.info(`Opening checkout for ${plan.name} plan...`);
-  }
-
-  function handleDownloadInvoice(invoiceId: string) {
-    toast.info(`Downloading invoice ${invoiceId}...`);
+  function handleStartTrial(plan: (typeof plans)[number]) {
+    window.open(urlFor(plan), "_blank", "noopener");
+    toast.info(`Opening secure checkout for the ${plan.name} plan (7-day free trial).`);
   }
 
   return (
@@ -83,17 +130,24 @@ function Billing() {
       </div>
 
       <Panel>
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium" style={{ color: "var(--ink-3)" }}>CURRENT PLAN</p>
-            <div className="mt-1 flex items-center gap-2">
-              <p className="text-xl font-semibold capitalize">{(user as any)?.plan ?? "Standard"}</p>
-              <StatusPill tone="ok">
-                {(user as any)?.plan === "standard" ? "Active" : "Pro"}
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="text-xl font-semibold capitalize">{currentPlan}</p>
+              <StatusPill tone={onTrial ? "info" : trialExpired ? "bad" : "ok"}>
+                {onTrial
+                  ? trialDays === null
+                    ? "Free trial"
+                    : `Free trial · ${trialDays} day${trialDays === 1 ? "" : "s"} left`
+                  : trialExpired
+                    ? "Trial ended"
+                    : "Active"}
               </StatusPill>
             </div>
             <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
-              {(user as any)?.plan === "standard" ? "$3/month · Includes 7-day free trial" : "$5/month · Includes 7-day free trial"}
+              {currentPlan === "pro" ? "$5/month" : "$3/month"}
+              {onTrial ? " · free until your trial ends, then billed monthly" : " · billed monthly"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -104,6 +158,34 @@ function Billing() {
           </div>
         </div>
       </Panel>
+
+      {/* Free trial — always visible, with real days remaining */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4"
+        style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
+      >
+        <div className="flex items-start gap-3">
+          <Sparkles size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2 }} />
+          <div>
+            <p className="text-sm font-semibold">
+              {onTrial
+                ? trialDays === null
+                  ? "You're on the 7-day free trial"
+                  : `7-day free trial — ${trialDays} day${trialDays === 1 ? "" : "s"} remaining`
+                : "Start your 7-day free trial"}
+            </p>
+            <p className="mt-0.5 text-xs" style={{ color: "var(--ink-2)" }}>
+              Every plan starts with 7 free days. Cancel any time before the trial ends and you are not charged.
+            </p>
+          </div>
+        </div>
+        <Btn
+          variant="primary"
+          onClick={() => handleStartTrial(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!)}
+        >
+          {onTrial ? "Manage trial" : trialExpired ? "Resume with free trial" : "Start free trial"}
+        </Btn>
+      </div>
 
       <div>
         <p className="mb-4 text-sm font-semibold">Available Plans</p>
@@ -146,23 +228,17 @@ function Billing() {
                   ))}
                 </ul>
                 <Btn
-                  variant={
-                    ((user as any)?.plan ?? "standard") === plan.name.toLowerCase()
-                      ? "secondary"
-                      : plan.popular
-                        ? "primary"
-                        : "secondary"
-                  }
+                  variant={currentPlan === plan.name.toLowerCase() ? "secondary" : plan.popular ? "primary" : "secondary"}
                   className="mt-5 w-full"
-                  disabled={((user as any)?.plan ?? "standard") === plan.name.toLowerCase()}
+                  disabled={currentPlan === plan.name.toLowerCase() && !trialExpired}
                   onClick={() => {
-                    if (((user as any)?.plan ?? "standard") !== plan.name.toLowerCase()) {
-                      handleStartTrial(plan);
-                    }
+                    if (currentPlan !== plan.name.toLowerCase() || trialExpired) handleStartTrial(plan);
                   }}
                 >
-                  {((user as any)?.plan ?? "standard") === plan.name.toLowerCase()
-                    ? "Current plan"
+                  {currentPlan === plan.name.toLowerCase() && !trialExpired
+                    ? onTrial
+                      ? "Current plan · on free trial"
+                      : "Current plan"
                     : plan.trialDays
                       ? `Start ${plan.trialDays}-day free trial`
                       : `Upgrade to ${plan.name}`}
@@ -173,52 +249,7 @@ function Billing() {
         </div>
       </div>
 
-      {invoices.length > 0 && (
-        <Panel>
-          <p className="mb-4 text-sm font-semibold">Invoice History</p>
-          <div
-            className="overflow-hidden rounded-xl"
-            style={{ border: "1px solid var(--hairline)" }}
-          >
-            <table className="w-full border-collapse">
-              <thead>
-                <tr style={{ background: "var(--color-login-bg)", borderBottom: "1px solid var(--hairline)" }}>
-                  <th className="px-4 py-3 text-left text-xs font-semibold">Invoice</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold">Date</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold">Status</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.map((inv) => (
-                  <tr key={inv.id} style={{ borderBottom: "1px solid var(--hairline)" }} className="hover:bg-black/5 transition-colors">
-                    <td className="px-4 py-3 font-mono text-sm">{inv.id}</td>
-                    <td className="px-4 py-3 text-sm" style={{ color: "var(--ink-2)" }}>{inv.date}</td>
-                    <td className="tnum px-4 py-3 text-right text-sm font-medium">{inv.amount}</td>
-                    <td className="px-4 py-3">
-                      <StatusPill tone="ok">{inv.status}</StatusPill>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        className="flex items-center gap-1.5 text-xs"
-                        style={{ color: "var(--color-accent)" }}
-                        onClick={() => handleDownloadInvoice(inv.id)}
-                      >
-                        <Download size={13} strokeWidth={1.75} />
-                        PDF
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      )}
-
-      <div
+<div
         className="flex items-start gap-2.5 rounded-2xl px-5 py-4 text-sm"
         style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
       >

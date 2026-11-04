@@ -258,7 +258,7 @@ function Settings() {
                 className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium"
                 style={{
                   background: tab === id ? "var(--color-accent)" : "var(--color-login-bg)",
-                  color: tab === id ? "#fff" : "var(--ink-2)",
+                  color: tab === id ? "var(--accent-fg)" : "var(--ink-2)",
                 }}
               >
                 {label}
@@ -370,7 +370,7 @@ function Settings() {
                         {isActive && (
                           <span
                             className="rounded-full px-2.5 py-1 text-xs font-medium"
-                            style={{ background: "var(--color-accent)", color: "#fff" }}
+                            style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
                           >
                             Active
                           </span>
@@ -521,7 +521,7 @@ function Settings() {
                   >
                     <div
                       className="flex size-8 shrink-0 items-center justify-center rounded-full overflow-hidden text-xs font-semibold"
-                      style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "#fff" }}
+                      style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "var(--accent-fg)" }}
                     >
                       {avatarUrl ? (
                         <img 

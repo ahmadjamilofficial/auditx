@@ -5,6 +5,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseServerConfig } from "@/lib/env.server";
 
 type Action = "create" | "test" | "sync" | "disconnect";
 
@@ -29,11 +30,12 @@ async function authenticate(request: Request) {
   const auth = request.headers.get("authorization") ?? "";
   if (!auth.startsWith("Bearer ")) return null;
 
-  const url = process.env["SUPABASE_URL"] ?? "";
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
-  if (!url || !key) return null;
+  // Reads Worker runtime env, process.env and Vite's env in that order, so the
+  // endpoint works in dev as well as on the deployed server.
+  const config = supabaseServerConfig();
+  if (!config) return null;
 
-  const supabase = createClient(url, key, {
+  const supabase = createClient(config.url, config.key, {
     global: { headers: { Authorization: auth } },
     auth: { persistSession: false, autoRefreshToken: false },
   });

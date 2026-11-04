@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Logo } from "@/components/brand/Logo";
+import { LogoIcon } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { signInWithEmail, signInWithGoogle } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 
@@ -68,20 +69,20 @@ function SignIn() {
       {/* LEFT — brand panel */}
       <div
         className="relative hidden w-[42%] flex-col justify-between p-12 lg:flex"
-        style={{ background: "var(--color-accent)" }}
+        style={{ background: "var(--brand-panel)", color: "var(--brand-panel-fg)" }}
       >
-        <Logo fill="#fff" />
+        <LogoIcon size={34} tone="onDark" />
 
         <div className="max-w-xs">
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-white"
             style={{
               fontFamily: "var(--font-heading)",
               fontSize: "clamp(1.6rem,3vw,2.2rem)",
               lineHeight: 1.1,
+              color: "var(--brand-panel-fg)",
             }}
           >
             Every trade, every rupee, every tax obligation — in one audit-ready book.
@@ -110,7 +111,7 @@ function SignIn() {
                 background: i === 0 ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)",
               }}
             >
-              <span className="flex items-center gap-2 text-xs font-medium text-white">
+              <span className="flex items-center gap-2 text-xs font-medium" style={{ color: "var(--brand-panel-fg)" }}>
                 <ShieldCheck size={14} strokeWidth={1.75} />
                 block #{1042 - i}
               </span>
@@ -127,11 +128,14 @@ function SignIn() {
 
       {/* RIGHT — form */}
       <div
-        className="flex flex-1 flex-col items-center justify-center px-6 py-12"
+        className="relative flex flex-1 flex-col items-center justify-center px-6 py-12"
         style={{ background: "var(--color-login-bg)" }}
       >
+        <div className="absolute right-5 top-5">
+          <ThemeToggle />
+        </div>
         <div className="mb-8 lg:hidden">
-          <Logo />
+          <LogoIcon size={30} />
         </div>
 
         <motion.div
@@ -249,10 +253,10 @@ function SignIn() {
               disabled={isSubmitting}
               whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+              className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold transition-opacity disabled:opacity-60"
               style={{
                 background: "var(--color-accent)",
-                boxShadow: "var(--shadow-accent)",
+                color: "var(--accent-fg)",
               }}
             >
               {isSubmitting ? "Signing in…" : "Sign in"}

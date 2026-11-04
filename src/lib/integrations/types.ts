@@ -6,6 +6,7 @@ export type ConnectionCategory =
   | "exchange"
   | "brokerage"
   | "wallet"
+  | "bank"
   | "accounting"
   | "custom"
   | "import";

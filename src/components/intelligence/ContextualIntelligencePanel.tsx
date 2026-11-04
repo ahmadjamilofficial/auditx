@@ -380,7 +380,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
             className="flex size-6 items-center justify-center rounded-lg disabled:opacity-40 transition-colors"
             style={{ background: "var(--color-accent)" }}
           >
-            <ArrowRight size={11} style={{ color: "#fff" }} />
+            <ArrowRight size={11} style={{ color: "var(--accent-fg)" }} />
           </button>
         </div>
       </div>

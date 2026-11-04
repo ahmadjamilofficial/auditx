@@ -188,17 +188,12 @@ function Home() {
       {/* ─── HERO ────────────────────────────────────────────────────────────── */}
       <section
         className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4"
-        style={{ paddingTop: "80px", paddingBottom: "80px" }}
+        style={{
+          paddingTop: "80px",
+          paddingBottom: "80px",
+          background: "var(--color-login-bg)",
+        }}
       >
-        {/* Subtle radial glow */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 10%, var(--accent-8) 0%, transparent 70%)",
-          }}
-        />
-
         <div className="relative z-10 mx-auto w-full max-w-[800px] text-center">
           {/* Spacer to maintain visual rhythm where the eyebrow was */}
           <div className="mb-6 h-9" aria-hidden />
@@ -645,7 +640,7 @@ function Home() {
                     className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all hover:shadow-md"
                     style={
                       t.popular
-                        ? { background: "var(--color-accent)", color: "#fff" }
+                        ? { background: "var(--color-accent)", color: "var(--accent-fg)" }
                         : { border: "1px solid var(--hairline)", color: "var(--ink-2)" }
                     }
                   >
@@ -705,7 +700,7 @@ function Home() {
             Turn messy broker records into
             <br />a clean, tax-ready ledger
           </h2>
-          <p className="mx-auto mb-8 max-w-lg text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+          <p className="mx-auto mb-8 max-w-lg text-sm" style={{ color: "color-mix(in srgb, var(--accent-fg) 80%, transparent)" }}>
             Upload your first broker statement. Extract, reconcile, verify, and report with full traceability.
           </p>
           <Link to={ctaTo}>
@@ -718,7 +713,7 @@ function Home() {
               <ArrowRight size={16} strokeWidth={2} />
             </button>
           </Link>
-          <p className="mt-4 text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <p className="mt-4 text-xs" style={{ color: "color-mix(in srgb, var(--accent-fg) 65%, transparent)" }}>
             Wab does not provide tax or legal advice.
           </p>
         </Container>

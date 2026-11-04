@@ -116,7 +116,7 @@ function NavItem({
       {badge != null && badge > 0 && (
         <span
           className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-          style={{ background: "var(--bad)" }}
+          style={{ background: "var(--bad)", color: "#fff" }}
         >
           {badge > 99 ? "99+" : badge}
         </span>
@@ -124,7 +124,7 @@ function NavItem({
       {collapsed && badge != null && badge > 0 && (
         <span
           className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white"
-          style={{ background: "var(--bad)" }}
+          style={{ background: "var(--bad)", color: "#fff" }}
         >
           {badge > 9 ? "9+" : badge}
         </span>
@@ -302,7 +302,7 @@ function InnerShell({ children }: { children: ReactNode }) {
               className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
               style={{
                 background: avatarUrl ? "transparent" : "var(--color-accent)",
-                color: "#fff",
+                color: "var(--accent-fg)",
               }}
             >
               {avatarUrl ? (
@@ -344,7 +344,7 @@ function InnerShell({ children }: { children: ReactNode }) {
                 <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
                   <div
                     className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
-                    style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "#fff" }}
+                    style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "var(--accent-fg)" }}
                   >
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={displayName} className="size-full object-cover" />

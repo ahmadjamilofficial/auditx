@@ -12,13 +12,16 @@
 
 const WORDMARK = "WAB";
 
-/** Mark only (no wordmark) — sidebar rail, compact spots. */
+/** Mark only (no wordmark) — nav bars, sidebar rail, compact spots. */
 export function LogoIcon({
   size = 28,
   className,
+  tone = "auto",
 }: {
   size?: number;
   className?: string | undefined;
+  /** "auto" follows the theme; pin a variant on a fixed-colour surface. */
+  tone?: "auto" | "onDark" | "onLight";
   fill?: string | undefined;
 }) {
   return (
@@ -26,18 +29,29 @@ export function LogoIcon({
       className={`inline-flex shrink-0 items-center justify-center ${className ?? ""}`}
       style={{ width: size, height: size }}
     >
-      <img
-        src="/light-logo.png"
-        alt="WAB"
-        className="block size-full object-contain dark:hidden"
-        draggable={false}
-      />
-      <img
-        src="/dark-logo.png"
-        alt="WAB"
-        className="hidden size-full object-contain dark:block"
-        draggable={false}
-      />
+      {tone === "auto" ? (
+        <>
+          <img
+            src="/light-logo.png"
+            alt="WAB"
+            className="block size-full object-contain dark:hidden"
+            draggable={false}
+          />
+          <img
+            src="/dark-logo.png"
+            alt="WAB"
+            className="hidden size-full object-contain dark:block"
+            draggable={false}
+          />
+        </>
+      ) : (
+        <img
+          src={tone === "onDark" ? "/dark-logo.png" : "/light-logo.png"}
+          alt="WAB"
+          className="block size-full object-contain"
+          draggable={false}
+        />
+      )}
     </span>
   );
 }

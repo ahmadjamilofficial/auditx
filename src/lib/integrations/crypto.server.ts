@@ -7,6 +7,25 @@
 // as "not configured" rather than pretending credentials are safe.
 
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
+import { serverEnv } from "../env.server";
+
+const DEV_FALLBACK_KEY = "wab.local-dev.credential-key.v1";
+
+/**
+ * The key material for credential encryption. Prefers the configured secret;
+ * local development falls back to a fixed passphrase so wallet/exchange
+ * connections can be tested without provisioning a secret. Never used when a
+ * real deployment is running (import.meta.env.DEV is compiled out of prod).
+ */
+function keyMaterial(): string | undefined {
+  const configured = serverEnv("WAB_CREDENTIAL_KEY");
+  if (configured) return configured;
+  if (import.meta.env.DEV) {
+    console.warn("[Wab] WAB_CREDENTIAL_KEY is unset — using the local development key for credential storage.");
+    return DEV_FALLBACK_KEY;
+  }
+  return undefined;
+}
 
 const ALGORITHM = "aes-256-gcm";
 const KEY_VERSION = 1;
@@ -23,11 +42,11 @@ export class CredentialKeyMissingError extends Error {
 
 /** True when server-side credential storage is available. */
 export function credentialStorageConfigured(): boolean {
-  return Boolean(process.env["WAB_CREDENTIAL_KEY"]);
+  return Boolean(keyMaterial());
 }
 
 function deriveKey(): Buffer {
-  const raw = process.env["WAB_CREDENTIAL_KEY"];
+  const raw = keyMaterial();
   if (!raw) throw new CredentialKeyMissingError();
 
   // Accept a 32-byte base64/hex secret, or derive deterministically from a

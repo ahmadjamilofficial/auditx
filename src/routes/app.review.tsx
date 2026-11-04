@@ -200,7 +200,10 @@ function ApprovalCard({
           onClick={() => void handle("approved")}
           disabled={!!deciding}
           className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-          style={{ background: isStop ? "var(--bad)" : "var(--color-accent)" }}
+          style={{
+            background: isStop ? "var(--bad)" : "var(--color-accent)",
+            color: isStop ? "#fff" : "var(--accent-fg)",
+          }}
         >
           {deciding === "approved"
             ? <Loader2 size={11} className="animate-spin" />
@@ -243,7 +246,7 @@ function ReviewInbox() {
           {visible.length > 0 && (
             <span
               className="flex size-6 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{ background: "var(--bad)" }}
+              style={{ background: "var(--bad)", color: "#fff" }}
             >
               {visible.length}
             </span>

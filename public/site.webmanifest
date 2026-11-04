@@ -1,5 +1,5 @@
 {
-  "name": "Wab \u2014 AI Financial Audit & Compliance",
+  "name": "Wab — AI Financial Audit & Compliance",
   "short_name": "Wab",
   "description": "AI-powered financial audit and tax compliance for traders.",
   "start_url": "/",
@@ -7,34 +7,14 @@
   "background_color": "#F5F5F4",
   "theme_color": "#0B0C0E",
   "orientation": "portrait-primary",
-  "categories": [
-    "finance",
-    "productivity",
-    "business"
-  ],
+  "categories": ["finance", "productivity", "business"],
   "lang": "en",
   "icons": [
     {
       "src": "/favicon.png",
       "type": "image/png",
-      "sizes": "192x192 512x512",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-desktop.png",
-      "sizes": "1280x800",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Wab Dashboard \u2014 Portfolio Overview"
-    },
-    {
-      "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Wab Mobile \u2014 Ledger View"
+      "sizes": "64x64",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -43,24 +23,14 @@
       "short_name": "Upload",
       "description": "Parse a new trade confirmation",
       "url": "/app/parser",
-      "icons": [
-        {
-          "src": "/favicon.png",
-          "sizes": "any"
-        }
-      ]
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64", "type": "image/png" }]
     },
     {
       "name": "Tax Center",
       "short_name": "Tax",
       "description": "View your CGT computation",
       "url": "/app/tax",
-      "icons": [
-        {
-          "src": "/favicon.png",
-          "sizes": "any"
-        }
-      ]
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64", "type": "image/png" }]
     }
   ]
 }

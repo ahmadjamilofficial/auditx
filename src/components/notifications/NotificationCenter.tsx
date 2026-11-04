@@ -185,7 +185,7 @@ export function NotificationCenter({
                 {unread > 0 && (
                   <span
                     className="rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white"
-                    style={{ background: "var(--bad)" }}
+                    style={{ background: "var(--bad)", color: "#fff" }}
                   >
                     {unread}
                   </span>
@@ -291,7 +291,7 @@ export function NotificationBell({
       {unread > 0 && (
         <span
           className="absolute right-1 top-1 flex min-w-[14px] items-center justify-center rounded-full px-[3px] text-[9px] font-bold text-white"
-          style={{ background: "var(--bad)", lineHeight: "14px", height: "14px" }}
+          style={{ background: "var(--bad)", color: "#fff", lineHeight: "14px", height: "14px" }}
         >
           {unread > 9 ? "9+" : unread}
         </span>

@@ -247,6 +247,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
                 onClick={() => void handleDelete()}
                 disabled={deleteMutation.isPending}
                 className="rounded-full bg-red-500 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
+                style={{ color: "#fff" }}
               >
                 {deleteMutation.isPending ? <Loader2 size={10} className="animate-spin inline" /> : "Confirm"}
               </button>

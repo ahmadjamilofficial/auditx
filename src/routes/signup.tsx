@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Logo } from "@/components/brand/Logo";
+import { LogoIcon } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { signUpWithEmail, signInWithGoogle } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
@@ -154,17 +155,21 @@ function SignUp() {
       {/* LEFT brand panel */}
       <div
         className="relative hidden w-[42%] flex-col justify-between p-12 lg:flex"
-        style={{ background: "var(--color-text)" }}
+        style={{ background: "var(--brand-panel)", color: "var(--brand-panel-fg)" }}
       >
-        <Logo fill="#fff" />
+        <LogoIcon size={34} tone="onDark" />
 
         <div className="max-w-xs">
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="text-white"
-            style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.6rem,3vw,2.2rem)", lineHeight: 1.1 }}
+            style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "clamp(1.6rem,3vw,2.2rem)",
+              lineHeight: 1.1,
+              color: "var(--brand-panel-fg)",
+            }}
           >
             Start your audit-ready ledger in minutes.
           </motion.h2>
@@ -196,7 +201,7 @@ function SignUp() {
             >
               <span
                 className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                style={{ background: "var(--color-accent)", color: "#fff" }}
+                style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
               >
                 ✓
               </span>
@@ -208,11 +213,14 @@ function SignUp() {
 
       {/* RIGHT form */}
       <div
-        className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12"
+        className="relative flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12"
         style={{ background: "var(--color-login-bg)" }}
       >
+        <div className="absolute right-5 top-5">
+          <ThemeToggle />
+        </div>
         <div className="mb-8 lg:hidden">
-          <Logo />
+          <LogoIcon size={30} />
         </div>
 
         <motion.div
@@ -359,8 +367,8 @@ function SignUp() {
               disabled={isSubmitting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
-              style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
+              className="flex w-full items-center justify-between gap-4 rounded-full px-6 py-3.5 text-sm font-semibold disabled:opacity-60"
+              style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
             >
               {isSubmitting ? "Creating account…" : "Create free account"}
               {!isSubmitting && <ArrowRightCircle size={18} strokeWidth={1.75} />}

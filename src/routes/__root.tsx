@@ -138,7 +138,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "mobile-web-app-capable",    content: "yes" },
       { name: "msapplication-TileColor",   content: "#0B0C0E" },
-      { name: "msapplication-config",      content: "/browserconfig.xml" },
 
       // ── Structured Data hint ─────────────────────────────────────────────
       { name: "category", content: "Finance, Tax, Accounting, Trading" },
@@ -155,8 +154,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://db.onlinewebfonts.com/c/04e6981992c0e2e7642af2074ebe3901?family=Helvetica+Now+Display+Bold",
       },
-      { rel: "icon",             href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon",             href: "/favicon.png", type: "image/png", sizes: "64x64" },
+      { rel: "apple-touch-icon", href: "/favicon.png", sizes: "64x64" },
       { rel: "canonical",        href: "https://psxl.live/" },
       { rel: "manifest",         href: "/site.webmanifest" },
     ],
@@ -222,7 +221,7 @@ function RootShell({ children }: { children: ReactNode }) {
         "@id": "https://psxl.live/#org",
         "name": "Wab",
         "url": "https://psxl.live",
-        "logo": "https://psxl.live/favicon.svg",
+        "logo": "https://psxl.live/favicon.png",
         "sameAs": [
           "https://twitter.com/wabapp",
           "https://linkedin.com/company/wab"

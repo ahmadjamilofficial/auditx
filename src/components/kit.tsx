@@ -56,8 +56,8 @@ export function Btn({
   const styles: Record<NonNullable<BtnProps["variant"]>, React.CSSProperties> = {
     primary: {
       background: "var(--color-accent)",
-      color: "#fff",
-      boxShadow: "var(--shadow-accent)",
+      // In dark mode the accent is white, so white text would vanish.
+      color: "var(--accent-fg)",
     },
     secondary: { background: "var(--color-login-bg)", color: "var(--color-text)" },
     ghost: { background: "transparent", color: "var(--color-text)" },
