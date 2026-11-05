@@ -141,7 +141,7 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
           />
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto px-2 pb-3">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin px-2 pb-3">
         {isLoading && <p className="px-2 py-3 text-xs text-muted-foreground">Loading chats…</p>}
         {!isLoading && groups.length === 0 && (
           <p className="px-2 py-3 text-xs text-muted-foreground">No chats yet</p>

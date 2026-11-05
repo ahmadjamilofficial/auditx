@@ -261,7 +261,7 @@ function InnerShell({ children }: { children: ReactNode }) {
 
         {/* ── Nav links ─────────────────────────────────────────────────────── */}
         <nav
-          className={`flex-1 overflow-y-auto ${
+          className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin ${
             collapsed ? "flex flex-col items-center gap-1 px-3" : "space-y-4 px-4"
           }`}
         >
@@ -438,7 +438,7 @@ function InnerShell({ children }: { children: ReactNode }) {
       <motion.aside
         animate={{ width: expanded ? 248 : 64 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="relative hidden shrink-0 lg:flex lg:flex-col"
+        className="relative hidden shrink-0 lg:flex lg:flex-col overflow-x-hidden"
         style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
       >
         <SidebarContent collapsed={!expanded} />
@@ -556,7 +556,7 @@ function InnerShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto scrollbar-thin">{children}</main>
       </div>
     </div>
   );

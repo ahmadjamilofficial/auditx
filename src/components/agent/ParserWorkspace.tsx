@@ -991,8 +991,9 @@ function Chat({
                 <PromptInputActionMenu>
                   <PromptInputActionMenuTrigger
                     tooltip="Attach files"
+                    className="text-[color:var(--color-accent)] hover:text-[color:var(--color-accent)] hover:bg-[var(--accent-10)]"
                   >
-                    <Paperclip size={15} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
+                    <Paperclip size={15} strokeWidth={1.75} />
                   </PromptInputActionMenuTrigger>
                   <PromptInputActionMenuContent>
                     <PromptInputActionAddAttachments label="Attach broker document" />

@@ -354,8 +354,28 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Theme-aware surface hover — works in both light and dark mode.
-   Use `hover:bg-surface-hover` instead of `hover:bg-black/5` in dark-aware components. */
+/* Theme-aware surface hover — works in both light and dark mode. */
 @utility bg-surface-hover {
   background-color: var(--accent-6);
+}
+
+/* Thin custom scrollbar for sidebar and other panels */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-12) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 0px; /* no horizontal scrollbar */
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--accent-12);
+    border-radius: 99px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-20);
+  }
 }
