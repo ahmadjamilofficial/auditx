@@ -646,16 +646,8 @@ function Chat({
         className="flex shrink-0 items-center justify-between border-b px-4 py-2.5"
         style={{ borderColor: "var(--hairline)", background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}
       >
-        <div className="flex items-center gap-2">
-          <div className="flex size-6 items-center justify-center rounded-lg" style={{ background: "var(--accent-10)" }}>
-            <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
-          </div>
-          <span className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>Wab</span>
-          <span className="text-xs" style={{ color: "var(--ink-3)" }}>Financial AI Agent</span>
-        </div>
-
         {/* Right controls */}
-        <div className="flex items-center gap-2" ref={menuRef}>
+        <div className="flex items-center gap-2 ml-auto" ref={menuRef}>
           {/* Thread menu */}
           <div className="relative">
             <button

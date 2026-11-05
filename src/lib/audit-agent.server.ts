@@ -28,8 +28,8 @@ const LOVABLE_PROVIDER_OPTIONS = {
   },
 } as const;
 
-/** Must be passed to every streamText call that uses the resolved model. */
-export const AI_PROVIDER_OPTIONS = LOVABLE_PROVIDER_OPTIONS;
+/** Empty options for non-Lovable providers (they don't support reasoning_content). */
+const DEFAULT_PROVIDER_OPTIONS = {} as const;
 
 export interface ResolvedModel {
   provider: "lovable" | "gemini" | "openai" | "openrouter" | "groq";
@@ -91,7 +91,7 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
       model: provider(modelId) as unknown as LanguageModel,
       provider: "gemini",
       modelId,
-      providerOptions: {},
+      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
   }
 
@@ -104,7 +104,7 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
       model: provider.chat(modelId) as unknown as LanguageModel,
       provider: "openai",
       modelId,
-      providerOptions: {},
+      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
   }
 
@@ -125,7 +125,7 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
       model: provider.chatModel(modelId) as unknown as LanguageModel,
       provider: "openrouter",
       modelId,
-      providerOptions: {},
+      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
   }
 
@@ -142,7 +142,7 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
       model: provider.chatModel(modelId) as unknown as LanguageModel,
       provider: "groq",
       modelId,
-      providerOptions: {},
+      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
   }
 
