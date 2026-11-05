@@ -30,7 +30,7 @@ function SignIn() {
   // As soon as a session appears (from any sign-in method), navigate to dashboard
   useEffect(() => {
     if (!loading && session) {
-      nav({ to: "/app/parser", replace: true });
+      nav({ to: "/app/overview", replace: true });
     }
   }, [session, loading, nav]);
 

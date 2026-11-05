@@ -15,7 +15,7 @@ import { Footer } from "@/components/site/Footer";
 import { LandingNavbar } from "@/components/site/LandingNavbar";
 import { StatusPill, Container, Reveal, Panel } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AgentAttachment } from "@/lib/agent-service";
 import { setPendingFiles, setPendingPrompt } from "@/lib/chat-session";
 import {
@@ -137,13 +137,20 @@ const faqs = [
 
 function Home() {
   const { session, loading, profile } = useAuth();
-  const ctaTo = !loading && session ? "/app/parser" : "/signup";
+  const navigate = useNavigate();
+  const ctaTo = !loading && session ? "/app/overview" : "/signup";
   const [chatValue, setChatValue] = useState("");
   const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
   const [isBusy, setIsBusy] = useState(false);
   const [pendingFileList, setPendingFileList] = useState<File[]>([]);
-  const navigate = useNavigate();
   const KELVIQ_CHECKOUT_URL = import.meta.env['VITE_KELVIQ_CHECKOUT_URL'] || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+
+  // Redirect logged-in users to dashboard
+  useEffect(() => {
+    if (!loading && session) {
+      navigate({ to: "/app/overview", replace: true });
+    }
+  }, [session, loading, navigate]);
 
   const handleAddFiles = (files: FileList | null) => {
     if (!files) return;

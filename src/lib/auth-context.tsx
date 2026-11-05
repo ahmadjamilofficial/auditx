@@ -122,7 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // always release the loading flag.
   const ensureUserData = useCallback(
     async (u: User, force = false) => {
-      if (loadingUserId.current === u.id) return;
+      if (loadingUserId.current === u.id) {
+        // Already loading this user, don't block
+        return;
+      }
       if (!force && loadedUserId.current === u.id) {
         setLoading(false);
         return;
@@ -132,6 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await loadProfile(u);
         loadedUserId.current = u.id;
+      } catch (error) {
+        console.error("Error loading user profile:", error);
       } finally {
         loadingUserId.current = null;
         setLoading(false);
@@ -195,9 +200,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (s?.user) void ensureUserData(s.user);
     });
 
+    // Safety timeout to prevent infinite loading on mobile
+    const timeout = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
+      clearTimeout(timeout);
     };
   }, [ensureUserData]);
 
