@@ -771,27 +771,30 @@ function Chat({
 
             <AnimatePresence>
               {menuOpen && (
-                <motion.div
+               <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: -4 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl bg-surface shadow-lg"
-                  style={{ border: "1px solid var(--hairline)" }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setDeleteOpen(true);
-                    }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-black/5"
-                    style={{ color: "var(--bad)" }}
-                  >
-                    <Trash2 size={14} strokeWidth={1.75} />
-                    Delete conversation
-                  </button>
-                </motion.div>
+                  className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl shadow-lg"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--hairline)",
+                  }}
+>
+              <button
+              type="button"
+              onClick={() => {
+              setMenuOpen(false);
+               setDeleteOpen(true);
+              }}
+             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-black/5"
+            style={{ color: "var(--bad)" }}
+         >
+    <Trash2 size={14} strokeWidth={1.75} />
+    Delete conversation
+  </button>
+</motion.div>
               )}
             </AnimatePresence>
           </div>
