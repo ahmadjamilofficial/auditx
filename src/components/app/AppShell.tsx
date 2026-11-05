@@ -119,8 +119,15 @@ function NavItem({
         collapsed ? "size-10 justify-center" : "gap-3 px-3 py-2.5"
       }`}
       style={{
-        background: active || accent ? "var(--accent-10)" : "transparent",
-        color: active || accent ? "var(--color-accent)" : "var(--ink-2)",
+        background: active || accent ? "var(--sidebar-accent)" : "transparent",
+        color: active || accent ? "var(--sidebar-primary)" : "var(--sidebar-foreground)",
+        opacity: active || accent ? 1 : 0.72,
+      }}
+      onMouseEnter={(e) => {
+        if (!active && !accent) (e.currentTarget as HTMLElement).style.background = "var(--sidebar-accent)";
+      }}
+      onMouseLeave={(e) => {
+        if (!active && !accent) (e.currentTarget as HTMLElement).style.background = "transparent";
       }}
     >
       <Icon size={18} strokeWidth={1.75} />
@@ -214,7 +221,7 @@ function InnerShell({ children }: { children: ReactNode }) {
                 aria-label="Expand navigation"
                 onClick={() => (onClose ? onClose() : setExpanded(true))}
                 className="flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-black/5"
-                style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
+                style={{ background: "var(--sidebar)", border: "1px solid var(--sidebar-border)" }}
               >
                 <LogoMark size={20} />
               </button>
@@ -241,7 +248,7 @@ function InnerShell({ children }: { children: ReactNode }) {
           {!collapsed && (
             <div
               className="mt-4 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs"
-              style={{ background: "var(--accent-4)", border: "1px solid var(--hairline)" }}
+              style={{ background: "var(--sidebar-accent)", border: "1px solid var(--sidebar-border)" }}
             >
               <div className="min-w-0">
                 <p className="truncate font-semibold">{orgName}</p>
@@ -274,13 +281,13 @@ function InnerShell({ children }: { children: ReactNode }) {
               {!collapsed && (
                 <p
                   className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: "var(--ink-3)" }}
+                  style={{ color: "var(--sidebar-primary)", opacity: 0.45 }}
                 >
                   {group.title}
                 </p>
               )}
               {collapsed && (
-                <div className="my-1 h-px w-6" style={{ background: "var(--hairline)" }} />
+                <div className="my-1 h-px w-6" style={{ background: "var(--sidebar-border)" }} />
               )}
               {group.items.map((item) => (
                 <NavItem
@@ -303,9 +310,12 @@ function InnerShell({ children }: { children: ReactNode }) {
             type="button"
             onClick={() => setUserMenuOpen((v) => !v)}
             title={displayName}
-            className={`flex w-full items-center rounded-xl transition-colors hover:bg-black/5 ${
+            className={`flex w-full items-center rounded-xl transition-colors ${
               collapsed ? "justify-center py-2" : "gap-3 px-3 py-2.5"
             }`}
+            style={{ color: "var(--sidebar-foreground)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--sidebar-accent)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             <div
               className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
@@ -339,14 +349,26 @@ function InnerShell({ children }: { children: ReactNode }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.97 }}
                 transition={{ duration: 0.16 }}
-                className="absolute bottom-full z-50 mb-1 overflow-hidden rounded-2xl bg-surface p-2"
+                className="overflow-hidden rounded-2xl p-2"
                 style={{
-                  border: "1px solid var(--hairline)",
+                  position: collapsed ? "fixed" : "absolute",
+                  ...(collapsed
+                    ? {
+                        bottom: "16px",
+                        left: "72px",
+                        minWidth: 220,
+                      }
+                    : {
+                        bottom: "100%",
+                        left: "12px",
+                        right: "12px",
+                        marginBottom: "4px",
+                        minWidth: 180,
+                      }),
+                  zIndex: 9999,
+                  border: "1px solid var(--sidebar-border)",
+                  background: "var(--sidebar)",
                   boxShadow: "var(--shadow-hover)",
-                  // When collapsed, anchor to left; when expanded, full-width
-                  left: collapsed ? "4px" : "12px",
-                  right: collapsed ? "4px" : "12px",
-                  minWidth: 180,
                 }}
               >
                 {/* User info row at top */}
@@ -371,11 +393,14 @@ function InnerShell({ children }: { children: ReactNode }) {
                     </p>
                   </div>
                 </div>
-                <div className="my-1 h-px" style={{ background: "var(--hairline)" }} />
+                <div className="my-1 h-px" style={{ background: "var(--sidebar-border)" }} />
                 <Link
                   to="/app/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-black/5"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors"
+                  style={{ color: "var(--sidebar-foreground)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--sidebar-accent)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   <User size={16} strokeWidth={1.75} />
                   Account settings
@@ -383,8 +408,10 @@ function InnerShell({ children }: { children: ReactNode }) {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-black/5"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors"
                   style={{ color: "var(--bad)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--sidebar-accent)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   <LogOut size={16} strokeWidth={1.75} />
                   Sign out
@@ -411,8 +438,8 @@ function InnerShell({ children }: { children: ReactNode }) {
       <motion.aside
         animate={{ width: expanded ? 248 : 64 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="relative hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
-        style={{ background: "var(--surface)", borderRight: "1px solid var(--hairline)" }}
+        className="relative hidden shrink-0 lg:flex lg:flex-col"
+        style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
       >
         <SidebarContent collapsed={!expanded} />
 
@@ -423,8 +450,8 @@ function InnerShell({ children }: { children: ReactNode }) {
             aria-label="Expand navigation"
             onClick={() => setExpanded(true)}
             title="Expand sidebar"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 flex size-5 items-center justify-center rounded-full border bg-surface shadow-sm transition-shadow hover:shadow-md"
-            style={{ borderColor: "var(--hairline)" }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 flex size-5 items-center justify-center rounded-full border shadow-sm transition-shadow hover:shadow-md"
+            style={{ borderColor: "var(--sidebar-border)", background: "var(--sidebar)" }}
           >
             <PanelRight size={11} strokeWidth={2} style={{ color: "var(--ink-3)" }} />
           </button>
@@ -444,7 +471,8 @@ function InnerShell({ children }: { children: ReactNode }) {
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed left-0 top-0 z-50 h-full w-72 overflow-hidden bg-surface shadow-2xl lg:hidden"
+              className="fixed left-0 top-0 z-50 h-full w-72 shadow-2xl lg:hidden"
+              style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -461,7 +489,7 @@ function InnerShell({ children }: { children: ReactNode }) {
         {/* Top header */}
         <header
           className="flex shrink-0 items-center gap-3 border-b px-4 py-3 sm:px-6"
-          style={{ background: "var(--surface)", borderColor: "var(--hairline)" }}
+          style={{ background: "var(--sidebar)", borderColor: "var(--sidebar-border)" }}
         >
           {/* Mobile hamburger */}
           <button
@@ -476,8 +504,8 @@ function InnerShell({ children }: { children: ReactNode }) {
           {/* Command bar trigger */}
           <button
             type="button"
-            className="hidden flex-1 items-center gap-2 rounded-xl border bg-surface px-3 py-2 text-sm sm:flex"
-            style={{ borderColor: "var(--hairline)", maxWidth: 380 }}
+            className="hidden flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-sm sm:flex"
+            style={{ borderColor: "var(--hairline)", background: "var(--surface)", maxWidth: 380 }}
             onClick={() => setCommandBarOpen(true)}
           >
             <Sparkles size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />

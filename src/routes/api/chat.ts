@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, tool, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
@@ -1224,7 +1224,8 @@ Mark figures as verified (with source) or assumption. Use markdown tables. Never
               delete_transaction: "user-approval" as const,
             },
             experimental_toolApprovalSecret: approvalSecret,
-            stopWhen: stepCountIs(50),
+            maxSteps,
+            maxRetries: 2,
             // After the plan's tool budget, tools switch off so the model must
             // write its final answer instead of stopping mid-way.
             prepareStep: ({ stepNumber }: { stepNumber: number }) =>

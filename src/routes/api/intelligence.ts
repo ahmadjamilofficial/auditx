@@ -15,12 +15,12 @@ export const Route = createFileRoute("/api/intelligence")({
             { status: 400 },
           );
         }
-        const { resolveAgentModel, AI_PROVIDER_OPTIONS } = await import("@/lib/audit-agent.server");
+        const { resolveAgentModel } = await import("@/lib/audit-agent.server");
         const resolved = await resolveAgentModel();
         if (!resolved) return Response.json({ error: "AI not configured" }, { status: 503 });
         const result = streamText({
           model: resolved.model,
-          providerOptions: AI_PROVIDER_OPTIONS as never,
+          providerOptions: resolved.providerOptions as never,
           system: body.systemPrompt,
           prompt: body.userPrompt.slice(0, 60000),
           abortSignal: request.signal,

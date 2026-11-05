@@ -17,8 +17,10 @@ import {
   ChevronDown,
   Clock,
   Download,
+  FileText,
   Loader2,
   MoreVertical,
+  Paperclip,
   Shield,
   Sparkles,
   Terminal,
@@ -46,6 +48,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useAuth } from "@/lib/auth-context";
@@ -609,6 +612,42 @@ function DeleteChatModal({
   );
 }
 
+// ── AttachedFileStrip — shows queued files inside the composer ───────────────
+
+function AttachedFileStrip() {
+  const attachments = usePromptInputAttachments();
+  const files = attachments.files;
+  if (!files || files.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 px-3 pt-3 pb-1">
+      {files.map((file) => (
+        <div
+          key={file.id}
+          className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+          style={{
+            background: "var(--accent-8)",
+            border: "1px solid var(--hairline)",
+            color: "var(--color-text)",
+          }}
+        >
+          <FileText size={12} strokeWidth={1.75} style={{ color: "var(--color-accent)", flexShrink: 0 }} />
+          <span className="max-w-[160px] truncate">{file.filename ?? "Document"}</span>
+          <button
+            type="button"
+            onClick={() => attachments.remove(file.id)}
+            className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-black/10"
+            aria-label={`Remove ${file.filename}`}
+            style={{ color: "var(--ink-3)" }}
+          >
+            <X size={10} strokeWidth={2} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Chat component ────────────────────────────────────────────────────────────
 
 function Chat({
@@ -751,8 +790,7 @@ function Chat({
         className="flex shrink-0 items-center justify-between border-b px-4 py-2.5"
         style={{
           borderColor: "var(--hairline)",
-          background: "rgba(255,255,255,0.8)",
-          backdropFilter: "blur(8px)",
+          background: "var(--surface)",
         }}
       >
         {/* Right controls */}
@@ -778,8 +816,9 @@ function Chat({
                   transition={{ duration: 0.12 }}
                   className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl shadow-lg"
                   style={{
-                    backgroundColor: "var(--background)",
+                    backgroundColor: "var(--surface)",
                     border: "1px solid var(--hairline)",
+                    boxShadow: "var(--shadow-hover)",
                   }}
 >
               <button
@@ -937,6 +976,7 @@ function Chat({
               await sendMessage({ text: trimmed || "Analyse the attached document(s).", files });
             }}
           >
+            <AttachedFileStrip />
             <PromptInputTextarea
               ref={textareaRef}
               autoFocus
@@ -946,7 +986,11 @@ function Chat({
             <PromptInputFooter>
               <PromptInputTools>
                 <PromptInputActionMenu>
-                  <PromptInputActionMenuTrigger tooltip="Attach files" />
+                  <PromptInputActionMenuTrigger
+                    tooltip="Attach files"
+                  >
+                    <Paperclip size={15} strokeWidth={1.75} style={{ color: "var(--ink-2)" }} />
+                  </PromptInputActionMenuTrigger>
                   <PromptInputActionMenuContent>
                     <PromptInputActionAddAttachments label="Attach broker document" />
                   </PromptInputActionMenuContent>
