@@ -1150,6 +1150,136 @@ export const Route = createFileRoute("/api/chat")({
                 return data ?? [];
               },
             }),
+            // ── investigate_discrepancy: orchestrated investigation workflow ──
+            investigate_discrepancy: tool({
+              description:
+                "Run an automated multi-step investigation into a specific financial discrepancy. Retrieves all related records, checks for duplicates, timing differences, fee issues, and returns a structured evidence-backed finding.",
+              inputSchema: z.object({
+                description: z.string().describe("What discrepancy to investigate"),
+                ticker: z.string().nullable().describe("Ticker symbol if relevant"),
+                ref_id: z.string().nullable().describe("Reference ID if known"),
+                date_from: z.string().nullable().describe("ISO date to search from"),
+                date_to: z.string().nullable().describe("ISO date to search to"),
+              }),
+              execute: async ({ description, ticker, ref_id, date_from, date_to }) => {
+                // Step 1: Get relevant transactions
+                let txQuery = supabase
+                  .from("transactions")
+                  .select("id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score")
+                  .eq("org_id", thread.org_id)
+                  .order("trade_date", { ascending: false })
+                  .limit(50);
+                if (ticker) txQuery = txQuery.eq("ticker", ticker.toUpperCase());
+                if (ref_id) txQuery = txQuery.ilike("ref_id", `%${ref_id}%`);
+                if (date_from) txQuery = txQuery.gte("trade_date", date_from);
+                if (date_to) txQuery = txQuery.lte("trade_date", date_to);
+                const { data: txData } = await txQuery;
+
+                // Step 2: Get existing flags
+                const { data: flagData } = await supabase
+                  .from("reconciliation_flags")
+                  .select("id,flag_type,severity,ticker,ref_id,expected,actual,description,suggested_resolution,status")
+                  .eq("org_id", thread.org_id)
+                  .eq("status", "open")
+                  .limit(20);
+
+                // Step 3: Detect duplicates in the retrieved transactions
+                const seen = new Map<string, number>();
+                const duplicates: typeof txData = [];
+                for (const tx of (txData ?? [])) {
+                  const key = `${tx.ticker}|${tx.action}|${tx.quantity}|${tx.price}|${tx.trade_date}`;
+                  const count = (seen.get(key) ?? 0) + 1;
+                  seen.set(key, count);
+                  if (count === 2) duplicates.push(tx);
+                }
+
+                // Step 4: Find low-confidence records
+                const lowConfidence = (txData ?? []).filter((tx) => (tx.confidence_score ?? 1) < 0.75);
+
+                return {
+                  investigation: {
+                    subject: description,
+                    ticker: ticker ?? "all",
+                    records_examined: txData?.length ?? 0,
+                    open_flags: flagData?.length ?? 0,
+                  },
+                  evidence: {
+                    transactions: txData ?? [],
+                    existing_flags: flagData ?? [],
+                    duplicates_found: duplicates,
+                    low_confidence_records: lowConfidence,
+                  },
+                  signals: {
+                    has_duplicates: duplicates.length > 0,
+                    has_low_confidence: lowConfidence.length > 0,
+                    has_open_flags: (flagData?.length ?? 0) > 0,
+                    duplicate_count: duplicates.length,
+                    low_confidence_count: lowConfidence.length,
+                  },
+                };
+              },
+            }),
+            // ── get_financial_health: overall org health snapshot ─────────────
+            get_financial_health: tool({
+              description: "Get a complete financial health snapshot including portfolio value, reconciliation status, active issues, and risk indicators.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const [txResult, flagResult] = await Promise.all([
+                  supabase
+                    .from("transactions")
+                    .select("id,ticker,action,quantity,price,fees,wht,trade_date,status,confidence_score")
+                    .eq("org_id", thread.org_id)
+                    .order("trade_date", { ascending: false })
+                    .limit(500),
+                  supabase
+                    .from("reconciliation_flags")
+                    .select("id,severity,status,description")
+                    .eq("org_id", thread.org_id)
+                    .eq("status", "open"),
+                ]);
+
+                const txs = txResult.data ?? [];
+                const flags = flagResult.data ?? [];
+
+                const buys = txs.filter((t) => t.action === "BUY");
+                const sells = txs.filter((t) => t.action === "SELL");
+                const needsReview = txs.filter((t) => t.status === "needs_review");
+                const lowConf = txs.filter((t) => (t.confidence_score ?? 1) < 0.75);
+                const criticalFlags = flags.filter((f) => f.severity === "bad");
+                const warnFlags = flags.filter((f) => f.severity === "warn");
+
+                const totalBuyValue = buys.reduce((s, t) => s + Number(t.price) * Number(t.quantity), 0);
+                const totalSellValue = sells.reduce((s, t) => s + Number(t.price) * Number(t.quantity), 0);
+                const totalFees = txs.reduce((s, t) => s + Number(t.fees ?? 0) + Number(t.wht ?? 0), 0);
+
+                const uniqueTickers = [...new Set(txs.map((t) => t.ticker))];
+
+                return {
+                  summary: {
+                    total_transactions: txs.length,
+                    buys: buys.length,
+                    sells: sells.length,
+                    unique_tickers: uniqueTickers.length,
+                    needs_review: needsReview.length,
+                    low_confidence: lowConf.length,
+                  },
+                  financial: {
+                    total_buy_value: totalBuyValue,
+                    total_sell_value: totalSellValue,
+                    net_exposure: totalBuyValue - totalSellValue,
+                    total_fees_and_wht: totalFees,
+                    tickers: uniqueTickers.slice(0, 20),
+                  },
+                  health: {
+                    open_critical_flags: criticalFlags.length,
+                    open_warning_flags: warnFlags.length,
+                    total_open_flags: flags.length,
+                    critical_issues: criticalFlags.map((f) => f.description).slice(0, 5),
+                    health_score: Math.max(0, 100 - criticalFlags.length * 20 - warnFlags.length * 5 - needsReview.length * 2),
+                  },
+                };
+              },
+            }),
           };
 
           const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
@@ -1213,7 +1343,11 @@ The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transacti
 
 ━━ AUDIT REPORT FORMAT (only for real analysis) ━━
 ## Summary / ## Key Findings / ## Discrepancies / ## Recommended Actions / ## Confidence Level
-Mark figures as verified (with source) or assumption. Use markdown tables. Never reveal hidden reasoning.`;
+Mark figures as verified (with source) or assumption. Use markdown tables. Never reveal hidden reasoning.
+
+NEW TOOLS ADDED:
+- investigate_discrepancy: automated multi-step investigation — use this when user reports a mismatch, duplicate, or unexplained difference. Returns structured evidence (transactions, flags, duplicates, low-confidence records).
+- get_financial_health: full org health snapshot (totals, flags, health score) — use for "give me an overview" / "what needs attention" queries.`;
 
           const STREAM_OPTS = {
             system: SYSTEM_PROMPT + planSection,
