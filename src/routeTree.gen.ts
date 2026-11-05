@@ -41,6 +41,7 @@ import { Route as AppParserRouteImport } from './routes/app.parser'
 import { Route as AppReconciliationRouteImport } from './routes/app.reconciliation'
 import { Route as AppReviewRouteImport } from './routes/app.review'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppSourcesRouteImport } from './routes/app.sources'
 import { Route as AppTaxRouteImport } from './routes/app.tax'
 import { Route as AppTimelineRouteImport } from './routes/app.timeline'
 import { Route as ApiAgentApproveRouteImport } from './routes/api/agent/approve'
@@ -216,6 +217,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSourcesRoute = AppSourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTaxRoute = AppTaxRouteImport.update({
   id: '/tax',
   path: '/tax',
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/app/reconciliation': typeof AppReconciliationRoute
   '/app/review': typeof AppReviewRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/sources': typeof AppSourcesRoute
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app/': typeof AppIndexRoute
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/app/reconciliation': typeof AppReconciliationRoute
   '/app/review': typeof AppReviewRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/sources': typeof AppSourcesRoute
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app': typeof AppIndexRoute
@@ -414,6 +422,7 @@ export interface FileRoutesById {
   '/app/reconciliation': typeof AppReconciliationRoute
   '/app/review': typeof AppReviewRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/sources': typeof AppSourcesRoute
   '/app/tax': typeof AppTaxRoute
   '/app/timeline': typeof AppTimelineRoute
   '/app/': typeof AppIndexRoute
@@ -464,6 +473,7 @@ export interface FileRouteTypes {
     | '/app/reconciliation'
     | '/app/review'
     | '/app/settings'
+    | '/app/sources'
     | '/app/tax'
     | '/app/timeline'
     | '/app/'
@@ -510,6 +520,7 @@ export interface FileRouteTypes {
     | '/app/reconciliation'
     | '/app/review'
     | '/app/settings'
+    | '/app/sources'
     | '/app/tax'
     | '/app/timeline'
     | '/app'
@@ -558,6 +569,7 @@ export interface FileRouteTypes {
     | '/app/reconciliation'
     | '/app/review'
     | '/app/settings'
+    | '/app/sources'
     | '/app/tax'
     | '/app/timeline'
     | '/app/'
@@ -831,6 +843,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/sources': {
+      id: '/app/sources'
+      path: '/sources'
+      fullPath: '/app/sources'
+      preLoaderRoute: typeof AppSourcesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/tax': {
       id: '/app/tax'
       path: '/tax'
@@ -961,6 +980,7 @@ interface AppRouteChildren {
   AppReconciliationRoute: typeof AppReconciliationRoute
   AppReviewRoute: typeof AppReviewRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppSourcesRoute: typeof AppSourcesRoute
   AppTaxRoute: typeof AppTaxRoute
   AppTimelineRoute: typeof AppTimelineRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -981,6 +1001,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReconciliationRoute: AppReconciliationRoute,
   AppReviewRoute: AppReviewRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppSourcesRoute: AppSourcesRoute,
   AppTaxRoute: AppTaxRoute,
   AppTimelineRoute: AppTimelineRoute,
   AppIndexRoute: AppIndexRoute,

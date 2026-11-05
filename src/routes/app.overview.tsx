@@ -107,21 +107,6 @@ function MetricCard({
         <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
           {sub}
         </p>
-        {askWhy && (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="mt-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold opacity-0 transition-all group-hover:opacity-100"
-            style={{
-              background: `color-mix(in srgb, ${toneColors[tone]} 10%, transparent)`,
-              color: toneColors[tone],
-              border: `1px solid color-mix(in srgb, ${toneColors[tone]} 20%, transparent)`,
-            }}
-          >
-            <Sparkles size={10} />
-            Why?
-          </button>
-        )}
       </div>
     </motion.div>
   );
@@ -329,8 +314,8 @@ function MissionControl() {
         </p>
         <Link
           to="/app/parser"
-          className="mt-6 flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
-          style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
+          className="mt-6 flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
+          style={{ background: "var(--color-accent)", color: "var(--accent-fg)", boxShadow: "var(--shadow-accent)" }}
         >
           <Upload size={16} />
           Upload records
@@ -340,19 +325,37 @@ function MissionControl() {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[1400px]">
+    <div className="p-4 sm:p-6 space-y-6 max-w-[1600px]">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem" }}>Portfolio Overview</h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
+            Real-time portfolio health and performance metrics
+          </p>
+        </div>
+        <Link
+          to="/app/parser"
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+          style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
+        >
+          <Upload size={16} />
+          Upload Data
+        </Link>
+      </div>
+
       {/* Daily Briefing */}
       <DailyBriefing />
 
-      {/* Top row: Health Score + Metrics */}
-      <div className="grid gap-4 lg:grid-cols-4">
-        {/* Health Score */}
-        <div className="lg:col-span-1">
-          <FinancialHealthScore score={score} isLoading={scoreLoading} />
+      {/* Key Metrics Grid */}
+      <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+        <div className="mb-4">
+          <h2 className="text-sm font-bold">Key Metrics</h2>
+          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+            Live portfolio valuation and performance
+          </p>
         </div>
-
-        {/* Metric cards */}
-        <div className="lg:col-span-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             label="Portfolio Value"
             value={summaryLoading ? "—" : `${currency} ${fmt(totalPortfolioValue)}`}
@@ -385,68 +388,103 @@ function MissionControl() {
             i={3}
             askWhy="Why did my estimated tax change?"
           />
-          <MetricCard
-            label="Unreconciled Items"
-            value={String(unreconciledCount)}
-            sub={unreconciledCount > 0 ? "Requires review" : "All matched"}
-            tone={unreconciledCount > 0 ? "warn" : "ok"}
-            i={4}
-            askWhy="Why are these transactions unreconciled?"
-          />
-          <MetricCard
-            label="Total Transactions"
-            value={String(transactions.length)}
-            sub="In your ledger"
-            tone="info"
-            i={5}
-          />
-          <MetricCard
-            label="Open Flags"
-            value={String(flags.length)}
-            sub={flags.length > 0 ? "Need attention" : "Clean book"}
-            tone={flags.length > 0 ? "warn" : "ok"}
-            i={6}
-          />
         </div>
       </div>
 
-      {/* Priorities */}
-      {(priorities.length > 0 || prioritiesLoading) && (
-        <div>
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold">Requires Attention</h2>
-              <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                Wab-prioritised issues for your review
-              </p>
-            </div>
-            <Link
-              to="/app/reconciliation"
-              className="flex items-center gap-1 text-xs font-semibold"
-              style={{ color: "var(--color-accent)" }}
-            >
-              All issues <ChevronRight size={13} />
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {prioritiesLoading
-              ? [0, 1, 2].map((i) => <PriorityCardSkeleton key={i} />)
-              : priorities.slice(0, 3).map((p) => <PriorityCard key={p.id} priority={p} />)}
-          </div>
-        </div>
-      )}
-
-      {/* Wab Found Something + Portfolio Charts */}
+      {/* Two-column layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Wab Found Something */}
-        <div className="lg:col-span-2">
+        {/* Left column - Main charts and insights */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* P&L Chart */}
+          {pnlData.length > 0 && (
+            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm font-bold">Cumulative Realized P&L</p>
+                  <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                    {currency} · YTD {currentYear} · FIFO lot matching
+                  </p>
+                </div>
+                <TrendingUp size={16} style={{ color: "var(--color-accent)" }} />
+              </div>
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={pnlData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+                  <defs>
+                    <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.01} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 11, fill: "var(--ink-3)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--ink-3)" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    formatter={(v: number) => [`${currency} ${fmt(v)}`, "Realized P&L"]}
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 10,
+                      border: "1px solid var(--hairline)",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--chart-1)"
+                    strokeWidth={2}
+                    fill="url(#pnlGrad)"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Wab Found Something */}
           <FoundSomethingSection insights={insights} flags={flags} currency={currency} />
+
+          {/* Financial Timeline */}
+          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold">Financial Timeline</h2>
+                <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                  Meaningful financial events — automatically recorded
+                </p>
+              </div>
+              <Link
+                to="/app/timeline"
+                className="flex items-center gap-1 text-xs font-semibold"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Full timeline <ChevronRight size={13} />
+              </Link>
+            </div>
+            <FinancialTimeline
+              entries={timelineEntries.slice(0, 8)}
+              isLoading={eventsLoading && transactions.length === 0}
+            />
+          </div>
         </div>
 
-        {/* Holdings Allocation */}
-        {allocationData.length > 0 && (
-          <div>
-            <Panel className="h-full">
+        {/* Right column - Sidebar widgets */}
+        <div className="space-y-6">
+          {/* Health Score */}
+          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <FinancialHealthScore score={score} isLoading={scoreLoading} />
+          </div>
+
+          {/* Holdings Allocation */}
+          {allocationData.length > 0 && (
+            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm font-bold">Holdings</p>
@@ -495,114 +533,68 @@ function MissionControl() {
                   </div>
                 ))}
               </div>
-            </Panel>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
 
-      {/* P&L Chart */}
-      {pnlData.length > 0 && (
-        <Panel>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-bold">Cumulative Realized P&L</p>
+          {/* Secondary Metrics */}
+          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <div className="mb-4">
+              <p className="text-sm font-bold">Data Quality</p>
               <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                {currency} · YTD {currentYear} · FIFO lot matching
+                Ledger health and reconciliation status
               </p>
             </div>
-            <TrendingUp size={16} style={{ color: "var(--color-accent)" }} />
+            <div className="space-y-3">
+              <MetricCard
+                label="Unreconciled Items"
+                value={String(unreconciledCount)}
+                sub={unreconciledCount > 0 ? "Requires review" : "All matched"}
+                tone={unreconciledCount > 0 ? "warn" : "ok"}
+                i={0}
+                askWhy="Why are these transactions unreconciled?"
+              />
+              <MetricCard
+                label="Total Transactions"
+                value={String(transactions.length)}
+                sub="In your ledger"
+                tone="info"
+                i={1}
+              />
+              <MetricCard
+                label="Open Flags"
+                value={String(flags.length)}
+                sub={flags.length > 0 ? "Need attention" : "Clean book"}
+                tone={flags.length > 0 ? "warn" : "ok"}
+                i={2}
+              />
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={pnlData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.01} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 11, fill: "var(--ink-3)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "var(--ink-3)" }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                formatter={(v: number) => [`${currency} ${fmt(v)}`, "Realized P&L"]}
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 10,
-                  border: "1px solid var(--hairline)",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                fill="url(#pnlGrad)"
-                dot={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-      )}
 
-      {/* Financial Timeline */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-bold">Financial Timeline</h2>
-            <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-              Meaningful financial events — automatically recorded
-            </p>
-          </div>
-          <Link
-            to="/app/timeline"
-            className="flex items-center gap-1 text-xs font-semibold"
-            style={{ color: "var(--color-accent)" }}
-          >
-            Full timeline <ChevronRight size={13} />
-          </Link>
-        </div>
-        <Panel>
-          <FinancialTimeline
-            entries={timelineEntries.slice(0, 8)}
-            isLoading={eventsLoading && transactions.length === 0}
-          />
-        </Panel>
-      </div>
-
-      {/* Quick Actions */}
-      <div>
-        <h2 className="mb-3 text-sm font-bold">Quick Actions</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { icon: Upload,     label: "Upload Statement",    to: "/app/parser",          color: "var(--color-accent)" },
-            { icon: GitFork,    label: "Run Reconciliation",  to: "/app/reconciliation",  color: "var(--info)" },
-            { icon: Search,     label: "New Investigation",   to: "/app/investigations",  color: "var(--warn)" },
-            { icon: BarChart3,  label: "Tax Summary",         to: "/app/tax",             color: "var(--ok)" },
-          ].map(({ icon: Ic, label, to, color }) => (
-            <Link
-              key={label}
-              to={to}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-surface py-5 text-center text-xs font-medium transition-shadow hover:shadow-md"
-              style={{ border: "1px solid var(--hairline)" }}
-            >
-              <span
-                className="flex size-10 items-center justify-center rounded-xl"
-                style={{ background: `color-mix(in srgb, ${color} 10%, transparent)` }}
-              >
-                <Ic size={20} strokeWidth={1.75} style={{ color }} />
-              </span>
-              {label}
-            </Link>
-          ))}
+          {/* Priorities */}
+          {(priorities.length > 0 || prioritiesLoading) && (
+            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold">Requires Attention</p>
+                  <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                    Priority issues
+                  </p>
+                </div>
+                <Link
+                  to="/app/reconciliation"
+                  className="flex items-center gap-1 text-xs font-semibold"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  All <ChevronRight size={13} />
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {prioritiesLoading
+                  ? [0, 1].map((i) => <PriorityCardSkeleton key={i} />)
+                  : priorities.slice(0, 2).map((p) => <PriorityCard key={p.id} priority={p} />)}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

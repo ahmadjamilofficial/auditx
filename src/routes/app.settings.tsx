@@ -8,7 +8,6 @@ import {
   Key,
   Loader2,
   Plus,
-  Share2,
   Trash2,
   Users,
 } from "lucide-react";
@@ -26,7 +25,6 @@ import {
   useDeleteBroker,
   useDeleteOrganization,
 } from "@/lib/data-hooks";
-import { ConnectedSourcesTab } from "@/components/app/ConnectedSourcesTab";
 import { DirectSourceConnect } from "@/components/app/DirectSourceConnect";
 
 
@@ -34,14 +32,13 @@ export const Route = createFileRoute("/app/settings")({
   component: Settings,
 });
 
-type Tab = "org" | "tax-profiles" | "brokers" | "import" | "sources" | "team" | "notifications" | "api";
+type Tab = "org" | "tax-profiles" | "brokers" | "import" | "team" | "notifications" | "api";
 
 const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
   { id: "org",          label: "Organisation",      icon: Building2  },
   { id: "tax-profiles", label: "Tax Profiles",       icon: CreditCard },
   { id: "brokers",      label: "Broker Accounts",    icon: Key        },
   { id: "import",       label: "Import Data",         icon: Download   },
-  { id: "sources",      label: "Connected Sources",  icon: Share2     },
   { id: "team",         label: "Team & Roles",        icon: Users      },
   { id: "notifications",label: "Notifications",      icon: Bell       },
 ];
@@ -564,18 +561,6 @@ function Settings() {
                   orgId={profile?.org_id ?? ""}
                   onComplete={() => setTab("brokers")}
                 />
-              </Panel>
-            </motion.div>
-          )}
-
-          {tab === "sources" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Panel>
-                <p className="mb-1 text-sm font-semibold">Connected Sources</p>
-                <p className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  Wab monitors these sources continuously and acts on changes automatically.
-                </p>
-                <ConnectedSourcesTab orgId={profile?.org_id ?? ""} />
               </Panel>
             </motion.div>
           )}

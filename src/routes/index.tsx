@@ -603,8 +603,8 @@ function Home() {
                 >
                   {t.popular && (
                     <div
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-xs font-semibold text-white"
-                      style={{ background: "var(--color-accent)" }}
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-xs font-semibold"
+                      style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
                     >
                       Most popular
                     </div>
@@ -690,11 +690,12 @@ function Home() {
       <section style={{ background: "var(--color-accent)" }}>
         <Container className="py-20 text-center">
           <h2
-            className="mb-4 text-white"
+            className="mb-4"
             style={{
               fontFamily: "var(--font-heading)",
               fontSize: "clamp(1.5rem,4vw,2.5rem)",
               lineHeight: 1.1,
+              color: "var(--accent-fg)",
             }}
           >
             Turn messy broker records into

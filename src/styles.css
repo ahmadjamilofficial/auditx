@@ -282,7 +282,15 @@
    * fixed dark/red surface set an explicit inline colour, which wins over this.
    */
   .dark .text-white {
-    color: var(--accent-fg);
+    color: var(--accent-fg) !important;
+  }
+
+  /* Fix for elements with inline color: #fff or color: white */
+  .dark [style*="color: #fff"],
+  .dark [style*="color: white"],
+  .dark [style*='color: "white"'],
+  .dark [style*='color: "#fff"'] {
+    color: var(--accent-fg) !important;
   }
 
   html {
