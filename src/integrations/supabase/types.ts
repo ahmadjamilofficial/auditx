@@ -327,6 +327,27 @@ export type Database = {
           },
         ]
       }
+      ai_plan_limits: {
+        Row: {
+          daily_credits: number
+          max_per_request: number
+          monthly_credits: number
+          plan: string
+        }
+        Insert: {
+          daily_credits: number
+          max_per_request: number
+          monthly_credits: number
+          plan: string
+        }
+        Update: {
+          daily_credits?: number
+          max_per_request?: number
+          monthly_credits?: number
+          plan?: string
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
           created_at: string
@@ -1116,6 +1137,65 @@ export type Database = {
           },
         ]
       }
+      integration_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          connection_id: string | null
+          created_at: string
+          detail: Json
+          id: number
+          org_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          connection_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: number
+          org_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          connection_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: number
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_audit_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_audit_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_audit_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "integration_audit_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
       ledger_entries: {
         Row: {
           amount: number
@@ -1326,6 +1406,7 @@ export type Database = {
           id: string
           link: string | null
           message: string
+          metadata: Json | null
           org_id: string
           read: boolean
           severity: string
@@ -1338,6 +1419,7 @@ export type Database = {
           id?: string
           link?: string | null
           message: string
+          metadata?: Json | null
           org_id: string
           read?: boolean
           severity?: string
@@ -1350,6 +1432,7 @@ export type Database = {
           id?: string
           link?: string | null
           message?: string
+          metadata?: Json | null
           org_id?: string
           read?: boolean
           severity?: string
@@ -1600,6 +1683,479 @@ export type Database = {
           },
         ]
       }
+      provider_accounts: {
+        Row: {
+          account_type: string
+          as_of: string
+          available: number | null
+          balance: number | null
+          connection_id: string
+          created_at: string
+          currency: string
+          external_id: string
+          id: string
+          org_id: string
+          raw: Json
+          source_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string
+          as_of?: string
+          available?: number | null
+          balance?: number | null
+          connection_id: string
+          created_at?: string
+          currency?: string
+          external_id: string
+          id?: string
+          org_id: string
+          raw?: Json
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string
+          as_of?: string
+          available?: number | null
+          balance?: number | null
+          connection_id?: string
+          created_at?: string
+          currency?: string
+          external_id?: string
+          id?: string
+          org_id?: string
+          raw?: Json
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_accounts_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_accounts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_accounts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_accounts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      provider_connections: {
+        Row: {
+          category: string
+          config: Json
+          consecutive_errors: number
+          created_at: string
+          created_by: string | null
+          credentials_set: boolean
+          id: string
+          label: string
+          last_error: string | null
+          last_error_at: string | null
+          last_sync_at: string | null
+          last_sync_status: string | null
+          org_id: string
+          permissions: Json
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          config?: Json
+          consecutive_errors?: number
+          created_at?: string
+          created_by?: string | null
+          credentials_set?: boolean
+          id?: string
+          label: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          org_id: string
+          permissions?: Json
+          provider: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          config?: Json
+          consecutive_errors?: number
+          created_at?: string
+          created_by?: string | null
+          credentials_set?: boolean
+          id?: string
+          label?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          org_id?: string
+          permissions?: Json
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      provider_credentials: {
+        Row: {
+          auth_tag: string
+          ciphertext: string
+          connection_id: string
+          created_at: string
+          iv: string
+          key_version: number
+          org_id: string
+          rotated_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          auth_tag: string
+          ciphertext: string
+          connection_id: string
+          created_at?: string
+          iv: string
+          key_version?: number
+          org_id: string
+          rotated_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auth_tag?: string
+          ciphertext?: string
+          connection_id?: string
+          created_at?: string
+          iv?: string
+          key_version?: number
+          org_id?: string
+          rotated_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_credentials_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_credentials_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_credentials_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_credentials_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      provider_events: {
+        Row: {
+          attempts: number
+          connection_id: string | null
+          id: string
+          idempotency_key: string
+          kind: string
+          last_error: string | null
+          org_id: string
+          payload: Json
+          processed_at: string | null
+          provider: string
+          received_at: string
+          signature_ok: boolean | null
+        }
+        Insert: {
+          attempts?: number
+          connection_id?: string | null
+          id?: string
+          idempotency_key: string
+          kind: string
+          last_error?: string | null
+          org_id: string
+          payload?: Json
+          processed_at?: string | null
+          provider: string
+          received_at?: string
+          signature_ok?: boolean | null
+        }
+        Update: {
+          attempts?: number
+          connection_id?: string | null
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          last_error?: string | null
+          org_id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+          signature_ok?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_events_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      provider_sync_runs: {
+        Row: {
+          accounts_upserted: number
+          connection_id: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          metadata: Json
+          org_id: string
+          request_id: string | null
+          started_at: string
+          status: string
+          transactions_skipped: number
+          transactions_upserted: number
+          trigger: string
+        }
+        Insert: {
+          accounts_upserted?: number
+          connection_id: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json
+          org_id: string
+          request_id?: string | null
+          started_at?: string
+          status?: string
+          transactions_skipped?: number
+          transactions_upserted?: number
+          trigger?: string
+        }
+        Update: {
+          accounts_upserted?: number
+          connection_id?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json
+          org_id?: string
+          request_id?: string | null
+          started_at?: string
+          status?: string
+          transactions_skipped?: number
+          transactions_upserted?: number
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_sync_runs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_sync_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_sync_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_sync_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      provider_transactions: {
+        Row: {
+          account_external_id: string | null
+          amount: number | null
+          connection_id: string
+          created_at: string
+          currency: string
+          dedupe_key: string
+          external_id: string
+          fees: number
+          id: string
+          instrument: string | null
+          kind: string
+          occurred_at: string
+          org_id: string
+          price: number | null
+          quantity: number | null
+          raw: Json
+          settled_at: string | null
+          side: string | null
+          source_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_external_id?: string | null
+          amount?: number | null
+          connection_id: string
+          created_at?: string
+          currency?: string
+          dedupe_key: string
+          external_id: string
+          fees?: number
+          id?: string
+          instrument?: string | null
+          kind?: string
+          occurred_at: string
+          org_id: string
+          price?: number | null
+          quantity?: number | null
+          raw?: Json
+          settled_at?: string | null
+          side?: string | null
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_external_id?: string | null
+          amount?: number | null
+          connection_id?: string
+          created_at?: string
+          currency?: string
+          dedupe_key?: string
+          external_id?: string
+          fees?: number
+          id?: string
+          instrument?: string | null
+          kind?: string
+          occurred_at?: string
+          org_id?: string
+          price?: number | null
+          quantity?: number | null
+          raw?: Json
+          settled_at?: string | null
+          side?: string | null
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_transactions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "provider_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
       reconciliation_flags: {
         Row: {
           actual: Json
@@ -1735,13 +2291,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "orgs_needing_nightly"
             referencedColumns: ["org_id"]
-          },
-          {
-            foreignKeyName: "subscription_events_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -2168,6 +2717,7 @@ export type Database = {
           exchange: string
           fees: number
           id: string
+          notes: string | null
           org_id: string
           price: number
           quantity: number
@@ -2188,6 +2738,7 @@ export type Database = {
           exchange?: string
           fees?: number
           id?: string
+          notes?: string | null
           org_id: string
           price: number
           quantity: number
@@ -2208,6 +2759,7 @@ export type Database = {
           exchange?: string
           fees?: number
           id?: string
+          notes?: string | null
           org_id?: string
           price?: number
           quantity?: number
@@ -2258,6 +2810,38 @@ export type Database = {
       }
     }
     Views: {
+      ai_usage_today: {
+        Row: {
+          credits_used_today: number | null
+          org_id: string | null
+          plan: string | null
+          requests_today: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "ai_usage_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
       orgs_needing_monthly: {
         Row: {
           org_id: string | null
@@ -2281,6 +2865,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_org_id: { Args: never; Returns: string }
       current_org_ids: { Args: never; Returns: string[] }
       dequeue_agent_job: {
         Args: { p_worker_id?: string }
