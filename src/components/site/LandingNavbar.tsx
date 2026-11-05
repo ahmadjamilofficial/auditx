@@ -162,6 +162,10 @@ export function LandingNavbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + links.length * 0.06, duration: 0.35 }}
                 >
+                  <button
+                    type="button"
+                    onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
+                    className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
                   >
                     <Github size={18} strokeWidth={1.75} />
                   </button>
