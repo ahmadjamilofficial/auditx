@@ -191,7 +191,7 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
               type="button"
               onClick={handleRevert}
               disabled={revertMutation.isPending}
-              className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-surface-hover disabled:opacity-50"
               style={{ borderColor: "var(--hairline)", color: "var(--ink-2)" }}
               title="Revert all changes from this run"
             >
@@ -230,7 +230,7 @@ function ActivityFeed() {
           type="button"
           onClick={() => void refetch()}
           disabled={isFetching}
-          className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface-hover disabled:opacity-50"
           style={{ borderColor: "var(--hairline)" }}
         >
           <RefreshCw size={13} className={isFetching ? "animate-spin" : ""} />

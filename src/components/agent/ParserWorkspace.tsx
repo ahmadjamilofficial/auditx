@@ -273,7 +273,7 @@ function ErrorBanner({
               <button
                 type="button"
                 onClick={onRetry}
-                className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5"
+                className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-surface-hover"
                 style={{ borderColor: cfg.color, color: cfg.color }}
               >
                 {cfg.cta}
@@ -501,12 +501,12 @@ function ToolCard({
       {open && (
         <div className="space-y-2 px-3 py-2 text-[11px]" style={{ color: "var(--ink-2)" }}>
           {part.input != null && (
-            <pre className="overflow-x-auto rounded-lg bg-black/5 p-2 whitespace-pre-wrap break-words">
+            <pre className="overflow-x-auto rounded-lg p-2 whitespace-pre-wrap break-words" style={{ background: "var(--accent-6)" }}>
               {JSON.stringify(part.input, null, 2)}
             </pre>
           )}
           {part.output !== undefined && (
-            <pre className="overflow-x-auto rounded-lg bg-black/5 p-2 whitespace-pre-wrap break-words">
+            <pre className="overflow-x-auto rounded-lg p-2 whitespace-pre-wrap break-words" style={{ background: "var(--accent-6)" }}>
               {JSON.stringify(part.output, null, 2)}
             </pre>
           )}
@@ -636,7 +636,7 @@ function AttachedFileStrip() {
           <button
             type="button"
             onClick={() => attachments.remove(file.id)}
-            className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-black/10"
+            className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-surface-hover"
             aria-label={`Remove ${file.filename}`}
             style={{ color: "var(--ink-3)" }}
           >
@@ -800,7 +800,7 @@ function Chat({
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-black/5"
+              className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
               style={{ borderColor: "var(--hairline)" }}
               aria-label="Chat options"
             >

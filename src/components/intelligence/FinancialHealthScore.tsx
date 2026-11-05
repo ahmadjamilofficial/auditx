@@ -122,7 +122,7 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors hover:bg-black/5"
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors hover:bg-surface-hover"
           style={{ color: "var(--ink-3)", border: "1px solid var(--hairline)" }}
         >
           <Info size={12} />

@@ -186,7 +186,7 @@ function ApprovalCard({
           type="button"
           onClick={() => void handle("skipped")}
           disabled={!!deciding}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-hover disabled:opacity-40"
           style={{ borderColor: "var(--hairline)", color: "var(--ink-2)" }}
         >
           {deciding === "skipped" ? (
@@ -201,7 +201,7 @@ function ApprovalCard({
           type="button"
           onClick={() => void handle("rejected")}
           disabled={!!deciding}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-hover disabled:opacity-40"
           style={{
             borderColor: "color-mix(in srgb, var(--bad) 30%, transparent)",
             color: "var(--bad)",
@@ -282,7 +282,7 @@ function ReviewInbox() {
             type="button"
             onClick={() => void refetch()}
             disabled={isFetching}
-            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface-hover disabled:opacity-50"
             style={{ borderColor: "var(--hairline)" }}
           >
             <RefreshCw size={13} className={isFetching ? "animate-spin" : ""} />

@@ -68,7 +68,7 @@ export function LandingNavbar() {
             <button
               type="button"
               onClick={() => nav({ to: "/signin" })}
-              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5"
+              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-hover"
               style={{ color: "var(--ink-2)" }}
             >
               Sign In
@@ -132,7 +132,7 @@ export function LandingNavbar() {
                   type="button"
                   aria-label="Close menu"
                   onClick={() => setOpen(false)}
-                  className="flex size-9 items-center justify-center rounded-xl hover:bg-black/5"
+                  className="flex size-9 items-center justify-center rounded-xl hover:bg-surface-hover"
                 >
                   <X size={20} strokeWidth={1.75} />
                 </button>
@@ -151,7 +151,7 @@ export function LandingNavbar() {
                     <Link
                       to={l.to}
                       onClick={() => setOpen(false)}
-                      className="block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-black/5"
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-surface-hover"
                     >
                       {l.label}
                     </Link>

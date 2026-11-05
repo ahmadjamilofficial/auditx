@@ -97,7 +97,7 @@ export function ChatComposer({
           type="button"
           aria-label="Attach files"
           onClick={() => inputRef.current?.click()}
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl border transition-colors hover:bg-black/5"
+          className="flex size-9 shrink-0 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
           style={{ borderColor: "var(--hairline)" }}
         >
           <Plus size={17} strokeWidth={1.75} />

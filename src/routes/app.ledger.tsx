@@ -185,7 +185,7 @@ function TxFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 transition-colors hover:bg-black/5"
+            className="rounded-lg p-1.5 transition-colors hover:bg-surface-hover"
           >
             <X size={16} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
           </button>
@@ -406,7 +406,7 @@ function TxFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5"
+              className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-hover"
               style={{ borderColor: "var(--hairline)" }}
             >
               Cancel
@@ -565,7 +565,7 @@ function BrokerPanel({ orgId, onClose }: { orgId: string; onClose: () => void })
             <Building2 size={16} style={{ color: "var(--color-accent)" }} />
             <span className="text-sm font-bold">Broker Accounts</span>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-black/5">
+          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-surface-hover">
             <X size={15} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
           </button>
         </div>
@@ -631,7 +631,7 @@ function BrokerPanel({ orgId, onClose }: { orgId: string; onClose: () => void })
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(b.id)}
-                        className="rounded-lg p-1.5 hover:bg-black/5"
+                        className="rounded-lg p-1.5 hover:bg-surface-hover"
                         aria-label="Delete broker"
                       >
                         <Trash2 size={13} strokeWidth={1.75} style={{ color: "var(--bad)" }} />
@@ -905,7 +905,7 @@ function ImportPanel({
             </span>
             <h2 className="text-sm font-bold">Import Records</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-black/5">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-surface-hover">
             <X size={16} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
           </button>
         </div>
@@ -989,7 +989,7 @@ function ImportPanel({
                           e.stopPropagation();
                           setFiles((p) => p.filter((x) => x.name !== f.name));
                         }}
-                        className="rounded p-0.5 hover:bg-black/10"
+                        className="rounded p-0.5 hover:bg-surface-hover"
                       >
                         <X size={11} strokeWidth={2} style={{ color: "var(--ink-3)" }} />
                       </button>
@@ -1662,7 +1662,7 @@ function Ledger() {
                       <button
                         type="button"
                         onClick={() => setRowMenu(rowMenu === tx.id ? null : tx.id)}
-                        className="rounded-lg p-1.5 transition-colors hover:bg-black/10"
+                        className="rounded-lg p-1.5 transition-colors hover:bg-surface-hover"
                         aria-label="Row actions"
                       >
                         <MoreHorizontal size={16} strokeWidth={1.75} />

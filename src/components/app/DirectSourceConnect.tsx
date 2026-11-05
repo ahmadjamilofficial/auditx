@@ -139,7 +139,7 @@ function PermissionPrompt({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5"
+          className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-hover"
           style={{ borderColor: "var(--hairline)" }}
         >
           Cancel
@@ -667,7 +667,7 @@ export function DirectSourceConnect({
             <button
               type="button"
               onClick={onComplete}
-              className="mt-5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-black/5"
+              className="mt-5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-surface-hover"
               style={{ borderColor: "var(--hairline)" }}
             >
               Done
@@ -701,7 +701,7 @@ export function DirectSourceConnect({
                 setStep("choose");
                 setErrorMsg(null);
               }}
-              className="mt-5 flex items-center gap-1.5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-black/5"
+              className="mt-5 flex items-center gap-1.5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-surface-hover"
               style={{ borderColor: "var(--hairline)" }}
             >
               <RotateCcw size={13} /> Try again

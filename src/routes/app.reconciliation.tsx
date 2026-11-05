@@ -434,7 +434,7 @@ function Reconciliation() {
                     <div key={flag.id}>
                       <button
                         type="button"
-                        className="w-full px-5 py-4 text-left transition-colors hover:bg-black/5"
+                        className="w-full px-5 py-4 text-left transition-colors hover:bg-surface-hover"
                         onClick={() => setExpanded(expanded === flag.id ? null : flag.id)}
                       >
                         <div className="flex items-center justify-between">

@@ -192,7 +192,7 @@ export function LandingComposer() {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex size-9 items-center justify-center rounded-full transition-colors hover:bg-black/5"
+              className="flex size-9 items-center justify-center rounded-full transition-colors hover:bg-surface-hover"
               aria-label="Attach files"
               title="Attach PDF, CSV, XLSX, image"
               style={{ color: "var(--ink-3)" }}

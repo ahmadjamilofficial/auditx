@@ -124,7 +124,7 @@ function RulesEditor({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-black/5"
+          className="rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-surface-hover"
           style={{ borderColor: "var(--hairline)" }}
         >
           Cancel
@@ -216,7 +216,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
           <button
             type="button"
             onClick={() => setEditingRules((v) => !v)}
-            className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-black/5"
+            className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
             style={{ borderColor: "var(--hairline)" }}
             title="Edit rules"
           >
@@ -227,7 +227,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
             type="button"
             onClick={() => void togglePause()}
             disabled={pauseMutation.isPending}
-            className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-black/5 disabled:opacity-40"
+            className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover disabled:opacity-40"
             style={{ borderColor: "var(--hairline)" }}
             title={source.paused ? "Resume" : "Pause"}
           >
@@ -244,7 +244,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-black/5"
+              className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
               style={{ borderColor: "var(--hairline)" }}
               title="Remove source"
             >
@@ -268,7 +268,7 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="rounded-full border px-2.5 py-1 text-[11px] font-medium hover:bg-black/5"
+                className="rounded-full border px-2.5 py-1 text-[11px] font-medium hover:bg-surface-hover"
                 style={{ borderColor: "var(--hairline)" }}
               >
                 Cancel
@@ -428,7 +428,7 @@ export function ConnectedSourcesTab({ orgId }: { orgId: string }) {
             startGoogleOAuth(orgId);
           }}
           disabled={connecting}
-          className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-hover disabled:opacity-50"
           style={{ borderColor: "var(--hairline)" }}
         >
           {connecting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}

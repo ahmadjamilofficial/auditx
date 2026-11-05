@@ -88,7 +88,7 @@ function NotificationRow({
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-black/5"
+      className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-surface-hover"
       style={{ opacity: n.read ? 0.6 : 1 }}
     >
       {/* Unread dot */}
@@ -211,7 +211,7 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-lg p-1 transition-colors hover:bg-black/5"
+                  className="rounded-lg p-1 transition-colors hover:bg-surface-hover"
                 >
                   <X size={15} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
                 </button>
@@ -289,7 +289,7 @@ export function NotificationBell({
     <button
       type="button"
       onClick={onClick}
-      className="relative flex size-9 items-center justify-center rounded-xl border transition-colors hover:bg-black/5"
+      className="relative flex size-9 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
       style={{ borderColor: "var(--hairline)" }}
       aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
     >

@@ -220,7 +220,7 @@ function InnerShell({ children }: { children: ReactNode }) {
                 type="button"
                 aria-label="Expand navigation"
                 onClick={() => (onClose ? onClose() : setExpanded(true))}
-                className="flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-black/5"
+                className="flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-surface-hover"
                 style={{ background: "var(--sidebar)", border: "1px solid var(--sidebar-border)" }}
               >
                 <LogoMark size={20} />
@@ -235,7 +235,7 @@ function InnerShell({ children }: { children: ReactNode }) {
                   type="button"
                   aria-label="Collapse navigation"
                   onClick={() => setExpanded(false)}
-                  className="flex size-8 items-center justify-center rounded-xl transition-colors hover:bg-black/5"
+                  className="flex size-8 items-center justify-center rounded-xl transition-colors hover:bg-surface-hover"
                   title="Collapse sidebar"
                 >
                   <PanelLeft size={16} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
@@ -523,7 +523,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setTheme(actualTheme === "dark" ? "light" : "dark")}
-              className="hidden items-center justify-center rounded-xl p-2 transition-colors hover:bg-black/5 sm:flex"
+              className="hidden items-center justify-center rounded-xl p-2 transition-colors hover:bg-surface-hover sm:flex"
               title={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               style={{ color: "var(--ink-2)" }}
             >
