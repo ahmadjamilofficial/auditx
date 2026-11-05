@@ -27,25 +27,43 @@ const steps = [
     icon: Upload,
     title: "1 · Upload",
     body: "Drag in PDFs, phone photos of broker slips, CSV or Excel exports, or forwarded email receipts. Files land in a private per-organisation bucket and are never shared across tenants.",
-    detail: ["PDF · PNG · JPG · CSV · XLSX", "Bulk upload up to 50 files", "Sample documents available"],
+    detail: [
+      "PDF · PNG · JPG · CSV · XLSX",
+      "Bulk upload up to 50 files",
+      "Sample documents available",
+    ],
   },
   {
     icon: Sparkles,
     title: "2 · Extract",
     body: "A multimodal model reads each document against a strict JSON schema and returns a confidence score per field. Anything below 0.75 is routed to the review queue instead of auto-posting.",
-    detail: ["Per-field confidence badges", "Schema-validated server-side", "One automatic retry on failure"],
+    detail: [
+      "Per-field confidence badges",
+      "Schema-validated server-side",
+      "One automatic retry on failure",
+    ],
   },
   {
     icon: ScanSearch,
     title: "3 · Reconcile",
     body: "A deterministic rule engine — no model involved — diffs extracted trades against your cash-balance ledger by reference ID, date and amount tolerance.",
-    detail: ["Unmatched trades", "Duplicate fills", "Fee surcharges vs tariff", "WHT vs filer status"],
+    detail: [
+      "Unmatched trades",
+      "Duplicate fills",
+      "Fee surcharges vs tariff",
+      "WHT vs filer status",
+    ],
   },
   {
     icon: FileCheck2,
     title: "4 · File",
     body: "FIFO lot matching computes holding periods and applies your jurisdiction's CGT bands. Export a PDF summary with the underlying lot-by-lot working and a verifiable audit trail.",
-    detail: ["FIFO cost basis", "Short vs long-term tiers", "Dividend WHT reconciliation", "PDF + CSV export"],
+    detail: [
+      "FIFO cost basis",
+      "Short vs long-term tiers",
+      "Dividend WHT reconciliation",
+      "PDF + CSV export",
+    ],
   },
 ];
 

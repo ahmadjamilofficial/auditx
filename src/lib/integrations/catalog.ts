@@ -125,8 +125,7 @@ export const PROVIDER_CATALOG: ProviderSummary[] = [
     id: "binance",
     label: "Binance",
     category: "exchange",
-    summary:
-      "Spot balances and trade history via signed REST calls. Requires a read-only API key.",
+    summary: "Spot balances and trade history via signed REST calls. Requires a read-only API key.",
     capabilities: [
       "Account balances",
       "Trade history (per configured symbol)",

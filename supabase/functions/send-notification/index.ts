@@ -4,10 +4,10 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
-const FROM_EMAIL       = Deno.env.get("FROM_EMAIL") ?? "noreply@auditx.app";
+const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "noreply@auditx.app";
 
 const db = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -20,14 +20,14 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   }
 
   const res = await fetch("https://api.resend.com/emails", {
-    method:  "POST",
+    method: "POST",
     headers: {
-      Authorization:  `Bearer ${RESEND_KEY}`,
+      Authorization: `Bearer ${RESEND_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from:    `Wab <${FROM_EMAIL}>`,
-      to:      [to],
+      from: `Wab <${FROM_EMAIL}>`,
+      to: [to],
       subject,
       html,
     }),
@@ -43,22 +43,25 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,authorization" },
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "content-type,authorization",
+      },
     });
   }
 
-  const body = await req.json().catch(() => null) as Record<string, unknown> | null;
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return new Response("bad body", { status: 400 });
 
   // Database webhook sends { type, table, record, old_record }
   const record = (body["record"] as Record<string, unknown>) ?? body;
 
-  const userId   = record["user_id"]  as string | undefined;
-  const orgId    = record["org_id"]   as string | undefined;
+  const userId = record["user_id"] as string | undefined;
+  const orgId = record["org_id"] as string | undefined;
   const severity = record["severity"] as string | undefined;
-  const title    = record["title"]    as string | undefined ?? "Wab notification";
-  const message  = record["message"]  as string | undefined ?? "";
-  const link     = record["link"]     as string | undefined;
+  const title = (record["title"] as string | undefined) ?? "Wab notification";
+  const message = (record["message"] as string | undefined) ?? "";
+  const link = record["link"] as string | undefined;
 
   if (!userId || !orgId) return new Response("missing user_id or org_id", { status: 400 });
 
@@ -75,14 +78,17 @@ Deno.serve(async (req: Request) => {
     .maybeSingle();
 
   const shouldEmail =
-    (prefs?.email_notify !== false) &&
+    prefs?.email_notify !== false &&
     ((severity === "warning" && prefs?.email_on_notify !== false) ||
-     (severity === "error"   && prefs?.email_on_stop   !== false));
+      (severity === "error" && prefs?.email_on_stop !== false));
 
   if (!shouldEmail) return new Response(JSON.stringify({ skipped: true }), { status: 200 });
 
   // Get user email
-  const { data: { user }, error: userErr } = await db.auth.admin.getUserById(userId);
+  const {
+    data: { user },
+    error: userErr,
+  } = await db.auth.admin.getUserById(userId);
   if (userErr || !user?.email) return new Response("user not found", { status: 200 });
 
   const actionUrl = link ? `https://auditx.app${link}` : "https://auditx.app/app/activity";

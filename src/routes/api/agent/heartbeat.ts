@@ -17,21 +17,26 @@ export const Route = createFileRoute("/api/agent/heartbeat")({
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const supabaseUrl = process.env["SUPABASE_URL"]
-          ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined)
-          ?? "";
-        const supabaseKey = process.env["SUPABASE_PUBLISHABLE_KEY"]
-          ?? (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string | undefined)
-          ?? (import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined)
-          ?? "";
+        const supabaseUrl =
+          process.env["SUPABASE_URL"] ??
+          (import.meta.env["VITE_SUPABASE_URL"] as string | undefined) ??
+          "";
+        const supabaseKey =
+          process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+          (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string | undefined) ??
+          (import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined) ??
+          "";
 
         const db = createClient<Database>(supabaseUrl, supabaseKey, {
           global: { headers: { Authorization: auth } },
-          auth:   { persistSession: false, autoRefreshToken: false },
+          auth: { persistSession: false, autoRefreshToken: false },
         });
 
         // Verify session
-        const { data: { user }, error: authErr } = await db.auth.getUser();
+        const {
+          data: { user },
+          error: authErr,
+        } = await db.auth.getUser();
         if (authErr || !user) return new Response("Unauthorized", { status: 401 });
 
         // Call the schedule function (idempotent — safe to call frequently)
@@ -41,23 +46,26 @@ export const Route = createFileRoute("/api/agent/heartbeat")({
         }
 
         // Poke the agent-runner to process any pending jobs (fire-and-forget)
-        const runnerUrl = supabaseUrl.replace("supabase.co", "supabase.co/functions/v1/agent-runner");
+        const runnerUrl = supabaseUrl.replace(
+          "supabase.co",
+          "supabase.co/functions/v1/agent-runner",
+        );
         const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "";
         if (serviceKey) {
           fetch(runnerUrl, {
-            method:  "POST",
+            method: "POST",
             headers: {
-              Authorization:  `Bearer ${serviceKey}`,
+              Authorization: `Bearer ${serviceKey}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ trigger: "heartbeat" }),
           }).catch((e: unknown) => console.warn("[heartbeat] runner poke failed:", e));
         }
 
-        return new Response(
-          JSON.stringify({ ok: true, schedule: scheduleResult ?? null }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ ok: true, schedule: scheduleResult ?? null }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       },
     } as never,
   },

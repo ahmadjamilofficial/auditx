@@ -77,7 +77,10 @@ function ParserIndex() {
       console.log("[Wab][ParserIndex] Thread created, navigating", { threadId: created.id });
       navigate({ to: "/app/parser/$threadId", params: { threadId: created.id }, replace: true });
     } catch (cause) {
-      console.error("[Wab][ParserIndex] ERROR opening workspace", { userId: currentUser.id, cause });
+      console.error("[Wab][ParserIndex] ERROR opening workspace", {
+        userId: currentUser.id,
+        cause,
+      });
       started.current = false;
       setFailure(cause instanceof Error ? cause.message : "Could not open the AI workspace.");
     }

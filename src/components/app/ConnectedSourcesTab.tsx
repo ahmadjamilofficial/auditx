@@ -28,9 +28,9 @@ import { startGoogleOAuth } from "@/lib/connected-sources";
 // ── Source type icons / labels ────────────────────────────────────────────────
 const SOURCE_META: Record<string, { label: string; icon: typeof Sheet }> = {
   google_sheets: { label: "Google Sheets", icon: Sheet },
-  onedrive:      { label: "OneDrive / SharePoint", icon: Sheet },
-  email_inbox:   { label: "Email Inbox", icon: Sheet },
-  folder:        { label: "Watched Folder", icon: Sheet },
+  onedrive: { label: "OneDrive / SharePoint", icon: Sheet },
+  email_inbox: { label: "Email Inbox", icon: Sheet },
+  folder: { label: "Watched Folder", icon: Sheet },
 };
 
 // ── Rules editor ──────────────────────────────────────────────────────────────
@@ -41,9 +41,9 @@ function RulesEditor({
   onClose,
 }: {
   sourceId: string;
-  orgId:    string;
-  initial:  SourceRules;
-  onClose:  () => void;
+  orgId: string;
+  initial: SourceRules;
+  onClose: () => void;
 }) {
   const update = useUpdateSourceRules();
   const [rules, setRules] = useState<SourceRules>({ ...initial });
@@ -65,7 +65,10 @@ function RulesEditor({
       className="mt-3 overflow-hidden rounded-xl p-4"
       style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)" }}
     >
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
+      <p
+        className="mb-3 text-xs font-semibold uppercase tracking-wide"
+        style={{ color: "var(--ink-3)" }}
+      >
         Source rules
       </p>
 
@@ -84,7 +87,8 @@ function RulesEditor({
         {/* Confidence threshold */}
         <div>
           <label className="mb-1 block text-xs" style={{ color: "var(--ink-2)" }}>
-            Confidence threshold (auto = {Math.round((rules.confidence_threshold_override ?? 0.9) * 100)}%)
+            Confidence threshold (auto ={" "}
+            {Math.round((rules.confidence_threshold_override ?? 0.9) * 100)}%)
           </label>
           <input
             type="range"
@@ -142,7 +146,7 @@ function RulesEditor({
 
 // ── Source row ────────────────────────────────────────────────────────────────
 function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }) {
-  const pauseMutation  = usePauseSource();
+  const pauseMutation = usePauseSource();
   const deleteMutation = useDeleteSource();
   const [editingRules, setEditingRules] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -171,7 +175,10 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
   return (
     <div
       className="overflow-hidden rounded-2xl"
-      style={{ border: "1px solid var(--hairline)", background: source.paused ? "var(--accent-2)" : "#fff" }}
+      style={{
+        border: "1px solid var(--hairline)",
+        background: source.paused ? "var(--accent-2)" : "#fff",
+      }}
     >
       <div className="flex items-start gap-3 p-4">
         <span
@@ -195,8 +202,10 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
           style={{
-            background: source.paused ? "color-mix(in srgb, var(--warn) 10%, transparent)" : "color-mix(in srgb, var(--ok) 10%, transparent)",
-            color:      source.paused ? "var(--warn)" : "var(--ok)",
+            background: source.paused
+              ? "color-mix(in srgb, var(--warn) 10%, transparent)"
+              : "color-mix(in srgb, var(--ok) 10%, transparent)",
+            color: source.paused ? "var(--warn)" : "var(--ok)",
           }}
         >
           {source.paused ? "Paused" : "Active"}
@@ -222,12 +231,13 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
             style={{ borderColor: "var(--hairline)" }}
             title={source.paused ? "Resume" : "Pause"}
           >
-            {pauseMutation.isPending
-              ? <Loader2 size={13} className="animate-spin" style={{ color: "var(--ink-3)" }} />
-              : source.paused
-              ? <Play size={13} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
-              : <Pause size={13} strokeWidth={1.75} style={{ color: "var(--warn)" }} />
-            }
+            {pauseMutation.isPending ? (
+              <Loader2 size={13} className="animate-spin" style={{ color: "var(--ink-3)" }} />
+            ) : source.paused ? (
+              <Play size={13} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
+            ) : (
+              <Pause size={13} strokeWidth={1.75} style={{ color: "var(--warn)" }} />
+            )}
           </button>
 
           {!confirmDelete ? (
@@ -249,7 +259,11 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
                 className="rounded-full bg-red-500 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
                 style={{ color: "#fff" }}
               >
-                {deleteMutation.isPending ? <Loader2 size={10} className="animate-spin inline" /> : "Confirm"}
+                {deleteMutation.isPending ? (
+                  <Loader2 size={10} className="animate-spin inline" />
+                ) : (
+                  "Confirm"
+                )}
               </button>
               <button
                 type="button"
@@ -280,15 +294,17 @@ function SourceRow({ source, orgId }: { source: ConnectedSource; orgId: string }
 
 // ── Policy config section ─────────────────────────────────────────────────────
 function AgentPolicySection({ orgId }: { orgId: string }) {
-  const { data: cfg }   = useOrgPolicyConfig(orgId);
-  const updatePolicy    = useUpdateOrgPolicy();
+  const { data: cfg } = useOrgPolicyConfig(orgId);
+  const updatePolicy = useUpdateOrgPolicy();
   const [saving, setSaving] = useState(false);
 
-  const [autoConf, setAutoConf]     = useState<string>("");
+  const [autoConf, setAutoConf] = useState<string>("");
   const [notifyConf, setNotifyConf] = useState<string>("");
 
-  const currentAutoConf   = autoConf   !== "" ? parseFloat(autoConf)   : Number(cfg?.confidence_threshold_auto ?? 0.9);
-  const currentNotifyConf = notifyConf !== "" ? parseFloat(notifyConf) : Number(cfg?.confidence_threshold_notify ?? 0.75);
+  const currentAutoConf =
+    autoConf !== "" ? parseFloat(autoConf) : Number(cfg?.confidence_threshold_auto ?? 0.9);
+  const currentNotifyConf =
+    notifyConf !== "" ? parseFloat(notifyConf) : Number(cfg?.confidence_threshold_notify ?? 0.75);
 
   async function savePolicy() {
     setSaving(true);
@@ -296,7 +312,7 @@ function AgentPolicySection({ orgId }: { orgId: string }) {
       await updatePolicy.mutateAsync({
         orgId,
         updates: {
-          confidence_threshold_auto:   currentAutoConf,
+          confidence_threshold_auto: currentAutoConf,
           confidence_threshold_notify: currentNotifyConf,
         },
       });
@@ -321,7 +337,10 @@ function AgentPolicySection({ orgId }: { orgId: string }) {
             Auto-apply threshold — {Math.round(currentAutoConf * 100)}%
           </label>
           <input
-            type="range" min={0.7} max={1} step={0.01}
+            type="range"
+            min={0.7}
+            max={1}
+            step={0.01}
             value={currentAutoConf}
             onChange={(e) => setAutoConf(e.target.value)}
             className="w-full"
@@ -336,7 +355,10 @@ function AgentPolicySection({ orgId }: { orgId: string }) {
             Notify threshold — {Math.round(currentNotifyConf * 100)}%
           </label>
           <input
-            type="range" min={0.5} max={0.95} step={0.01}
+            type="range"
+            min={0.5}
+            max={0.95}
+            step={0.01}
             value={currentNotifyConf}
             onChange={(e) => setNotifyConf(e.target.value)}
             className="w-full"
@@ -365,7 +387,7 @@ function AgentPolicySection({ orgId }: { orgId: string }) {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 export function ConnectedSourcesTab({ orgId }: { orgId: string }) {
-  const { data: flags }   = useOrgFeatureFlags(orgId || undefined);
+  const { data: flags } = useOrgFeatureFlags(orgId || undefined);
   const { data: sources, isLoading } = useConnectedSources(orgId || undefined);
   const [connecting, setConnecting] = useState(false);
 
@@ -380,7 +402,8 @@ export function ConnectedSourcesTab({ orgId }: { orgId: string }) {
         <AlertTriangle size={28} style={{ color: "var(--warn)" }} />
         <p className="mt-3 text-sm font-semibold">Autonomous mode not available on your plan</p>
         <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--ink-3)" }}>
-          Upgrade to Pro to connect Google Sheets and OneDrive sources and let Wab monitor them automatically.
+          Upgrade to Pro to connect Google Sheets and OneDrive sources and let Wab monitor them
+          automatically.
         </p>
         <a
           href="/app/billing"
@@ -400,14 +423,15 @@ export function ConnectedSourcesTab({ orgId }: { orgId: string }) {
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => { setConnecting(true); startGoogleOAuth(orgId); }}
+          onClick={() => {
+            setConnecting(true);
+            startGoogleOAuth(orgId);
+          }}
           disabled={connecting}
           className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-50"
           style={{ borderColor: "var(--hairline)" }}
         >
-          {connecting
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Plus size={14} />}
+          {connecting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
           Connect Google Sheet
         </button>
 

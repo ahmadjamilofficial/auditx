@@ -26,7 +26,17 @@ import { useAuth } from "@/lib/auth-context";
 import { useTransactions, useReconciliationFlags } from "@/lib/data-hooks";
 import { computeTax } from "@/lib/tax";
 import { computePortfolioSummary, computeHealthScore } from "@/lib/financial-intelligence";
-import { buildIntelligencePrompt, detectIntent, getPortfolioSummary, getTaxLiability, getUnreconciledTransactions, getCriticalAnomalies, getBrokerDiscrepancies, getMissingDocuments, type IntelligenceToolContext } from "@/lib/intelligence-tools";
+import {
+  buildIntelligencePrompt,
+  detectIntent,
+  getPortfolioSummary,
+  getTaxLiability,
+  getUnreconciledTransactions,
+  getCriticalAnomalies,
+  getBrokerDiscrepancies,
+  getMissingDocuments,
+  type IntelligenceToolContext,
+} from "@/lib/intelligence-tools";
 import { useLedgerContext } from "@/lib/use-ledger-context";
 
 export const Route = createFileRoute("/app/investigations")({
@@ -53,7 +63,8 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
     icon: BarChart3,
     color: "var(--color-accent)",
     description: "Comprehensive portfolio health, concentration risk, and performance analysis.",
-    prompt: "Investigate my entire portfolio. Analyse holdings, realized gains, concentration risk, tax exposure, and identify any concerns or opportunities.",
+    prompt:
+      "Investigate my entire portfolio. Analyse holdings, realized gains, concentration risk, tax exposure, and identify any concerns or opportunities.",
   },
   {
     type: "TAX",
@@ -61,7 +72,8 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
     icon: TrendingDown,
     color: "var(--warn)",
     description: "Deep-dive into tax liability, FIFO lot matching, and harvesting opportunities.",
-    prompt: "Investigate my tax situation. Analyse FIFO lot matching, short vs long-term gains, estimated tax liability, and identify tax-loss harvesting opportunities.",
+    prompt:
+      "Investigate my tax situation. Analyse FIFO lot matching, short vs long-term gains, estimated tax liability, and identify tax-loss harvesting opportunities.",
   },
   {
     type: "BROKER",
@@ -69,15 +81,18 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
     icon: GitFork,
     color: "var(--bad)",
     description: "Detect fee discrepancies, WHT mismatches, and duplicate transactions.",
-    prompt: "Investigate broker discrepancies. Find fee surcharges, WHT mismatches, duplicate entries, and reconciliation flags that need attention.",
+    prompt:
+      "Investigate broker discrepancies. Find fee surcharges, WHT mismatches, duplicate entries, and reconciliation flags that need attention.",
   },
   {
     type: "TRANSACTIONS",
     label: "Investigate Transactions",
     icon: FileSearch,
     color: "var(--info)",
-    description: "Analyse all transactions for anomalies, low-confidence entries, and missing data.",
-    prompt: "Investigate my transaction ledger. Identify unreconciled transactions, low-confidence extractions, missing documents, and any suspicious patterns.",
+    description:
+      "Analyse all transactions for anomalies, low-confidence entries, and missing data.",
+    prompt:
+      "Investigate my transaction ledger. Identify unreconciled transactions, low-confidence extractions, missing documents, and any suspicious patterns.",
   },
   {
     type: "ANOMALIES",
@@ -85,7 +100,8 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
     icon: Search,
     color: "var(--warn)",
     description: "Comprehensive anomaly detection across your entire financial dataset.",
-    prompt: "Run a comprehensive anomaly detection sweep. Find all discrepancies, mismatches, missing data, compliance risks, and unusual patterns across my financial records.",
+    prompt:
+      "Run a comprehensive anomaly detection sweep. Find all discrepancies, mismatches, missing data, compliance risks, and unusual patterns across my financial records.",
   },
 ];
 
@@ -93,10 +109,26 @@ const INVESTIGATION_TYPES: InvestigationConfig[] = [
 
 function SeverityBadge({ level }: { level: "CRITICAL" | "WARNING" | "OPPORTUNITY" | "INFO" }) {
   const styles = {
-    CRITICAL:    { bg: "color-mix(in srgb, var(--bad) 10%, transparent)",   text: "var(--bad)",          label: "CRITICAL" },
-    WARNING:     { bg: "color-mix(in srgb, var(--warn) 10%, transparent)",  text: "var(--warn)",         label: "WARNING" },
-    OPPORTUNITY: { bg: "color-mix(in srgb, var(--ok) 10%, transparent)",   text: "var(--ok)",           label: "OPPORTUNITY" },
-    INFO:        { bg: "color-mix(in srgb, var(--info) 10%, transparent)",  text: "var(--info)",         label: "INFO" },
+    CRITICAL: {
+      bg: "color-mix(in srgb, var(--bad) 10%, transparent)",
+      text: "var(--bad)",
+      label: "CRITICAL",
+    },
+    WARNING: {
+      bg: "color-mix(in srgb, var(--warn) 10%, transparent)",
+      text: "var(--warn)",
+      label: "WARNING",
+    },
+    OPPORTUNITY: {
+      bg: "color-mix(in srgb, var(--ok) 10%, transparent)",
+      text: "var(--ok)",
+      label: "OPPORTUNITY",
+    },
+    INFO: {
+      bg: "color-mix(in srgb, var(--info) 10%, transparent)",
+      text: "var(--info)",
+      label: "INFO",
+    },
   };
   const s = styles[level];
   return (
@@ -190,7 +222,7 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
               {[
                 { label: "Transactions", value: result.transactionsAnalysed.toString() },
                 { label: "Flags Analysed", value: result.flagsAnalysed.toString() },
-                { label: "Health Score",  value: `${result.healthScore}/100` },
+                { label: "Health Score", value: `${result.healthScore}/100` },
                 { label: "Critical Issues", value: result.criticalFlags.toString() },
               ].map(({ label, value }) => (
                 <div key={label} className="bg-surface p-4 text-center">
@@ -205,36 +237,52 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
             </div>
 
             {/* Key findings summary */}
-            <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-4" style={{ borderBottom: "1px solid var(--hairline)" }}>
+            <div
+              className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-4"
+              style={{ borderBottom: "1px solid var(--hairline)" }}
+            >
               {result.unreconciledCount > 0 && (
                 <div
                   className="rounded-xl p-3"
-                  style={{ background: "color-mix(in srgb, var(--warn) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--warn) 15%, transparent)" }}
+                  style={{
+                    background: "color-mix(in srgb, var(--warn) 6%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--warn) 15%, transparent)",
+                  }}
                 >
                   <AlertTriangle size={14} style={{ color: "var(--warn)" }} />
                   <p className="tnum mt-1.5 text-lg font-bold" style={{ color: "var(--warn)" }}>
                     {result.unreconciledCount}
                   </p>
-                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>Unreconciled</p>
+                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    Unreconciled
+                  </p>
                 </div>
               )}
               {result.criticalFlags > 0 && (
                 <div
                   className="rounded-xl p-3"
-                  style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--bad) 15%, transparent)" }}
+                  style={{
+                    background: "color-mix(in srgb, var(--bad) 6%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--bad) 15%, transparent)",
+                  }}
                 >
                   <AlertCircle size={14} style={{ color: "var(--bad)" }} />
                   <p className="tnum mt-1.5 text-lg font-bold" style={{ color: "var(--bad)" }}>
                     {result.criticalFlags}
                   </p>
-                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>Critical Flags</p>
+                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    Critical Flags
+                  </p>
                 </div>
               )}
               {result.totalGain !== 0 && (
                 <div
                   className="rounded-xl p-3"
                   style={{
-                    background: result.totalGain > 0 ? "color-mix(in srgb, var(--ok) 6%, transparent)" : "color-mix(in srgb, var(--bad) 6%, transparent)",
+                    background:
+                      result.totalGain > 0
+                        ? "color-mix(in srgb, var(--ok) 6%, transparent)"
+                        : "color-mix(in srgb, var(--bad) 6%, transparent)",
                     border: `1px solid ${result.totalGain > 0 ? "color-mix(in srgb, var(--ok) 15%, transparent)" : "color-mix(in srgb, var(--bad) 15%, transparent)"}`,
                   }}
                 >
@@ -248,7 +296,9 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
                     style={{ color: result.totalGain > 0 ? "var(--ok)" : "var(--bad)" }}
                   >
                     {result.currency}{" "}
-                    {Math.abs(result.totalGain).toLocaleString("en-PK", { maximumFractionDigits: 0 })}
+                    {Math.abs(result.totalGain).toLocaleString("en-PK", {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                   <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>
                     {result.totalGain > 0 ? "Realized Gains" : "Realized Loss"}
@@ -261,11 +311,16 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
                   style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
                 >
                   <Lightbulb size={14} style={{ color: "var(--color-accent)" }} />
-                  <p className="tnum mt-1.5 text-sm font-bold" style={{ color: "var(--color-accent)" }}>
+                  <p
+                    className="tnum mt-1.5 text-sm font-bold"
+                    style={{ color: "var(--color-accent)" }}
+                  >
                     {result.currency}{" "}
                     {result.taxLiability.toLocaleString("en-PK", { maximumFractionDigits: 0 })}
                   </p>
-                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>Estimated Tax</p>
+                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    Estimated Tax
+                  </p>
                 </div>
               )}
             </div>
@@ -274,24 +329,39 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
             <div className="p-5">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-accent)" }}>
+                <p
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
+                >
                   Wab Intelligence Report
                 </p>
               </div>
               <div
                 className="rounded-xl p-4 text-sm leading-relaxed"
-                style={{ background: "var(--accent-3)", border: "1px solid var(--accent-10)", color: "var(--ink-2)" }}
+                style={{
+                  background: "var(--accent-3)",
+                  border: "1px solid var(--accent-10)",
+                  color: "var(--ink-2)",
+                }}
               >
                 {result.aiReport.split("\n").map((line, i) => {
                   if (line.startsWith("## "))
                     return (
-                      <p key={i} className="mt-3 mb-1 font-bold" style={{ color: "var(--color-text)", fontSize: "13px" }}>
+                      <p
+                        key={i}
+                        className="mt-3 mb-1 font-bold"
+                        style={{ color: "var(--color-text)", fontSize: "13px" }}
+                      >
                         {line.slice(3)}
                       </p>
                     );
                   if (line.startsWith("**") && line.endsWith("**"))
                     return (
-                      <p key={i} className="mt-2 font-semibold" style={{ color: "var(--color-text)" }}>
+                      <p
+                        key={i}
+                        className="mt-2 font-semibold"
+                        style={{ color: "var(--color-text)" }}
+                      >
                         {line.slice(2, -2)}
                       </p>
                     );
@@ -302,11 +372,16 @@ function InvestigationReport({ result }: { result: InvestigationResult }) {
                       </p>
                     );
                   if (line.trim() === "") return <div key={i} className="h-1.5" />;
-                  return <p key={i} className="mb-1">{line}</p>;
+                  return (
+                    <p key={i} className="mb-1">
+                      {line}
+                    </p>
+                  );
                 })}
               </div>
               <p className="mt-3 text-[11px]" style={{ color: "var(--ink-3)" }}>
-                All numbers are deterministic. AI interprets pre-computed data only. Confidence: determined by calculation source.
+                All numbers are deterministic. AI interprets pre-computed data only. Confidence:
+                determined by calculation source.
               </p>
             </div>
           </motion.div>
@@ -386,10 +461,15 @@ function Investigations() {
       ) as ReturnType<typeof getPortfolioSummary> extends Promise<infer T> ? T[] : never[];
 
       const intent = detectIntent(config.prompt);
-      const aiPrompt = buildIntelligencePrompt(config.prompt, intent, toolResults as any, {
-        jurisdiction,
-        taxYear,
-      });
+      const aiPrompt = buildIntelligencePrompt(
+        config.prompt,
+        intent,
+        toolResults as unknown as Record<string, unknown>,
+        {
+          jurisdiction,
+          taxYear,
+        },
+      );
 
       setProgress((p) => [...p.slice(-4), "Generating intelligence report…"]);
 
@@ -411,7 +491,7 @@ function Investigations() {
 
       let aiReport = "";
       if (resp.ok) {
-        const data = await resp.json() as { choices?: Array<{ message?: { content?: string } }> };
+        const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
         aiReport = data.choices?.[0]?.message?.content ?? "";
       } else {
         aiReport = `Investigation could not complete: OpenRouter returned ${resp.status}. Please check your API key.`;
@@ -423,7 +503,11 @@ function Investigations() {
         filerStatus: "Filer",
         taxYear,
       });
-      const health = computeHealthScore(transactions, flags.length, flags.filter((f) => f.severity === "bad").length);
+      const health = computeHealthScore(
+        transactions,
+        flags.length,
+        flags.filter((f) => f.severity === "bad").length,
+      );
 
       const result: InvestigationResult = {
         type: config.type,
@@ -489,7 +573,8 @@ function Investigations() {
         <div>
           <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>Investigations</h1>
           <p className="mt-0.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            Structured financial investigations with AI-generated reports backed by deterministic data.
+            Structured financial investigations with AI-generated reports backed by deterministic
+            data.
           </p>
         </div>
         <Btn onClick={() => setShowCustom(true)} disabled={running}>
@@ -509,7 +594,11 @@ function Investigations() {
             <Panel>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold">Custom Investigation</p>
-                <button type="button" onClick={() => setShowCustom(false)} style={{ color: "var(--ink-3)" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCustom(false)}
+                  style={{ color: "var(--ink-3)" }}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -519,7 +608,11 @@ function Investigations() {
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="Describe what you want to investigate. e.g. 'Investigate all OGDC transactions for fee discrepancies and calculate their tax impact.'"
                 className="w-full resize-none rounded-xl border p-3 text-sm outline-none"
-                style={{ borderColor: "var(--hairline)", minHeight: 80, color: "var(--color-text)" }}
+                style={{
+                  borderColor: "var(--hairline)",
+                  minHeight: 80,
+                  color: "var(--color-text)",
+                }}
               />
               <div className="mt-3 flex justify-end gap-2">
                 <Btn variant="secondary" onClick={() => setShowCustom(false)}>
@@ -563,7 +656,11 @@ function Investigations() {
                       style={{ background: `color-mix(in srgb, ${config.color} 12%, transparent)` }}
                     >
                       {isRunning ? (
-                        <Loader2 size={16} className="animate-spin" style={{ color: config.color }} />
+                        <Loader2
+                          size={16}
+                          className="animate-spin"
+                          style={{ color: config.color }}
+                        />
                       ) : (
                         <Icon size={16} style={{ color: config.color }} />
                       )}
@@ -576,10 +673,17 @@ function Investigations() {
                   {isRunning && progress.length > 0 && (
                     <div className="mt-3 space-y-1">
                       {progress.slice(-3).map((step, i) => (
-                        <div key={i} className="flex items-center gap-2 text-[11px]" style={{ color: "var(--ink-3)" }}>
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 text-[11px]"
+                          style={{ color: "var(--ink-3)" }}
+                        >
                           <div
                             className="size-1.5 rounded-full"
-                            style={{ background: i === progress.length - 1 ? config.color : "var(--hairline)" }}
+                            style={{
+                              background:
+                                i === progress.length - 1 ? config.color : "var(--hairline)",
+                            }}
                           />
                           {step}
                         </div>
@@ -611,7 +715,11 @@ function Investigations() {
           >
             <Panel>
               <div className="flex items-center gap-3 mb-4">
-                <Loader2 size={18} className="animate-spin" style={{ color: "var(--color-accent)" }} />
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                  style={{ color: "var(--color-accent)" }}
+                />
                 <p className="text-sm font-semibold">Investigation in Progress</p>
               </div>
               <div className="space-y-2">
@@ -620,13 +728,24 @@ function Investigations() {
                   `Reviewing ${flags.length} reconciliation flags`,
                   ...progress.slice(-3),
                 ].map((step, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-xs" style={{ color: "var(--ink-2)" }}>
+                  <div
+                    key={i}
+                    className="flex items-center gap-2.5 text-xs"
+                    style={{ color: "var(--ink-2)" }}
+                  >
                     {i < 2 ? (
                       <CheckCircle2 size={13} style={{ color: "var(--ok)" }} />
                     ) : i === 2 ? (
-                      <Loader2 size={13} className="animate-spin" style={{ color: "var(--color-accent)" }} />
+                      <Loader2
+                        size={13}
+                        className="animate-spin"
+                        style={{ color: "var(--color-accent)" }}
+                      />
                     ) : (
-                      <div className="size-3 rounded-full" style={{ background: "var(--hairline)" }} />
+                      <div
+                        className="size-3 rounded-full"
+                        style={{ background: "var(--hairline)" }}
+                      />
                     )}
                     {step}
                   </div>
@@ -668,7 +787,8 @@ function Investigations() {
           </div>
           <p className="mt-4 font-semibold">No investigations yet</p>
           <p className="mt-1 text-sm" style={{ color: "var(--ink-3)" }}>
-            Run an investigation above to get a structured AI report backed by your real financial data.
+            Run an investigation above to get a structured AI report backed by your real financial
+            data.
           </p>
           <p className="mt-3 text-xs" style={{ color: "var(--ink-3)" }}>
             Every finding references real transactions. No invented numbers.

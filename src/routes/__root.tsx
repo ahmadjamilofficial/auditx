@@ -90,54 +90,64 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Wab is an AI-powered trade reconciliation and CGT tax engine for PSX (Pakistan) and NSE (India) traders. Upload broker slips, get a FIFO-accurate, audit-ready ledger in minutes. Free for 50 transactions/month.",
       },
-      { name: "keywords",
+      {
+        name: "keywords",
         content:
           "PSX tax calculator, NSE CGT calculator, Pakistan capital gains tax, FIFO trade reconciliation, broker slip parser, AI financial audit, portfolio ledger PSX, WHT calculator Pakistan, NSE STCG LTCG, trade confirmation parser, Wab",
       },
-      { name: "author",       content: "Wab" },
-      { name: "robots",       content: "index, follow" },
-      { name: "googlebot",    content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" },
-      { name: "theme-color",  content: "#0B0C0E" },
-      { name: "rating",       content: "general" },
+      { name: "author", content: "Wab" },
+      { name: "robots", content: "index, follow" },
+      {
+        name: "googlebot",
+        content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+      },
+      { name: "theme-color", content: "#0B0C0E" },
+      { name: "rating", content: "general" },
       { name: "revisit-after", content: "7 days" },
-      { name: "language",     content: "English" },
+      { name: "language", content: "English" },
 
       // ── Open Graph ───────────────────────────────────────────────────────
-      { property: "og:type",         content: "website" },
-      { property: "og:url",          content: "https://psxl.live/" },
-      { property: "og:site_name",    content: "Wab" },
-      { property: "og:title",        content: "Wab — AI-Native Trade Reconciliation & CGT Engine for PSX & NSE" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://psxl.live/" },
+      { property: "og:site_name", content: "Wab" },
+      {
+        property: "og:title",
+        content: "Wab — AI-Native Trade Reconciliation & CGT Engine for PSX & NSE",
+      },
       {
         property: "og:description",
         content:
           "Replace hours of manual ledger work with Wab. Upload any PSX or NSE broker slip — AI extracts every field, FIFO math computes your CGT, and an immutable audit trail keeps you filing-ready.",
       },
-      { property: "og:image",        content: "https://psxl.live/og-image.png" },
-      { property: "og:image:width",  content: "1200" },
+      { property: "og:image", content: "https://psxl.live/og-image.png" },
+      { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt",    content: "Wab dashboard showing portfolio reconciliation and tax computation" },
-      { property: "og:locale",       content: "en_US" },
+      {
+        property: "og:image:alt",
+        content: "Wab dashboard showing portfolio reconciliation and tax computation",
+      },
+      { property: "og:locale", content: "en_US" },
 
       // ── Twitter / X ──────────────────────────────────────────────────────
-      { name: "twitter:card",        content: "summary_large_image" },
-      { name: "twitter:site",        content: "@wabapp" },
-      { name: "twitter:creator",     content: "@wabapp" },
-      { name: "twitter:title",       content: "Wab — AI-Native Trade Reconciliation & CGT Engine" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@wabapp" },
+      { name: "twitter:creator", content: "@wabapp" },
+      { name: "twitter:title", content: "Wab — AI-Native Trade Reconciliation & CGT Engine" },
       {
         name: "twitter:description",
         content:
           "Upload your PSX/NSE broker slips. AI extracts the data, FIFO math computes your capital gains tax, and an immutable audit trail keeps you filing-ready.",
       },
-      { name: "twitter:image",       content: "https://psxl.live/og-image.png" },
-      { name: "twitter:image:alt",   content: "Wab — AI-powered trade reconciliation dashboard" },
+      { name: "twitter:image", content: "https://psxl.live/og-image.png" },
+      { name: "twitter:image:alt", content: "Wab — AI-powered trade reconciliation dashboard" },
 
       // ── App / Mobile ─────────────────────────────────────────────────────
-      { name: "application-name",          content: "Wab" },
+      { name: "application-name", content: "Wab" },
       { name: "apple-mobile-web-app-title", content: "Wab" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "mobile-web-app-capable",    content: "yes" },
-      { name: "msapplication-TileColor",   content: "#0B0C0E" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "msapplication-TileColor", content: "#0B0C0E" },
 
       // ── Structured Data hint ─────────────────────────────────────────────
       { name: "category", content: "Finance, Tax, Accounting, Trading" },
@@ -154,10 +164,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://db.onlinewebfonts.com/c/04e6981992c0e2e7642af2074ebe3901?family=Helvetica+Now+Display+Bold",
       },
-      { rel: "icon",             href: "/favicon.png", type: "image/png", sizes: "64x64" },
+      { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
       { rel: "apple-touch-icon", href: "/favicon.png", sizes: "64x64" },
-      { rel: "canonical",        href: "https://psxl.live/" },
-      { rel: "manifest",         href: "/site.webmanifest" },
+      { rel: "canonical", href: "https://psxl.live/" },
+      { rel: "manifest", href: "/site.webmanifest" },
     ],
   }),
 
@@ -174,112 +184,109 @@ function RootShell({ children }: { children: ReactNode }) {
       {
         "@type": "SoftwareApplication",
         "@id": "https://psxl.live/#app",
-        "name": "Wab",
-        "url": "https://psxl.live",
-        "applicationCategory": "FinanceApplication",
-        "operatingSystem": "Web",
-        "description":
+        name: "Wab",
+        url: "https://psxl.live",
+        applicationCategory: "FinanceApplication",
+        operatingSystem: "Web",
+        description:
           "AI-native financial audit and compliance agent for PSX and NSE traders. Multimodal document parsing, FIFO CGT computation, and immutable audit trails.",
-        "offers": [
+        offers: [
           {
             "@type": "Offer",
-            "name": "Free",
-            "price": "0",
-            "priceCurrency": "USD",
-            "description": "50 transactions/month, CSV export"
+            name: "Free",
+            price: "0",
+            priceCurrency: "USD",
+            description: "50 transactions/month, CSV export",
           },
           {
             "@type": "Offer",
-            "name": "Pro",
-            "price": "9.99",
-            "priceCurrency": "USD",
-            "billingIncrement": "P1M",
-            "description": "Unlimited transactions, PDF reports, anomaly detection"
+            name: "Pro",
+            price: "9.99",
+            priceCurrency: "USD",
+            billingIncrement: "P1M",
+            description: "Unlimited transactions, PDF reports, anomaly detection",
           },
           {
             "@type": "Offer",
-            "name": "Enterprise",
-            "price": "49",
-            "priceCurrency": "USD",
-            "billingIncrement": "P1M",
-            "description": "Multi-client, team roles, API access"
-          }
+            name: "Enterprise",
+            price: "49",
+            priceCurrency: "USD",
+            billingIncrement: "P1M",
+            description: "Multi-client, team roles, API access",
+          },
         ],
-        "featureList": [
+        featureList: [
           "Multimodal trade confirmation parser (PDF, image, CSV)",
           "FIFO capital gains tax computation for PSX and NSE",
           "Immutable hash-chained audit log",
           "AI anomaly detection and reconciliation",
           "Tax-loss harvesting suggestions",
           "Google OAuth and email authentication",
-          "Multi-tenant row-level security"
+          "Multi-tenant row-level security",
         ],
-        "screenshot": "https://psxl.live/og-image.png"
+        screenshot: "https://psxl.live/og-image.png",
       },
       {
         "@type": "Organization",
         "@id": "https://psxl.live/#org",
-        "name": "Wab",
-        "url": "https://psxl.live",
-        "logo": "https://psxl.live/favicon.png",
-        "sameAs": [
-          "https://twitter.com/wabapp",
-          "https://linkedin.com/company/wab"
-        ]
+        name: "Wab",
+        url: "https://psxl.live",
+        logo: "https://psxl.live/favicon.png",
+        sameAs: ["https://twitter.com/wabapp", "https://linkedin.com/company/wab"],
       },
       {
         "@type": "WebSite",
         "@id": "https://psxl.live/#website",
-        "url": "https://psxl.live",
-        "name": "Wab",
-        "description": "AI-Native Financial Audit & Compliance for PSX and NSE Traders",
-        "publisher": { "@id": "https://psxl.live/#org" },
-        "potentialAction": {
+        url: "https://psxl.live",
+        name: "Wab",
+        description: "AI-Native Financial Audit & Compliance for PSX and NSE Traders",
+        publisher: { "@id": "https://psxl.live/#org" },
+        potentialAction: {
           "@type": "SearchAction",
-          "target": { "@type": "EntryPoint", "urlTemplate": "https://psxl.live/?q={search_term_string}" },
-          "query-input": "required name=search_term_string"
-        }
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: "https://psxl.live/?q={search_term_string}",
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
       {
         "@type": "FAQPage",
-        "mainEntity": [
+        mainEntity: [
           {
             "@type": "Question",
-            "name": "What is Wab?",
-            "acceptedAnswer": {
+            name: "What is Wab?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Wab is an AI-native financial audit and compliance agent for retail traders and micro-brokerages trading on PSX (Pakistan Stock Exchange) and NSE (India National Stock Exchange). It parses broker trade confirmations and computes capital gains tax automatically."
-            }
+              text: "Wab is an AI-native financial audit and compliance agent for retail traders and micro-brokerages trading on PSX (Pakistan Stock Exchange) and NSE (India National Stock Exchange). It parses broker trade confirmations and computes capital gains tax automatically.",
+            },
           },
           {
             "@type": "Question",
-            "name": "How does Wab compute capital gains tax?",
-            "acceptedAnswer": {
+            name: "How does Wab compute capital gains tax?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Wab uses a deterministic FIFO (First In, First Out) lot-matching engine written in TypeScript. The AI model never computes numbers — it only extracts data from documents. Tax math is 100% code-based and auditable."
-            }
+              text: "Wab uses a deterministic FIFO (First In, First Out) lot-matching engine written in TypeScript. The AI model never computes numbers — it only extracts data from documents. Tax math is 100% code-based and auditable.",
+            },
           },
           {
             "@type": "Question",
-            "name": "Which stock exchanges does Wab support?",
-            "acceptedAnswer": {
+            name: "Which stock exchanges does Wab support?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Wab currently supports PSX (Pakistan) with CGT slabs and Filer/Non-Filer WHT rates, and NSE (India) with STCG/LTCG rules per the 2024 Union Budget. More jurisdictions are coming."
-            }
-          }
-        ]
-      }
-    ]
+              text: "Wab currently supports PSX (Pakistan) with CGT slabs and Filer/Non-Filer WHT rates, and NSE (India) with STCG/LTCG rules per the 2024 Union Budget. More jurisdictions are coming.",
+            },
+          },
+        ],
+      },
+    ],
   });
 
   return (
     <html lang="en">
       <head>
         <HeadContent />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLd }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       </head>
       <body>
         {children}

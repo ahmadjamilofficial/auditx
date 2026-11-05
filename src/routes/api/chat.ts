@@ -33,14 +33,23 @@ async function spreadsheetsToText(messages: UIMessage[]): Promise<UIMessage[]> {
             const b64 = p.url.slice(p.url.indexOf(",") + 1);
             const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
             let body: string;
-            if (/\.(xlsx|xls)$/i.test(name) || p.mediaType?.includes("sheet") || p.mediaType?.includes("excel")) {
+            if (
+              /\.(xlsx|xls)$/i.test(name) ||
+              p.mediaType?.includes("sheet") ||
+              p.mediaType?.includes("excel")
+            ) {
               XLSX ??= await import("xlsx");
               const wb = XLSX.read(bytes, { type: "array" });
-              body = wb.SheetNames.map((s) => `### Sheet: ${s}\n${XLSX!.utils.sheet_to_csv(wb.Sheets[s]!)}`).join("\n\n");
+              body = wb.SheetNames.map(
+                (s) => `### Sheet: ${s}\n${XLSX!.utils.sheet_to_csv(wb.Sheets[s]!)}`,
+              ).join("\n\n");
             } else {
               body = new TextDecoder().decode(bytes);
             }
-            return { type: "text" as const, text: `Attached file "${name}":\n\`\`\`\n${body.slice(0, 60000)}\n\`\`\`` };
+            return {
+              type: "text" as const,
+              text: `Attached file "${name}":\n\`\`\`\n${body.slice(0, 60000)}\n\`\`\``,
+            };
           } catch {
             return { type: "text" as const, text: `Attached file "${name}" could not be read.` };
           }
@@ -140,7 +149,10 @@ function csvEscape(value: string | number | null | undefined) {
 }
 
 function toCsv(headers: string[], rows: Array<Array<string | number | null | undefined>>) {
-  return [headers.map(csvEscape).join(","), ...rows.map((row) => row.map(csvEscape).join(","))].join("\n");
+  return [
+    headers.map(csvEscape).join(","),
+    ...rows.map((row) => row.map(csvEscape).join(",")),
+  ].join("\n");
 }
 
 function asTransaction(row: {
@@ -223,14 +235,19 @@ export const Route = createFileRoute("/api/chat")({
       // ── DELETE /api/chat?threadId=xxx — clear a chat thread ──────────────
       DELETE: async ({ request }) => {
         const authorization = request.headers.get("authorization") ?? "";
-        if (!authorization.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
+        if (!authorization.startsWith("Bearer "))
+          return new Response("Unauthorized", { status: 401 });
 
         const url2 = new URL(request.url);
         const threadId = url2.searchParams.get("threadId");
         if (!threadId) return new Response("threadId is required", { status: 400 });
 
         const supabaseConfig = supabaseServerConfig();
-        if (!supabaseConfig) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+        if (!supabaseConfig)
+          return new Response(
+            "Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY",
+            { status: 500 },
+          );
 
         const db = createClient<Database>(supabaseConfig.url, supabaseConfig.key, {
           global: { headers: { Authorization: authorization } },
@@ -266,16 +283,20 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         try {
           const authorization = request.headers.get("authorization") ?? "";
-          if (!authorization.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
+          if (!authorization.startsWith("Bearer "))
+            return new Response("Unauthorized", { status: 401 });
 
           let body: ChatBody;
           try {
             body = (await request.json()) as ChatBody;
           } catch (e) {
-            return new Response(JSON.stringify({ code: "invalid_json", message: "Invalid JSON body" }), {
-              status: 400,
-              headers: { "Content-Type": "application/json" },
-            });
+            return new Response(
+              JSON.stringify({ code: "invalid_json", message: "Invalid JSON body" }),
+              {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+              },
+            );
           }
 
           if (typeof body.id !== "string" || !Array.isArray(body.messages)) {
@@ -284,7 +305,11 @@ export const Route = createFileRoute("/api/chat")({
 
           const supabaseConfig = supabaseServerConfig();
           const approvalSecret = serverEnv("TOOL_APPROVAL_SECRET") ?? "wab-tool-approval";
-          if (!supabaseConfig) return new Response("Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY", { status: 500 });
+          if (!supabaseConfig)
+            return new Response(
+              "Database configuration is missing: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY",
+              { status: 500 },
+            );
           const url = supabaseConfig.url;
           const key = supabaseConfig.key;
 
@@ -335,7 +360,10 @@ export const Route = createFileRoute("/api/chat")({
           }
 
           resolved = selected.model;
-          console.log("[Wab Chat] AI Model Resolved:", { provider: resolved.provider, modelId: resolved.modelId });
+          console.log("[Wab Chat] AI Model Resolved:", {
+            provider: resolved.provider,
+            modelId: resolved.modelId,
+          });
           const model = resolved.model;
 
           const supabase = createClient<Database>(url, key, {
@@ -353,605 +381,812 @@ export const Route = createFileRoute("/api/chat")({
             .single();
           if (threadError || !thread) return new Response("Thread not found", { status: 404 });
 
-        // ── Plan entitlements (Free / Pro / Enterprise — no checkout, mailto upgrades) ──
-        // A missing or inactive subscription row means the org is on the Free plan.
-        const { data: subData } = await supabase
-          .from("subscriptions")
-          .select("plan, status, trial_end_at")
-          .eq("org_id", thread.org_id)
-          .maybeSingle();
+          // ── Plan entitlements (Free / Pro / Enterprise — no checkout, mailto upgrades) ──
+          // A missing or inactive subscription row means the org is on the Free plan.
+          const { data: subData } = await supabase
+            .from("subscriptions")
+            .select("plan, status, trial_end_at")
+            .eq("org_id", thread.org_id)
+            .maybeSingle();
 
-        const subActive = subData && ["active", "trialing"].includes(subData.status as string);
-        const trialValid = subData?.trial_end_at ? new Date(subData.trial_end_at) > new Date() : false;
-        // Cancelled / past_due / missing → Free limits until the subscription is sorted out.
-        const rawPlan = (subData?.plan as string) ?? "free";
-        const plan = subActive && (subData?.status !== "trialing" || trialValid) ? rawPlan : "free";
-        const limits = planOf(plan);
-        const isPro = plan === "pro" || plan === "enterprise";
+          const subActive = subData && ["active", "trialing"].includes(subData.status as string);
+          const trialValid = subData?.trial_end_at
+            ? new Date(subData.trial_end_at) > new Date()
+            : false;
+          // Cancelled / past_due / missing → Free limits until the subscription is sorted out.
+          const rawPlan = (subData?.plan as string) ?? "free";
+          const plan =
+            subActive && (subData?.status !== "trialing" || trialValid) ? rawPlan : "free";
+          const limits = planOf(plan);
+          const isPro = plan === "pro" || plan === "enterprise";
 
-        // Higher plans get larger tool budgets for deeper audits.
-        const maxSteps = plan === "enterprise" ? 36 : isPro ? 28 : 18;
-        const monthlyTxLimit = limits.transactionsPerMonth; // null = unlimited
-        // Specialist delegation is a Pro/Enterprise capability.
-        const canDelegate = isPro;
+          // Higher plans get larger tool budgets for deeper audits.
+          const maxSteps = plan === "enterprise" ? 36 : isPro ? 28 : 18;
+          const monthlyTxLimit = limits.transactionsPerMonth; // null = unlimited
+          // Specialist delegation is a Pro/Enterprise capability.
+          const canDelegate = isPro;
 
-        // Track usage for analytics (but don't block on it)
-        const usageId = crypto.randomUUID();
-        supabase.from("ai_usage").insert({
-          id:                 usageId,
-          user_id:            authData.user.id,
-          org_id:             thread.org_id,
-          plan,
-          thread_id:          thread.id,
-          model:              resolved.modelId,
-          inference_requests: 1,
-          credits_used:       1,
-          status:             "ok",
-        } as never).then(
-          () => undefined,
-          (err: unknown) => {
-            // Silent error handling for ai_usage insert
-          },
-        );
+          // Track usage for analytics (but don't block on it)
+          const usageId = crypto.randomUUID();
+          supabase
+            .from("ai_usage")
+            .insert({
+              id: usageId,
+              user_id: authData.user.id,
+              org_id: thread.org_id,
+              plan,
+              thread_id: thread.id,
+              model: resolved.modelId,
+              inference_requests: 1,
+              credits_used: 1,
+              status: "ok",
+            } as never)
+            .then(
+              () => undefined,
+              (err: unknown) => {
+                // Silent error handling for ai_usage insert
+              },
+            );
 
-        // ── Convert UI messages to AI messages ─────────────────────────────
-        let uiMessages: UIMessage[];
-        try {
-          uiMessages = await spreadsheetsToText(body.messages as UIMessage[]);
-        } catch (e) {
-          return new Response(
-            JSON.stringify({
-              code: "message_conversion_error",
-              message: "Failed to process message attachments",
-              error: e instanceof Error ? e.message : String(e),
-            }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const audit = async (action: string, entityId: string, payload: Record<string, unknown>) => {
-          const encoded = new TextEncoder().encode(`${Date.now()}-${action}-${entityId}-${authData.user.id}`);
-          const digest = await crypto.subtle.digest("SHA-256", encoded);
-          const hash = Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-          const { error } = await supabase.from("audit_log").insert({
-            org_id: thread.org_id,
-            actor: authData.user.email ?? authData.user.id,
-            action,
-            entity_type: "transaction",
-            entity_id: entityId,
-            payload: payload as never,
-            prev_hash: "",
-            hash,
-          });
-          if (error) {
-            // Silent error handling for audit log
+          // ── Convert UI messages to AI messages ─────────────────────────────
+          let uiMessages: UIMessage[];
+          try {
+            uiMessages = await spreadsheetsToText(body.messages as UIMessage[]);
+          } catch (e) {
+            return new Response(
+              JSON.stringify({
+                code: "message_conversion_error",
+                message: "Failed to process message attachments",
+                error: e instanceof Error ? e.message : String(e),
+              }),
+              { status: 500, headers: { "Content-Type": "application/json" } },
+            );
           }
-        };
 
-        const tools = {
-          plan_task: tool({
-            description:
-              "Understand the objective and publish the work plan before doing anything else. Call this first on every non-trivial request. Also use it to surface a public progress stage.",
-            inputSchema: z.object({
-              objective: z.string(),
-              steps: z.array(z.string()),
-              agents_needed: z.array(z.string()),
-              public_stage: z
-                .enum([
+          const audit = async (
+            action: string,
+            entityId: string,
+            payload: Record<string, unknown>,
+          ) => {
+            const encoded = new TextEncoder().encode(
+              `${Date.now()}-${action}-${entityId}-${authData.user.id}`,
+            );
+            const digest = await crypto.subtle.digest("SHA-256", encoded);
+            const hash = Array.from(new Uint8Array(digest))
+              .map((byte) => byte.toString(16).padStart(2, "0"))
+              .join("");
+            const { error } = await supabase.from("audit_log").insert({
+              org_id: thread.org_id,
+              actor: authData.user.email ?? authData.user.id,
+              action,
+              entity_type: "transaction",
+              entity_id: entityId,
+              payload: payload as never,
+              prev_hash: "",
+              hash,
+            });
+            if (error) {
+              // Silent error handling for audit log
+            }
+          };
+
+          const tools = {
+            plan_task: tool({
+              description:
+                "Understand the objective and publish the work plan before doing anything else. Call this first on every non-trivial request. Also use it to surface a public progress stage.",
+              inputSchema: z.object({
+                objective: z.string(),
+                steps: z.array(z.string()),
+                agents_needed: z.array(z.string()),
+                public_stage: z
+                  .enum([
+                    "Understanding your task",
+                    "Extracting financial data",
+                    "Running reconciliation",
+                    "Verifying evidence",
+                    "Checking calculations",
+                    "Preparing findings",
+                  ])
+                  .nullable(),
+              }),
+              execute: async (input) => ({ ...input, accepted: true }),
+            }),
+            delegate_agent: tool({
+              description:
+                "Delegate a focused sub-task to a specialist agent (extraction, analysis, reconciliation, compliance, evidence, research, quality). Pass all data the specialist needs inside `context` — specialists cannot see the conversation.",
+              inputSchema: z.object({
+                agent: z.enum([
+                  "extraction",
+                  "analysis",
+                  "reconciliation",
+                  "compliance",
+                  "evidence",
+                  "research",
+                  "calculation",
+                  "quality",
+                ]),
+                objective: z.string(),
+                context: z.string(),
+              }),
+              execute: async ({ agent, objective, context }) => {
+                if (!canDelegate) {
+                  return {
+                    agent,
+                    findings:
+                      "Specialist agents are a Pro/Enterprise capability. This account is on the Free plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
+                    model_used: "not_available_on_free_plan",
+                  };
+                }
+                const sub = streamText({
+                  model,
+                  providerOptions: resolved.providerOptions as never,
+                  system: `${SPECIALISTS[agent]}\n\nReturn compact markdown (under 400 words): findings, figures, evidence references, and a confidence rating (high/medium/low). Never expose hidden reasoning.`,
+                  prompt: `Objective:\n${objective}\n\nData and context:\n${context.slice(0, 40000)}`,
+                });
+                const findings = await sub.text;
+                return { agent, findings, model_used: resolved.modelId };
+              },
+            }),
+            calculate: tool({
+              description:
+                "Perform exact arithmetic. Use this for every financial number instead of computing mentally.",
+              inputSchema: z.object({
+                items: z.array(z.object({ label: z.string(), expression: z.string() })),
+              }),
+              execute: async ({ items }) =>
+                items.map((item) => {
+                  try {
+                    return {
+                      label: item.label,
+                      expression: item.expression,
+                      value: evaluateExpression(item.expression),
+                    };
+                  } catch (cause) {
+                    return {
+                      label: item.label,
+                      expression: item.expression,
+                      error: cause instanceof Error ? cause.message : "Invalid expression",
+                    };
+                  }
+                }),
+            }),
+            get_transactions: tool({
+              description:
+                "Read the signed-in user's real transaction ledger before answering questions about trades, holdings, fees, or tax.",
+              inputSchema: z.object({
+                ticker: z.string().nullable(),
+                action: z.string().nullable(),
+                limit: z.number().nullable(),
+              }),
+              execute: async ({ ticker, action, limit }) => {
+                let query = supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status",
+                  )
+                  .eq("org_id", thread.org_id)
+                  .order("trade_date", { ascending: false })
+                  .limit(Math.min(Math.max(limit ?? 30, 1), 100));
+                if (ticker) query = query.eq("ticker", ticker.toUpperCase());
+                if (action)
+                  query = query.eq("action", action.toUpperCase() as "BUY" | "SELL" | "DIV");
+                const { data, error } = await query;
+                if (error) throw new Error(error.message);
+                return data;
+              },
+            }),
+            get_ledger_summary: tool({
+              description:
+                "Read a compact real-data summary of the user's ledger and open reconciliation flags.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const [transactions, flags] = await Promise.all([
+                  supabase
+                    .from("transactions")
+                    .select("id,ticker,status")
+                    .eq("org_id", thread.org_id),
+                  supabase
+                    .from("reconciliation_flags")
+                    .select("id,severity")
+                    .eq("org_id", thread.org_id)
+                    .eq("status", "open"),
+                ]);
+                if (transactions.error) throw new Error(transactions.error.message);
+                if (flags.error) throw new Error(flags.error.message);
+                return {
+                  totalTransactions: transactions.data.length,
+                  needsReview: transactions.data.filter((row) => row.status === "needs_review")
+                    .length,
+                  openFlags: flags.data.length,
+                  tickers: [...new Set(transactions.data.map((row) => row.ticker))],
+                };
+              },
+            }),
+            get_open_flags: tool({
+              description:
+                "Read the open reconciliation flags with full detail so findings can cite them as evidence.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const { data, error } = await supabase
+                  .from("reconciliation_flags")
+                  .select(
+                    "id,flag_type,severity,ticker,ref_id,expected,actual,description,suggested_resolution,status",
+                  )
+                  .eq("org_id", thread.org_id)
+                  .eq("status", "open");
+                if (error) throw new Error(error.message);
+                return data;
+              },
+            }),
+            insert_transaction: tool({
+              description:
+                "Create a transaction in the real ledger. Runs immediately and is audited.",
+              inputSchema: z.object({
+                ticker: z.string(),
+                action: z.string(),
+                quantity: z.number(),
+                price: z.number(),
+                fees: z.number().nullable(),
+                wht: z.number().nullable(),
+                trade_date: z.string(),
+                ref_id: z.string().nullable(),
+                broker: z.string().nullable(),
+                exchange: z.string().nullable(),
+              }),
+              execute: async (input) => {
+                const action = input.action.toUpperCase();
+                if (!(["BUY", "SELL", "DIV"] as string[]).includes(action))
+                  throw new Error("Action must be BUY, SELL, or DIV");
+                if (monthlyTxLimit !== null) {
+                  const monthStart = new Date(
+                    new Date().getFullYear(),
+                    new Date().getMonth(),
+                    1,
+                  ).toISOString();
+                  const { count } = await supabase
+                    .from("transactions")
+                    .select("id", { count: "exact", head: true })
+                    .eq("org_id", thread.org_id)
+                    .gte("created_at", monthStart);
+                  if ((count ?? 0) >= monthlyTxLimit)
+                    throw new Error(
+                      `Your ${plan} plan allows ${monthlyTxLimit} transactions per month. Upgrade to Pro on the Billing page to add more.`,
+                    );
+                }
+                if (input.quantity <= 0 || input.price <= 0)
+                  throw new Error("Quantity and price must be positive");
+                const payload = {
+                  org_id: thread.org_id,
+                  ticker: input.ticker.toUpperCase(),
+                  action: action as "BUY" | "SELL" | "DIV",
+                  quantity: input.quantity,
+                  price: input.price,
+                  fees: input.fees ?? 0,
+                  wht: input.wht ?? 0,
+                  trade_date: input.trade_date,
+                  ref_id: input.ref_id ?? `AI-${Date.now()}`,
+                  broker: input.broker ?? "",
+                  exchange: input.exchange ?? "PSX",
+                  confidence_score: 0.95,
+                  status: "posted" as const,
+                  source: { via: "wab_agent", thread_id: thread.id },
+                };
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .insert(payload)
+                  .select()
+                  .single();
+                if (error) throw new Error(error.message);
+                await audit("ai_insert_transaction", data.id, payload);
+                return data;
+              },
+            }),
+            update_transaction: tool({
+              description:
+                "Edit a real ledger transaction after the user reviews the proposed fields.",
+              inputSchema: z.object({
+                id: z.string(),
+                ticker: z.string().nullable(),
+                action: z.string().nullable(),
+                quantity: z.number().nullable(),
+                price: z.number().nullable(),
+                fees: z.number().nullable(),
+                wht: z.number().nullable(),
+                trade_date: z.string().nullable(),
+                ref_id: z.string().nullable(),
+                broker: z.string().nullable(),
+                exchange: z.string().nullable(),
+                status: z.string().nullable(),
+              }),
+              execute: async ({ id, ...input }) => {
+                const updates = Object.fromEntries(
+                  Object.entries(input).filter(([, value]) => value !== null),
+                );
+                if (typeof updates["ticker"] === "string")
+                  updates["ticker"] = updates["ticker"].toUpperCase();
+                if (typeof updates["action"] === "string")
+                  updates["action"] = updates["action"].toUpperCase();
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .update(updates as never)
+                  .eq("id", id)
+                  .eq("org_id", thread.org_id)
+                  .select()
+                  .single();
+                if (error) throw new Error(error.message);
+                await audit("ai_update_transaction", id, updates);
+                return data;
+              },
+            }),
+            delete_transaction: tool({
+              description: "Delete a ledger transaction. Requires explicit user approval.",
+              inputSchema: z.object({ id: z.string() }),
+              execute: async ({ id }) => {
+                const { error } = await supabase
+                  .from("transactions")
+                  .delete()
+                  .eq("id", id)
+                  .eq("org_id", thread.org_id);
+                if (error) throw new Error(error.message);
+                await audit("ai_delete_transaction", id, {});
+                return { id, deleted: true };
+              },
+            }),
+            flag_anomaly: tool({
+              description: "Record a real reconciliation anomaly after the user approves it.",
+              inputSchema: z.object({
+                flag_type: z.string(),
+                severity: z.string().nullable(),
+                ticker: z.string(),
+                ref_id: z.string().nullable(),
+                expected: z.number().nullable(),
+                actual: z.number().nullable(),
+                description: z.string(),
+                suggested_resolution: z.string().nullable(),
+              }),
+              execute: async (input) => {
+                const { data, error } = await supabase
+                  .from("reconciliation_flags")
+                  .insert({
+                    org_id: thread.org_id,
+                    flag_type: input.flag_type,
+                    severity: (input.severity ?? "warn") as "ok" | "warn" | "bad",
+                    ticker: input.ticker.toUpperCase(),
+                    ref_id: input.ref_id ?? "",
+                    expected: input.expected ?? 0,
+                    actual: input.actual ?? 0,
+                    description: input.description,
+                    suggested_resolution: input.suggested_resolution ?? "",
+                    status: "open",
+                  })
+                  .select()
+                  .single();
+                if (error) throw new Error(error.message);
+                return data;
+              },
+            }),
+            resolve_flag: tool({
+              description: "Mark a reconciliation flag as resolved after the user approves it.",
+              inputSchema: z.object({ flag_id: z.string() }),
+              execute: async ({ flag_id }) => {
+                const { error } = await supabase
+                  .from("reconciliation_flags")
+                  .update({ status: "resolved" })
+                  .eq("id", flag_id)
+                  .eq("org_id", thread.org_id);
+                if (error) throw new Error(error.message);
+                return { id: flag_id, status: "resolved" };
+              },
+            }),
+            report_progress: tool({
+              description:
+                "Publish a short public progress update for the user. Call this as work moves between stages. Never include hidden reasoning.",
+              inputSchema: z.object({
+                stage: z.enum([
                   "Understanding your task",
                   "Extracting financial data",
                   "Running reconciliation",
                   "Verifying evidence",
                   "Checking calculations",
                   "Preparing findings",
-                ])
-                .nullable(),
+                ]),
+                detail: z.string().nullable(),
+              }),
+              execute: async (input) => input,
             }),
-            execute: async (input) => ({ ...input, accepted: true }),
-          }),
-          delegate_agent: tool({
-            description:
-              "Delegate a focused sub-task to a specialist agent (extraction, analysis, reconciliation, compliance, evidence, research, quality). Pass all data the specialist needs inside `context` — specialists cannot see the conversation.",
-            inputSchema: z.object({
-              agent: z.enum([
-                "extraction",
-                "analysis",
-                "reconciliation",
-                "compliance",
-                "evidence",
-                "research",
-                "calculation",
-                "quality",
-              ]),
-              objective: z.string(),
-              context: z.string(),
+            get_unfinished_records: tool({
+              description:
+                "Read incomplete or needs-review ledger rows so they can be completed, posted, or exported. Use this whenever the user asks to update unfinished records.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
+                  )
+                  .eq("org_id", thread.org_id)
+                  .order("trade_date", { ascending: false })
+                  .limit(200);
+                if (error) throw new Error(error.message);
+                const unfinished = (data ?? []).filter((row) => {
+                  const gaps = missingFields(row);
+                  return (
+                    row.status === "needs_review" || row.confidence_score < 0.75 || gaps.length > 0
+                  );
+                });
+                return unfinished.map((row) => ({
+                  ...row,
+                  missing_fields: missingFields(row),
+                  can_post: missingFields(row).length === 0,
+                }));
+              },
             }),
-            execute: async ({ agent, objective, context }) => {
-              if (!canDelegate) {
+            propose_unfinished_fixes: tool({
+              description:
+                "Propose conservative completions for unfinished records using only existing ledger values. Does not write. Follow with update_transaction for each change the user should approve.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
+                  )
+                  .eq("org_id", thread.org_id)
+                  .limit(200);
+                if (error) throw new Error(error.message);
+                return (data ?? [])
+                  .filter((row) => row.status === "needs_review" || missingFields(row).length > 0)
+                  .map((row) => {
+                    const missing = missingFields(row);
+                    const proposed: Record<string, unknown> = { id: row.id };
+                    if (row.fees == null) proposed["fees"] = 0;
+                    if (row.wht == null) proposed["wht"] = 0;
+                    if (!row.exchange) proposed["exchange"] = "PSX";
+                    if (missing.length === 0) proposed["status"] = "posted";
+                    return {
+                      id: row.id,
+                      ticker: row.ticker,
+                      missing_fields: missing,
+                      proposed_updates: proposed,
+                      assumption:
+                        missing.length === 0
+                          ? "Required fields are present; posting is a status change only."
+                          : "Required fields are still missing — do not invent values. Export a spreadsheet for the user to complete.",
+                      ready_to_post: missing.length === 0,
+                    };
+                  });
+              },
+            }),
+            get_tax_computation: tool({
+              description:
+                "Run the deterministic FIFO CGT engine on the user's real ledger. Never invent tax numbers.",
+              inputSchema: z.object({
+                jurisdiction: z.enum(["PSX", "NSE"]).nullable(),
+                tax_year: z.string().nullable(),
+              }),
+              execute: async ({ jurisdiction, tax_year }) => {
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
+                  )
+                  .eq("org_id", thread.org_id);
+                if (error) throw new Error(error.message);
+                const txs = (data ?? []).map(asTransaction);
+                const year = tax_year || String(new Date().getFullYear());
+                const market =
+                  jurisdiction ?? (txs.find((t) => t.exchange === "NSE") ? "NSE" : "PSX");
+                const tax = computeTax(txs, {
+                  jurisdiction: market,
+                  filerStatus: "Filer",
+                  taxYear: year,
+                });
                 return {
-                  agent,
-                  findings:
-                    "Specialist agents are a Pro/Enterprise capability. This account is on the Free plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
-                  model_used: "not_available_on_free_plan",
+                  source: "DETERMINISTIC_FIFO",
+                  jurisdiction: market,
+                  taxYear: year,
+                  shortTermGain: tax.shortTermGain,
+                  longTermGain: tax.longTermGain,
+                  estimatedTaxDue: tax.estimatedTaxDue,
+                  dividendWHT: tax.dividendWHT,
+                  lots: tax.lots.slice(0, 40),
                 };
-              }
-              const sub = streamText({
-                model,
-                providerOptions: resolved.providerOptions as never,
-                system: `${SPECIALISTS[agent]}\n\nReturn compact markdown (under 400 words): findings, figures, evidence references, and a confidence rating (high/medium/low). Never expose hidden reasoning.`,
-                prompt: `Objective:\n${objective}\n\nData and context:\n${context.slice(0, 40000)}`,
-              });
-              const findings = await sub.text;
-              return { agent, findings, model_used: resolved.modelId };
-            },
-          }),
-          calculate: tool({
-            description:
-              "Perform exact arithmetic. Use this for every financial number instead of computing mentally.",
-            inputSchema: z.object({
-              items: z.array(z.object({ label: z.string(), expression: z.string() })),
+              },
             }),
-            execute: async ({ items }) =>
-              items.map((item) => {
-                try {
-                  return { label: item.label, expression: item.expression, value: evaluateExpression(item.expression) };
-                } catch (cause) {
+            get_portfolio_analysis: tool({
+              description:
+                "Compute a deterministic portfolio summary from the ledger (cost-basis proxy, not live prices).",
+              inputSchema: z.object({ jurisdiction: z.enum(["PSX", "NSE"]).nullable() }),
+              execute: async ({ jurisdiction }) => {
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
+                  )
+                  .eq("org_id", thread.org_id);
+                if (error) throw new Error(error.message);
+                const txs = (data ?? []).map(asTransaction);
+                const market =
+                  jurisdiction ?? (txs.find((t) => t.exchange === "NSE") ? "NSE" : "PSX");
+                return computePortfolioSummary(txs, market, String(new Date().getFullYear()));
+              },
+            }),
+            prepare_spreadsheet: tool({
+              description:
+                "Build a downloadable CSV. Use kind=unfinished for rows that still need work, kind=ledger for the full book, kind=template for a blank sheet to add new records, or kind=custom with explicit rows.",
+              inputSchema: z.object({
+                kind: z.enum(["unfinished", "ledger", "template", "custom"]),
+                filename: z.string().nullable(),
+                headers: z.array(z.string()).nullable(),
+                rows: z.array(z.array(z.string())).nullable(),
+              }),
+              execute: async ({ kind, filename, headers, rows }) => {
+                const stamp = new Date().toISOString().slice(0, 10);
+                if (kind === "template") {
+                  const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
                   return {
-                    label: item.label,
-                    expression: item.expression,
-                    error: cause instanceof Error ? cause.message : "Invalid expression",
+                    filename: filename || `wab-new-records-${stamp}.csv`,
+                    csv: toCsv(cols, [cols.map(() => "")]),
+                    kind,
+                    note: "Blank template for new transactions. Required columns: ticker, action, quantity, price, trade_date.",
                   };
                 }
-              }),
-          }),
-          get_transactions: tool({
-            description: "Read the signed-in user's real transaction ledger before answering questions about trades, holdings, fees, or tax.",
-            inputSchema: z.object({ ticker: z.string().nullable(), action: z.string().nullable(), limit: z.number().nullable() }),
-            execute: async ({ ticker, action, limit }) => {
-              let query = supabase.from("transactions").select("id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status").eq("org_id", thread.org_id).order("trade_date", { ascending: false }).limit(Math.min(Math.max(limit ?? 30, 1), 100));
-              if (ticker) query = query.eq("ticker", ticker.toUpperCase());
-              if (action) query = query.eq("action", action.toUpperCase() as "BUY" | "SELL" | "DIV");
-              const { data, error } = await query;
-              if (error) throw new Error(error.message);
-              return data;
-            },
-          }),
-          get_ledger_summary: tool({
-            description: "Read a compact real-data summary of the user's ledger and open reconciliation flags.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const [transactions, flags] = await Promise.all([
-                supabase.from("transactions").select("id,ticker,status").eq("org_id", thread.org_id),
-                supabase.from("reconciliation_flags").select("id,severity").eq("org_id", thread.org_id).eq("status", "open"),
-              ]);
-              if (transactions.error) throw new Error(transactions.error.message);
-              if (flags.error) throw new Error(flags.error.message);
-              return { totalTransactions: transactions.data.length, needsReview: transactions.data.filter((row) => row.status === "needs_review").length, openFlags: flags.data.length, tickers: [...new Set(transactions.data.map((row) => row.ticker))] };
-            },
-          }),
-          get_open_flags: tool({
-            description: "Read the open reconciliation flags with full detail so findings can cite them as evidence.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const { data, error } = await supabase
-                .from("reconciliation_flags")
-                .select("id,flag_type,severity,ticker,ref_id,expected,actual,description,suggested_resolution,status")
-                .eq("org_id", thread.org_id)
-                .eq("status", "open");
-              if (error) throw new Error(error.message);
-              return data;
-            },
-          }),
-          insert_transaction: tool({
-            description: "Create a transaction in the real ledger. Runs immediately and is audited.",
-            inputSchema: z.object({ ticker: z.string(), action: z.string(), quantity: z.number(), price: z.number(), fees: z.number().nullable(), wht: z.number().nullable(), trade_date: z.string(), ref_id: z.string().nullable(), broker: z.string().nullable(), exchange: z.string().nullable() }),
-            execute: async (input) => {
-              const action = input.action.toUpperCase();
-              if (!(["BUY", "SELL", "DIV"] as string[]).includes(action)) throw new Error("Action must be BUY, SELL, or DIV");
-              if (monthlyTxLimit !== null) {
-                const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-                const { count } = await supabase.from("transactions").select("id", { count: "exact", head: true }).eq("org_id", thread.org_id).gte("created_at", monthStart);
-                if ((count ?? 0) >= monthlyTxLimit) throw new Error(`Your ${plan} plan allows ${monthlyTxLimit} transactions per month. Upgrade to Pro on the Billing page to add more.`);
-              }
-              if (input.quantity <= 0 || input.price <= 0) throw new Error("Quantity and price must be positive");
-              const payload = { org_id: thread.org_id, ticker: input.ticker.toUpperCase(), action: action as "BUY" | "SELL" | "DIV", quantity: input.quantity, price: input.price, fees: input.fees ?? 0, wht: input.wht ?? 0, trade_date: input.trade_date, ref_id: input.ref_id ?? `AI-${Date.now()}`, broker: input.broker ?? "", exchange: input.exchange ?? "PSX", confidence_score: 0.95, status: "posted" as const, source: { via: "wab_agent", thread_id: thread.id } };
-              const { data, error } = await supabase.from("transactions").insert(payload).select().single();
-              if (error) throw new Error(error.message);
-              await audit("ai_insert_transaction", data.id, payload);
-              return data;
-            },
-          }),
-          update_transaction: tool({
-            description: "Edit a real ledger transaction after the user reviews the proposed fields.",
-            inputSchema: z.object({ id: z.string(), ticker: z.string().nullable(), action: z.string().nullable(), quantity: z.number().nullable(), price: z.number().nullable(), fees: z.number().nullable(), wht: z.number().nullable(), trade_date: z.string().nullable(), ref_id: z.string().nullable(), broker: z.string().nullable(), exchange: z.string().nullable(), status: z.string().nullable() }),
-            execute: async ({ id, ...input }) => {
-              const updates = Object.fromEntries(Object.entries(input).filter(([, value]) => value !== null));
-              if (typeof updates["ticker"] === "string") updates["ticker"] = updates["ticker"].toUpperCase();
-              if (typeof updates["action"] === "string") updates["action"] = updates["action"].toUpperCase();
-              const { data, error } = await supabase.from("transactions").update(updates as never).eq("id", id).eq("org_id", thread.org_id).select().single();
-              if (error) throw new Error(error.message);
-              await audit("ai_update_transaction", id, updates);
-              return data;
-            },
-          }),
-          delete_transaction: tool({
-            description: "Delete a ledger transaction. Requires explicit user approval.",
-            inputSchema: z.object({ id: z.string() }),
-            execute: async ({ id }) => {
-              const { error } = await supabase.from("transactions").delete().eq("id", id).eq("org_id", thread.org_id);
-              if (error) throw new Error(error.message);
-              await audit("ai_delete_transaction", id, {});
-              return { id, deleted: true };
-            },
-          }),
-          flag_anomaly: tool({
-            description: "Record a real reconciliation anomaly after the user approves it.",
-            inputSchema: z.object({ flag_type: z.string(), severity: z.string().nullable(), ticker: z.string(), ref_id: z.string().nullable(), expected: z.number().nullable(), actual: z.number().nullable(), description: z.string(), suggested_resolution: z.string().nullable() }),
-            execute: async (input) => {
-              const { data, error } = await supabase.from("reconciliation_flags").insert({ org_id: thread.org_id, flag_type: input.flag_type, severity: (input.severity ?? "warn") as "ok" | "warn" | "bad", ticker: input.ticker.toUpperCase(), ref_id: input.ref_id ?? "", expected: input.expected ?? 0, actual: input.actual ?? 0, description: input.description, suggested_resolution: input.suggested_resolution ?? "", status: "open" }).select().single();
-              if (error) throw new Error(error.message);
-              return data;
-            },
-          }),
-          resolve_flag: tool({
-            description: "Mark a reconciliation flag as resolved after the user approves it.",
-            inputSchema: z.object({ flag_id: z.string() }),
-            execute: async ({ flag_id }) => {
-              const { error } = await supabase
-                .from("reconciliation_flags")
-                .update({ status: "resolved" })
-                .eq("id", flag_id)
-                .eq("org_id", thread.org_id);
-              if (error) throw new Error(error.message);
-              return { id: flag_id, status: "resolved" };
-            },
-          }),
-          report_progress: tool({
-            description:
-              "Publish a short public progress update for the user. Call this as work moves between stages. Never include hidden reasoning.",
-            inputSchema: z.object({
-              stage: z.enum([
-                "Understanding your task",
-                "Extracting financial data",
-                "Running reconciliation",
-                "Verifying evidence",
-                "Checking calculations",
-                "Preparing findings",
-              ]),
-              detail: z.string().nullable(),
-            }),
-            execute: async (input) => input,
-          }),
-          get_unfinished_records: tool({
-            description:
-              "Read incomplete or needs-review ledger rows so they can be completed, posted, or exported. Use this whenever the user asks to update unfinished records.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const { data, error } = await supabase
-                .from("transactions")
-                .select(
-                  "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
-                )
-                .eq("org_id", thread.org_id)
-                .order("trade_date", { ascending: false })
-                .limit(200);
-              if (error) throw new Error(error.message);
-              const unfinished = (data ?? []).filter((row) => {
-                const gaps = missingFields(row);
-                return row.status === "needs_review" || row.confidence_score < 0.75 || gaps.length > 0;
-              });
-              return unfinished.map((row) => ({
-                ...row,
-                missing_fields: missingFields(row),
-                can_post: missingFields(row).length === 0,
-              }));
-            },
-          }),
-          propose_unfinished_fixes: tool({
-            description:
-              "Propose conservative completions for unfinished records using only existing ledger values. Does not write. Follow with update_transaction for each change the user should approve.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const { data, error } = await supabase
-                .from("transactions")
-                .select(
-                  "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
-                )
-                .eq("org_id", thread.org_id)
-                .limit(200);
-              if (error) throw new Error(error.message);
-              return (data ?? [])
-                .filter((row) => row.status === "needs_review" || missingFields(row).length > 0)
-                .map((row) => {
-                  const missing = missingFields(row);
-                  const proposed: Record<string, unknown> = { id: row.id };
-                  if (row.fees == null) proposed["fees"] = 0;
-                  if (row.wht == null) proposed["wht"] = 0;
-                  if (!row.exchange) proposed["exchange"] = "PSX";
-                  if (missing.length === 0) proposed["status"] = "posted";
+                if (kind === "custom") {
+                  const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
                   return {
-                    id: row.id,
-                    ticker: row.ticker,
-                    missing_fields: missing,
-                    proposed_updates: proposed,
-                    assumption:
-                      missing.length === 0
-                        ? "Required fields are present; posting is a status change only."
-                        : "Required fields are still missing — do not invent values. Export a spreadsheet for the user to complete.",
-                    ready_to_post: missing.length === 0,
+                    filename: filename || `wab-export-${stamp}.csv`,
+                    csv: toCsv(cols, rows ?? []),
+                    kind,
                   };
+                }
+                const { data, error } = await supabase
+                  .from("transactions")
+                  .select(
+                    "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
+                  )
+                  .eq("org_id", thread.org_id)
+                  .order("trade_date", { ascending: false });
+                if (error) throw new Error(error.message);
+                const selected =
+                  kind === "unfinished"
+                    ? (data ?? []).filter(
+                        (row) =>
+                          row.status === "needs_review" ||
+                          missingFields(row).length > 0 ||
+                          row.confidence_score < 0.75,
+                      )
+                    : (data ?? []);
+                const cols = [...LEDGER_TEMPLATE_COLUMNS, "status", "confidence_score", "id"];
+                const csvRows = selected.map((row) => [
+                  row.ticker,
+                  row.action,
+                  row.quantity,
+                  row.price,
+                  row.fees,
+                  row.wht,
+                  row.trade_date,
+                  row.ref_id,
+                  row.broker,
+                  row.exchange,
+                  row.status,
+                  row.confidence_score,
+                  row.id,
+                ]);
+                return {
+                  filename:
+                    filename ||
+                    (kind === "unfinished"
+                      ? `wab-unfinished-${stamp}.csv`
+                      : `wab-ledger-${stamp}.csv`),
+                  csv: toCsv(cols, csvRows),
+                  kind,
+                  row_count: csvRows.length,
+                };
+              },
+            }),
+            // ── create_notification: agent can push a real in-app notification ──
+            create_notification: tool({
+              description:
+                "Send a persistent in-app notification to the user. Use after completing a significant task, finding anomalies, or needing to alert the user. Always include a meaningful title and message.",
+              inputSchema: z.object({
+                type: z
+                  .string()
+                  .describe(
+                    "Notification type: task_complete | approval_required | anomaly | error | info",
+                  ),
+                title: z.string().describe("Short title, max 60 chars"),
+                message: z.string().describe("Full message body, 1-2 sentences"),
+                severity: z.enum(["info", "success", "warning", "error"]).default("info"),
+                link: z
+                  .string()
+                  .nullable()
+                  .describe("Optional app route to link to, e.g. /app/ledger"),
+              }),
+              execute: async ({ type, title, message, severity, link }) => {
+                await supabase.from("notifications").insert({
+                  org_id: thread.org_id,
+                  user_id: authData.user.id,
+                  type,
+                  title,
+                  message,
+                  severity,
+                  link: link ?? null,
                 });
-            },
-          }),
-          get_tax_computation: tool({
-            description: "Run the deterministic FIFO CGT engine on the user's real ledger. Never invent tax numbers.",
-            inputSchema: z.object({
-              jurisdiction: z.enum(["PSX", "NSE"]).nullable(),
-              tax_year: z.string().nullable(),
+                return { sent: true, title, type };
+              },
             }),
-            execute: async ({ jurisdiction, tax_year }) => {
-              const { data, error } = await supabase
-                .from("transactions")
-                .select(
-                  "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
-                )
-                .eq("org_id", thread.org_id);
-              if (error) throw new Error(error.message);
-              const txs = (data ?? []).map(asTransaction);
-              const year = tax_year || String(new Date().getFullYear());
-              const market = jurisdiction ?? (txs.find((t) => t.exchange === "NSE") ? "NSE" : "PSX");
-              const tax = computeTax(txs, { jurisdiction: market, filerStatus: "Filer", taxYear: year });
-              return {
-                source: "DETERMINISTIC_FIFO",
-                jurisdiction: market,
-                taxYear: year,
-                shortTermGain: tax.shortTermGain,
-                longTermGain: tax.longTermGain,
-                estimatedTaxDue: tax.estimatedTaxDue,
-                dividendWHT: tax.dividendWHT,
-                lots: tax.lots.slice(0, 40),
-              };
-            },
-          }),
-          get_portfolio_analysis: tool({
-            description: "Compute a deterministic portfolio summary from the ledger (cost-basis proxy, not live prices).",
-            inputSchema: z.object({ jurisdiction: z.enum(["PSX", "NSE"]).nullable() }),
-            execute: async ({ jurisdiction }) => {
-              const { data, error } = await supabase
-                .from("transactions")
-                .select(
-                  "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
-                )
-                .eq("org_id", thread.org_id);
-              if (error) throw new Error(error.message);
-              const txs = (data ?? []).map(asTransaction);
-              const market = jurisdiction ?? (txs.find((t) => t.exchange === "NSE") ? "NSE" : "PSX");
-              return computePortfolioSummary(txs, market, String(new Date().getFullYear()));
-            },
-          }),
-          prepare_spreadsheet: tool({
-            description:
-              "Build a downloadable CSV. Use kind=unfinished for rows that still need work, kind=ledger for the full book, kind=template for a blank sheet to add new records, or kind=custom with explicit rows.",
-            inputSchema: z.object({
-              kind: z.enum(["unfinished", "ledger", "template", "custom"]),
-              filename: z.string().nullable(),
-              headers: z.array(z.string()).nullable(),
-              rows: z.array(z.array(z.string())).nullable(),
-            }),
-            execute: async ({ kind, filename, headers, rows }) => {
-              const stamp = new Date().toISOString().slice(0, 10);
-              if (kind === "template") {
-                const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
+            get_account_overview: tool({
+              description:
+                "Read the user's profile, organisation, plan/billing status, tax profile and record counts.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const [prof, org, tax, txCount, flagCount, brokers] = await Promise.all([
+                  supabase
+                    .from("profiles")
+                    .select("*")
+                    .eq("user_id", authData.user.id)
+                    .maybeSingle(),
+                  supabase.from("organizations").select("*").eq("id", thread.org_id).maybeSingle(),
+                  supabase
+                    .from("tax_profiles")
+                    .select("*")
+                    .eq("org_id", thread.org_id)
+                    .maybeSingle(),
+                  supabase
+                    .from("transactions")
+                    .select("id", { count: "exact", head: true })
+                    .eq("org_id", thread.org_id),
+                  supabase
+                    .from("reconciliation_flags")
+                    .select("id", { count: "exact", head: true })
+                    .eq("org_id", thread.org_id)
+                    .eq("status", "open"),
+                  supabase
+                    .from("broker_accounts")
+                    .select("id", { count: "exact", head: true })
+                    .eq("org_id", thread.org_id),
+                ]);
                 return {
-                  filename: filename || `wab-new-records-${stamp}.csv`,
-                  csv: toCsv(cols, [cols.map(() => "")]),
-                  kind,
-                  note: "Blank template for new transactions. Required columns: ticker, action, quantity, price, trade_date.",
+                  email: authData.user.email,
+                  profile: prof.data,
+                  organisation: org.data,
+                  tax_profile: tax.data,
+                  plan,
+                  monthly_transaction_limit: monthlyTxLimit,
+                  transactions: txCount.count ?? 0,
+                  open_flags: flagCount.count ?? 0,
+                  broker_accounts: brokers.count ?? 0,
                 };
-              }
-              if (kind === "custom") {
-                const cols = headers?.length ? headers : [...LEDGER_TEMPLATE_COLUMNS];
-                return {
-                  filename: filename || `wab-export-${stamp}.csv`,
-                  csv: toCsv(cols, rows ?? []),
-                  kind,
-                };
-              }
-              const { data, error } = await supabase
-                .from("transactions")
-                .select(
-                  "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,broker,exchange,status,confidence_score",
-                )
-                .eq("org_id", thread.org_id)
-                .order("trade_date", { ascending: false });
-              if (error) throw new Error(error.message);
-              const selected =
-                kind === "unfinished"
-                  ? (data ?? []).filter(
-                      (row) => row.status === "needs_review" || missingFields(row).length > 0 || row.confidence_score < 0.75,
-                    )
-                  : (data ?? []);
-              const cols = [...LEDGER_TEMPLATE_COLUMNS, "status", "confidence_score", "id"];
-              const csvRows = selected.map((row) => [
-                row.ticker,
-                row.action,
-                row.quantity,
-                row.price,
-                row.fees,
-                row.wht,
-                row.trade_date,
-                row.ref_id,
-                row.broker,
-                row.exchange,
-                row.status,
-                row.confidence_score,
-                row.id,
-              ]);
-              return {
-                filename:
-                  filename ||
-                  (kind === "unfinished" ? `wab-unfinished-${stamp}.csv` : `wab-ledger-${stamp}.csv`),
-                csv: toCsv(cols, csvRows),
-                kind,
-                row_count: csvRows.length,
-              };
-            },
-          }),
-          // ── create_notification: agent can push a real in-app notification ──
-          create_notification: tool({
-            description: "Send a persistent in-app notification to the user. Use after completing a significant task, finding anomalies, or needing to alert the user. Always include a meaningful title and message.",
-            inputSchema: z.object({
-              type: z.string().describe("Notification type: task_complete | approval_required | anomaly | error | info"),
-              title: z.string().describe("Short title, max 60 chars"),
-              message: z.string().describe("Full message body, 1-2 sentences"),
-              severity: z.enum(["info", "success", "warning", "error"]).default("info"),
-              link: z.string().nullable().describe("Optional app route to link to, e.g. /app/ledger"),
+              },
             }),
-            execute: async ({ type, title, message, severity, link }) => {
-              await supabase.from("notifications").insert({
-                org_id: thread.org_id,
-                user_id: authData.user.id,
-                type,
-                title,
-                message,
-                severity,
-                link: link ?? null,
-              });
-              return { sent: true, title, type };
-            },
-          }),
-          get_account_overview: tool({
-            description: "Read the user's profile, organisation, plan/billing status, tax profile and record counts.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const [prof, org, tax, txCount, flagCount, brokers] = await Promise.all([
-                supabase.from("profiles").select("*").eq("user_id", authData.user.id).maybeSingle(),
-                supabase.from("organizations").select("*").eq("id", thread.org_id).maybeSingle(),
-                supabase.from("tax_profiles").select("*").eq("org_id", thread.org_id).maybeSingle(),
-                supabase.from("transactions").select("id", { count: "exact", head: true }).eq("org_id", thread.org_id),
-                supabase.from("reconciliation_flags").select("id", { count: "exact", head: true }).eq("org_id", thread.org_id).eq("status", "open"),
-                supabase.from("broker_accounts").select("id", { count: "exact", head: true }).eq("org_id", thread.org_id),
-              ]);
-              return {
-                email: authData.user.email,
-                profile: prof.data,
-                organisation: org.data,
-                tax_profile: tax.data,
-                plan,
-                monthly_transaction_limit: monthlyTxLimit,
-                transactions: txCount.count ?? 0,
-                open_flags: flagCount.count ?? 0,
-                broker_accounts: brokers.count ?? 0,
-              };
-            },
-          }),
-          read_google_sheet: tool({
-            description: "Read a Google Sheet from a link (sheet must be shared as 'Anyone with the link'). Returns CSV text.",
-            inputSchema: z.object({ url: z.string() }),
-            execute: async ({ url }) => {
-              const m = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-              if (!m) throw new Error("That isn't a Google Sheets link.");
-              const gid = url.match(/[#&?]gid=(\d+)/)?.[1] ?? "0";
-              const res = await fetch(`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`, { redirect: "follow" });
-              if (!res.ok || !(res.headers.get("content-type") ?? "").includes("csv")) {
-                throw new Error("Couldn't open the sheet. In Google Sheets choose Share → 'Anyone with the link' and try again.");
-              }
-              const csv = await res.text();
-              return { csv: csv.slice(0, 60000), truncated: csv.length > 60000 };
-            },
-          }),
-          get_live_balances: tool({
-            description:
-              "Read live balances from connected sources (Binance, wallets, bank accounts) plus the latest synced movements. Use for questions about balances, portfolio value or what changed since the last sync.",
-            inputSchema: z.object({ limit: z.number().nullable() }),
-            execute: async ({ limit }) => {
-              // These tables are newer than the generated Database type.
-              const db = supabase as unknown as {
-                from: (table: string) => {
-                  select: (columns: string) => {
-                    eq: (column: string, value: string) => {
-                      order: (column: string, opts: { ascending: boolean }) => {
-                        limit: (n: number) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+            read_google_sheet: tool({
+              description:
+                "Read a Google Sheet from a link (sheet must be shared as 'Anyone with the link'). Returns CSV text.",
+              inputSchema: z.object({ url: z.string() }),
+              execute: async ({ url }) => {
+                const m = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+                if (!m) throw new Error("That isn't a Google Sheets link.");
+                const gid = url.match(/[#&?]gid=(\d+)/)?.[1] ?? "0";
+                const res = await fetch(
+                  `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`,
+                  { redirect: "follow" },
+                );
+                if (!res.ok || !(res.headers.get("content-type") ?? "").includes("csv")) {
+                  throw new Error(
+                    "Couldn't open the sheet. In Google Sheets choose Share → 'Anyone with the link' and try again.",
+                  );
+                }
+                const csv = await res.text();
+                return { csv: csv.slice(0, 60000), truncated: csv.length > 60000 };
+              },
+            }),
+            get_live_balances: tool({
+              description:
+                "Read live balances from connected sources (Binance, wallets, bank accounts) plus the latest synced movements. Use for questions about balances, portfolio value or what changed since the last sync.",
+              inputSchema: z.object({ limit: z.number().nullable() }),
+              execute: async ({ limit }) => {
+                // These tables are newer than the generated Database type.
+                const db = supabase as unknown as {
+                  from: (table: string) => {
+                    select: (columns: string) => {
+                      eq: (
+                        column: string,
+                        value: string,
+                      ) => {
+                        order: (
+                          column: string,
+                          opts: { ascending: boolean },
+                        ) => {
+                          limit: (n: number) => Promise<{
+                            data: unknown[] | null;
+                            error: { message: string } | null;
+                          }>;
+                        };
                       };
                     };
                   };
                 };
-              };
-              const [accounts, movements] = await Promise.all([
-                db
-                  .from("provider_accounts")
-                  .select("connection_id,external_id,account_type,currency,balance,available,as_of,raw")
+                const [accounts, movements] = await Promise.all([
+                  db
+                    .from("provider_accounts")
+                    .select(
+                      "connection_id,external_id,account_type,currency,balance,available,as_of,raw",
+                    )
+                    .eq("org_id", thread.org_id)
+                    .order("as_of", { ascending: false })
+                    .limit(50),
+                  db
+                    .from("provider_transactions")
+                    .select(
+                      "connection_id,kind,side,instrument,quantity,price,amount,fees,currency,occurred_at",
+                    )
+                    .eq("org_id", thread.org_id)
+                    .order("occurred_at", { ascending: false })
+                    .limit(Math.min(Math.max(limit ?? 25, 1), 100)),
+                ]);
+                if (accounts.error) throw new Error(accounts.error.message);
+                if (movements.error) throw new Error(movements.error.message);
+                return {
+                  accounts: accounts.data ?? [],
+                  recent_movements: movements.data ?? [],
+                  note:
+                    (accounts.data ?? []).length === 0
+                      ? "No live source is connected yet. Connect one in Connections, then sync."
+                      : "Balances are as of the last sync. Bank accounts update from their statement feed.",
+                };
+              },
+            }),
+            // ── get_broker_accounts: read broker accounts ─────────────────────
+            get_broker_accounts: tool({
+              description: "Read the user's connected broker accounts.",
+              inputSchema: z.object({}),
+              execute: async () => {
+                const { data, error } = await supabase
+                  .from("broker_accounts")
+                  .select("id,name,broker_name,currency,exchange,external_ref,created_at")
                   .eq("org_id", thread.org_id)
-                  .order("as_of", { ascending: false })
-                  .limit(50),
-                db
-                  .from("provider_transactions")
-                  .select("connection_id,kind,side,instrument,quantity,price,amount,fees,currency,occurred_at")
-                  .eq("org_id", thread.org_id)
-                  .order("occurred_at", { ascending: false })
-                  .limit(Math.min(Math.max(limit ?? 25, 1), 100)),
-              ]);
-              if (accounts.error) throw new Error(accounts.error.message);
-              if (movements.error) throw new Error(movements.error.message);
-              return {
-                accounts: accounts.data ?? [],
-                recent_movements: movements.data ?? [],
-                note:
-                  (accounts.data ?? []).length === 0
-                    ? "No live source is connected yet. Connect one in Connections, then sync."
-                    : "Balances are as of the last sync. Bank accounts update from their statement feed.",
-              };
-            },
-          }),
-          // ── get_broker_accounts: read broker accounts ─────────────────────
-          get_broker_accounts: tool({
-            description: "Read the user's connected broker accounts.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const { data, error } = await supabase
-                .from("broker_accounts")
-                .select("id,name,broker_name,currency,exchange,external_ref,created_at")
-                .eq("org_id", thread.org_id)
-                .order("created_at", { ascending: false });
-              if (error) throw new Error(error.message);
-              return data ?? [];
-            },
-          }),
-        };
-
-        const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
-        const latestText = (lastUser?.parts ?? []).map((p) => (p.type === "text" ? p.text : "")).join(" ");
-        const title = text(latestText).slice(0, 64) || "Document audit";
-        // Spreadsheets/text files can't go to the model as files — turn them into text tables.
-        const modelMessages = await convertToModelMessages(uiMessages);
-
-        // Sanitize messages to remove reasoning_content which Groq doesn't support
-        const cleanedMessages = modelMessages.map((message) => {
-          if (message.role !== "assistant") {
-            return message;
-          }
-
-          return {
-            ...message,
-            content: Array.isArray(message.content)
-              ? message.content.filter((part) => part.type !== "reasoning")
-              : message.content,
+                  .order("created_at", { ascending: false });
+                if (error) throw new Error(error.message);
+                return data ?? [];
+              },
+            }),
           };
-        });
 
-        // tries the next free model whenever a provider/quota error is thrown
-        // during the initial connection (before any bytes are streamed).
+          const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
+          const latestText = (lastUser?.parts ?? [])
+            .map((p) => (p.type === "text" ? p.text : ""))
+            .join(" ");
+          const title = text(latestText).slice(0, 64) || "Document audit";
+          // Spreadsheets/text files can't go to the model as files — turn them into text tables.
+          const modelMessages = await convertToModelMessages(uiMessages);
 
-        const modelCascade = resolved.cascade;
+          // Sanitize messages to remove reasoning_content which Groq doesn't support
+          const cleanedMessages = modelMessages.map((message) => {
+            if (message.role !== "assistant") {
+              return message;
+            }
 
-        // Tell the model which entitlements apply so it never promises a
-        // capability the user's plan doesn't include.
-        const planSection = `
+            return {
+              ...message,
+              content: Array.isArray(message.content)
+                ? message.content.filter((part) => part.type !== "reasoning")
+                : message.content,
+            };
+          });
+
+          // tries the next free model whenever a provider/quota error is thrown
+          // during the initial connection (before any bytes are streamed).
+
+          const modelCascade = resolved.cascade;
+
+          // Tell the model which entitlements apply so it never promises a
+          // capability the user's plan doesn't include.
+          const planSection = `
 
 ━━ ACCOUNT ━━
 The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transactionsPerMonth ?? "unlimited"} new transactions per month, 1 broker account and CSV export; specialist delegation, PDF exports, anomaly detection and tax-loss harvesting are Pro/Enterprise capabilities. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
 
-        const SYSTEM_PROMPT = `You are Wab, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
+          const SYSTEM_PROMPT = `You are Wab, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
 
 ━━ SPEED AND EFFICIENCY (most important) ━━
 - Answer greetings, definitions and general questions directly with NO tools.
@@ -980,103 +1215,118 @@ The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transacti
 ## Summary / ## Key Findings / ## Discrepancies / ## Recommended Actions / ## Confidence Level
 Mark figures as verified (with source) or assumption. Use markdown tables. Never reveal hidden reasoning.`;
 
-        const STREAM_OPTS = {
-          system: SYSTEM_PROMPT + planSection,
-          messages: cleanedMessages,
-          tools,
-          // Only destructive deletes need a confirmation; everything else is audited.
-          toolApproval: {
-            delete_transaction: "user-approval" as const,
-          },
-          experimental_toolApprovalSecret: approvalSecret,
-          stopWhen: stepCountIs(50),
-          // After the plan's tool budget, tools switch off so the model must
-          // write its final answer instead of stopping mid-way.
-          prepareStep: ({ stepNumber }: { stepNumber: number }) =>
-            stepNumber >= maxSteps ? { toolChoice: "none" as const } : {},
-          providerOptions: resolved.providerOptions as never,
-        };
+          const STREAM_OPTS = {
+            system: SYSTEM_PROMPT + planSection,
+            messages: cleanedMessages,
+            tools,
+            // Only destructive deletes need a confirmation; everything else is audited.
+            toolApproval: {
+              delete_transaction: "user-approval" as const,
+            },
+            experimental_toolApprovalSecret: approvalSecret,
+            stopWhen: stepCountIs(50),
+            // After the plan's tool budget, tools switch off so the model must
+            // write its final answer instead of stopping mid-way.
+            prepareStep: ({ stepNumber }: { stepNumber: number }) =>
+              stepNumber >= maxSteps ? { toolChoice: "none" as const } : {},
+            providerOptions: resolved.providerOptions as never,
+          };
 
-        // No abortSignal: the answer finishes and is saved even if the
-        // browser connection drops mid-response.
-        let result;
-        try {
-          result = streamText({ model, ...STREAM_OPTS });
-        } catch (e) {
+          // No abortSignal: the answer finishes and is saved even if the
+          // browser connection drops mid-response.
+          let result;
+          try {
+            result = streamText({ model, ...STREAM_OPTS });
+          } catch (e) {
+            return new Response(
+              JSON.stringify({
+                code: "ai_stream_error",
+                message: "Failed to start AI stream",
+                error: e instanceof Error ? e.message : String(e),
+              }),
+              { status: 500, headers: { "Content-Type": "application/json" } },
+            );
+          }
+          void result.consumeStream();
+          return result.toUIMessageStreamResponse({
+            sendReasoning: true,
+            originalMessages: body.messages as UIMessage[],
+            onError: (e) => {
+              const st = (e as { statusCode?: number })?.statusCode;
+              const errorMessage = (e as { message?: string })?.message;
+              console.error("[Wab Chat] AI Stream Error:", {
+                statusCode: st,
+                message: errorMessage,
+                error: e,
+              });
+
+              if (st === 402)
+                return "AI credits are used up. Add credits in your workspace settings to continue.";
+              if (st === 429) return "Wab AI is busy right now. Please try again in a moment.";
+              if (st === 403)
+                return "AI access is blocked for this workspace. Please check your settings.";
+              if (st === 401)
+                return "AI authentication failed. Please check your API key configuration.";
+
+              // More detailed error message for debugging
+              if (errorMessage) {
+                return `Wab AI encountered an error: ${errorMessage}. Your data was not changed. Please try again.`;
+              }
+
+              return "Wab AI hit an error. Your data was not changed — please try again.";
+            },
+            onFinish: async ({ messages }) => {
+              try {
+                // Deduplicate by ai_message_id — keep the last occurrence of each
+                // (the full message array re-sends history on every turn, so the
+                // same id can appear twice and cause a Postgres 21000 conflict).
+                const seen = new Map<string, (typeof messages)[number] & { position: number }>();
+                messages.forEach((message, index) => {
+                  seen.set(message.id, { ...message, position: index });
+                });
+                const deduped = Array.from(seen.values());
+
+                const { error: messageError } = await supabase.from("chat_messages").upsert(
+                  deduped.map((message) => ({
+                    thread_id: thread.id,
+                    org_id: thread.org_id,
+                    user_id: authData.user.id,
+                    ai_message_id: message.id,
+                    role: message.role,
+                    parts: message.parts as never,
+                    position: message.position,
+                  })),
+                  { onConflict: "thread_id,ai_message_id" },
+                );
+                const { error: updateError } = await supabase
+                  .from("chat_threads")
+                  .update({ title, updated_at: new Date().toISOString() })
+                  .eq("id", thread.id)
+                  .eq("user_id", authData.user.id);
+              } catch (e) {
+                // Silent error handling for message persistence
+              }
+            },
+          });
+        } catch (error) {
+          // Return more detailed error for debugging
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          console.error("[Wab Chat] Internal Error:", {
+            message: errorMessage,
+            stack: errorStack,
+            error,
+          });
+
           return new Response(
             JSON.stringify({
-              code: "ai_stream_error",
-              message: "Failed to start AI stream",
-              error: e instanceof Error ? e.message : String(e),
+              code: "internal_error",
+              message: "An internal error occurred. Please try again.",
+              error: errorMessage,
             }),
             { status: 500, headers: { "Content-Type": "application/json" } },
           );
         }
-        void result.consumeStream();
-        return result.toUIMessageStreamResponse({
-          sendReasoning: true,
-          originalMessages: body.messages as UIMessage[],
-          onError: (e) => {
-            const st = (e as { statusCode?: number })?.statusCode;
-            const errorMessage = (e as { message?: string })?.message;
-            console.error("[Wab Chat] AI Stream Error:", { statusCode: st, message: errorMessage, error: e });
-
-            if (st === 402) return "AI credits are used up. Add credits in your workspace settings to continue.";
-            if (st === 429) return "Wab AI is busy right now. Please try again in a moment.";
-            if (st === 403) return "AI access is blocked for this workspace. Please check your settings.";
-            if (st === 401) return "AI authentication failed. Please check your API key configuration.";
-
-            // More detailed error message for debugging
-            if (errorMessage) {
-              return `Wab AI encountered an error: ${errorMessage}. Your data was not changed. Please try again.`;
-            }
-
-            return "Wab AI hit an error. Your data was not changed — please try again.";
-          },
-          onFinish: async ({ messages }) => {
-            try {
-              // Deduplicate by ai_message_id — keep the last occurrence of each
-              // (the full message array re-sends history on every turn, so the
-              // same id can appear twice and cause a Postgres 21000 conflict).
-              const seen = new Map<string, typeof messages[number] & { position: number }>();
-              messages.forEach((message, index) => {
-                seen.set(message.id, { ...message, position: index });
-              });
-              const deduped = Array.from(seen.values());
-
-              const { error: messageError } = await supabase.from("chat_messages").upsert(
-                deduped.map((message) => ({
-                  thread_id:    thread.id,
-                  org_id:       thread.org_id,
-                  user_id:      authData.user.id,
-                  ai_message_id: message.id,
-                  role:         message.role,
-                  parts:        message.parts as never,
-                  position:     message.position,
-                })),
-                { onConflict: "thread_id,ai_message_id" },
-              );
-              const { error: updateError } = await supabase.from("chat_threads").update({ title, updated_at: new Date().toISOString() }).eq("id", thread.id).eq("user_id", authData.user.id);
-            } catch (e) {
-              // Silent error handling for message persistence
-            }
-          },
-        });
-      } catch (error) {
-        // Return more detailed error for debugging
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const errorStack = error instanceof Error ? error.stack : undefined;
-        console.error("[Wab Chat] Internal Error:", { message: errorMessage, stack: errorStack, error });
-
-        return new Response(
-          JSON.stringify({
-            code: "internal_error",
-            message: "An internal error occurred. Please try again.",
-            error: errorMessage,
-          }),
-          { status: 500, headers: { "Content-Type": "application/json" } },
-        );
-      }
       },
     }) as never,
   },

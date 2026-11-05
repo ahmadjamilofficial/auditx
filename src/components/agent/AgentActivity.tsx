@@ -23,19 +23,19 @@ import type { AgentStep } from "@/lib/agent-service";
 // ── Step icon mapping ─────────────────────────────────────────────────────────
 
 const STEP_ICONS: Record<string, React.FC<any>> = {
-  "understanding":   Sparkles,
-  "extracting":      FileSearch,
-  "reconciliation":  GitMerge,
-  "analysis":        BarChart3,
-  "evidence":        BookOpen,
-  "compliance":      Shield,
-  "calculation":     Scale,
-  "quality":         ClipboardCheck,
-  "research":        Search,
-  "reading":         FileSearch,
-  "context":         Sparkles,
-  "analyze":         BarChart3,
-  "compose":         ClipboardCheck,
+  understanding: Sparkles,
+  extracting: FileSearch,
+  reconciliation: GitMerge,
+  analysis: BarChart3,
+  evidence: BookOpen,
+  compliance: Shield,
+  calculation: Scale,
+  quality: ClipboardCheck,
+  research: Search,
+  reading: FileSearch,
+  context: Sparkles,
+  analyze: BarChart3,
+  compose: ClipboardCheck,
 };
 
 function resolveIcon(step: AgentStep): React.FC<any> {
@@ -52,7 +52,14 @@ function StepIcon({ status, step }: { status: AgentStep["status"]; step: AgentSt
   if (status === "done")
     return <Check size={11} strokeWidth={2.5} style={{ color: "var(--ok)" }} />;
   if (status === "active")
-    return <Loader2 size={11} strokeWidth={2.5} className="animate-spin" style={{ color: "var(--color-accent)" }} />;
+    return (
+      <Loader2
+        size={11}
+        strokeWidth={2.5}
+        className="animate-spin"
+        style={{ color: "var(--color-accent)" }}
+      />
+    );
   if (status === "error")
     return <AlertCircle size={11} strokeWidth={2.5} style={{ color: "var(--bad)" }} />;
   const Icon = resolveIcon(step);
@@ -65,12 +72,12 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
   const [open, setOpen] = useState(true);
   if (steps.length === 0) return null;
 
-  const done   = steps.every((s) => s.status === "done");
-  const failed = steps.some((s)  => s.status === "error");
-  const active = steps.find((s)  => s.status === "active");
+  const done = steps.every((s) => s.status === "done");
+  const failed = steps.some((s) => s.status === "error");
+  const active = steps.find((s) => s.status === "active");
 
   const completed = steps.filter((s) => s.status === "done").length;
-  const progress  = steps.length > 0 ? (completed / steps.length) * 100 : 0;
+  const progress = steps.length > 0 ? (completed / steps.length) * 100 : 0;
 
   return (
     <div
@@ -161,13 +168,17 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
                   animate={{ opacity: 1, x: 0 }}
                   className="flex items-start gap-2.5 text-xs"
                 >
-                  <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full"
+                  <span
+                    className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full"
                     style={{
                       background:
-                        s.status === "done"   ? "color-mix(in srgb, var(--ok) 12%, transparent)"  :
-                        s.status === "active" ? "var(--accent-12)" :
-                        s.status === "error"  ? "color-mix(in srgb, var(--bad) 12%, transparent)"  :
-                        "var(--accent-6)",
+                        s.status === "done"
+                          ? "color-mix(in srgb, var(--ok) 12%, transparent)"
+                          : s.status === "active"
+                            ? "var(--accent-12)"
+                            : s.status === "error"
+                              ? "color-mix(in srgb, var(--bad) 12%, transparent)"
+                              : "var(--accent-6)",
                     }}
                   >
                     <StepIcon status={s.status} step={s} />
@@ -176,9 +187,11 @@ export function AgentActivity({ steps, running }: { steps: AgentStep[]; running:
                     <span
                       style={{
                         color:
-                          s.status === "pending" ? "var(--ink-3)" :
-                          s.status === "error"   ? "var(--bad)"   :
-                          "var(--ink-2)",
+                          s.status === "pending"
+                            ? "var(--ink-3)"
+                            : s.status === "error"
+                              ? "var(--bad)"
+                              : "var(--ink-2)",
                         fontWeight: s.status === "active" ? 500 : 400,
                       }}
                     >

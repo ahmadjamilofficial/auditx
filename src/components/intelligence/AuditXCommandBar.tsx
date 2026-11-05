@@ -17,28 +17,61 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import {
-  type KeyboardEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useAIContext } from "@/lib/financial-intelligence-hooks";
-import { detectIntent, buildIntelligencePrompt, getPortfolioSummary, getTaxLiability, getUnreconciledTransactions, getCriticalAnomalies, getFinancialHealth, type IntelligenceToolContext } from "@/lib/intelligence-tools";
+import {
+  detectIntent,
+  buildIntelligencePrompt,
+  getPortfolioSummary,
+  getTaxLiability,
+  getUnreconciledTransactions,
+  getCriticalAnomalies,
+  getFinancialHealth,
+  type IntelligenceToolContext,
+} from "@/lib/intelligence-tools";
 import { useLedgerContext } from "@/lib/use-ledger-context";
 
 // ── Suggestions ───────────────────────────────────────────────────────────────
 
 const GLOBAL_SUGGESTIONS = [
-  { icon: AlertTriangle, label: "WHY DID MY TAX CHANGE?", sub: "Explain my latest tax change", intent: "TAX_CHANGE_EXPLANATION" },
-  { icon: Zap,           label: "WHAT NEEDS ATTENTION?",   sub: "Show critical financial issues",       intent: "DAILY_PRIORITIES" },
-  { icon: Search,        label: "FIND DISCREPANCIES",      sub: "Show suspicious transactions",        intent: "BROKER_DISCREPANCY" },
-  { icon: Lightbulb,     label: "TAX OPPORTUNITIES",       sub: "Find tax-loss harvesting chances",    intent: "TAX_OPPORTUNITY" },
-  { icon: BarChart3,     label: "PORTFOLIO HEALTH",        sub: "Analyse my current positions",        intent: "PORTFOLIO_ANALYSIS" },
-  { icon: GitFork,       label: "RECONCILIATION STATUS",   sub: "Show what's unreconciled",            intent: "RECONCILIATION_STATUS" },
+  {
+    icon: AlertTriangle,
+    label: "WHY DID MY TAX CHANGE?",
+    sub: "Explain my latest tax change",
+    intent: "TAX_CHANGE_EXPLANATION",
+  },
+  {
+    icon: Zap,
+    label: "WHAT NEEDS ATTENTION?",
+    sub: "Show critical financial issues",
+    intent: "DAILY_PRIORITIES",
+  },
+  {
+    icon: Search,
+    label: "FIND DISCREPANCIES",
+    sub: "Show suspicious transactions",
+    intent: "BROKER_DISCREPANCY",
+  },
+  {
+    icon: Lightbulb,
+    label: "TAX OPPORTUNITIES",
+    sub: "Find tax-loss harvesting chances",
+    intent: "TAX_OPPORTUNITY",
+  },
+  {
+    icon: BarChart3,
+    label: "PORTFOLIO HEALTH",
+    sub: "Analyse my current positions",
+    intent: "PORTFOLIO_ANALYSIS",
+  },
+  {
+    icon: GitFork,
+    label: "RECONCILIATION STATUS",
+    sub: "Show what's unreconciled",
+    intent: "RECONCILIATION_STATUS",
+  },
 ];
 
 // ── AI Response Component ─────────────────────────────────────────────────────
@@ -46,13 +79,12 @@ const GLOBAL_SUGGESTIONS = [
 function AIResponse({ text, isStreaming }: { text: string; isStreaming: boolean }) {
   return (
     <div className="max-h-[420px] overflow-y-auto px-5 py-4">
-      <div
-        className="mb-3 flex items-center gap-2"
-        style={{ color: "var(--color-accent)" }}
-      >
+      <div className="mb-3 flex items-center gap-2" style={{ color: "var(--color-accent)" }}>
         <Sparkles size={13} />
         <span className="text-xs font-semibold uppercase tracking-wider">Wab Intelligence</span>
-        {isStreaming && <Loader2 size={12} className="ml-auto animate-spin" style={{ color: "var(--ink-3)" }} />}
+        {isStreaming && (
+          <Loader2 size={12} className="ml-auto animate-spin" style={{ color: "var(--ink-3)" }} />
+        )}
       </div>
       <div
         className="prose prose-sm max-w-none"
@@ -60,16 +92,32 @@ function AIResponse({ text, isStreaming }: { text: string; isStreaming: boolean 
       >
         {text.split("\n").map((line, i) => {
           if (line.startsWith("## ")) {
-            return <p key={i} className="font-bold mt-3 mb-1" style={{ fontSize: "13px" }}>{line.slice(3)}</p>;
+            return (
+              <p key={i} className="font-bold mt-3 mb-1" style={{ fontSize: "13px" }}>
+                {line.slice(3)}
+              </p>
+            );
           }
           if (line.startsWith("- ")) {
-            return <p key={i} className="pl-3 mb-0.5" style={{ color: "var(--ink-2)" }}>• {line.slice(2)}</p>;
+            return (
+              <p key={i} className="pl-3 mb-0.5" style={{ color: "var(--ink-2)" }}>
+                • {line.slice(2)}
+              </p>
+            );
           }
           if (line.startsWith("**") && line.endsWith("**")) {
-            return <p key={i} className="font-semibold mt-2">{line.slice(2, -2)}</p>;
+            return (
+              <p key={i} className="font-semibold mt-2">
+                {line.slice(2, -2)}
+              </p>
+            );
           }
           if (line.trim() === "") return <div key={i} className="h-1.5" />;
-          return <p key={i} className="mb-1" style={{ color: "var(--ink-2)" }}>{line}</p>;
+          return (
+            <p key={i} className="mb-1" style={{ color: "var(--ink-2)" }}>
+              {line}
+            </p>
+          );
         })}
       </div>
       {!isStreaming && (
@@ -197,7 +245,8 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemPrompt: "You are Wab Intelligence, a financial audit assistant. Be concise, precise, and reference specific numbers from the data provided. Never invent figures.",
+            systemPrompt:
+              "You are Wab Intelligence, a financial audit assistant. Be concise, precise, and reference specific numbers from the data provided. Never invent figures.",
             userPrompt: finalPrompt,
             maxTokens: 1024,
             temperature: 0.3,
@@ -282,7 +331,10 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
           >
             <div
               className="mx-4 overflow-hidden rounded-2xl bg-surface shadow-2xl"
-              style={{ border: "1px solid var(--hairline)", boxShadow: "0 24px 80px rgba(10,18,28,0.18)" }}
+              style={{
+                border: "1px solid var(--hairline)",
+                boxShadow: "0 24px 80px rgba(10,18,28,0.18)",
+              }}
             >
               {/* Search input */}
               <div
@@ -334,10 +386,19 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
               {loadingState && (
                 <div
                   className="flex items-center gap-3 px-5 py-3"
-                  style={{ borderBottom: "1px solid var(--hairline)", background: "var(--accent-4)" }}
+                  style={{
+                    borderBottom: "1px solid var(--hairline)",
+                    background: "var(--accent-4)",
+                  }}
                 >
-                  <Loader2 size={14} className="animate-spin" style={{ color: "var(--color-accent)" }} />
-                  <span className="text-xs" style={{ color: "var(--ink-2)" }}>{loadingState}</span>
+                  <Loader2
+                    size={14}
+                    className="animate-spin"
+                    style={{ color: "var(--color-accent)" }}
+                  />
+                  <span className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    {loadingState}
+                  </span>
                 </div>
               )}
 
@@ -349,14 +410,20 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
               {/* Navigation shortcuts */}
               {!hasResponse && filteredNav.length > 0 && (
                 <div className="px-2 py-2">
-                  <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
+                  <p
+                    className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-3)" }}
+                  >
                     Navigate
                   </p>
                   {filteredNav.map((item) => (
                     <button
                       key={item.to}
                       type="button"
-                      onClick={() => { void navigate({ to: item.to }); onClose(); }}
+                      onClick={() => {
+                        void navigate({ to: item.to });
+                        onClose();
+                      }}
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-black/4"
                       style={{ color: "var(--ink-2)" }}
                     >
@@ -375,7 +442,9 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                     className="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest"
                     style={{ color: "var(--ink-3)" }}
                   >
-                    {getContextualPrompt() ? `Context: ${currentPath.split("/").pop()?.toUpperCase()} page` : "Suggested Queries"}
+                    {getContextualPrompt()
+                      ? `Context: ${currentPath.split("/").pop()?.toUpperCase()} page`
+                      : "Suggested Queries"}
                   </p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {GLOBAL_SUGGESTIONS.map((s) => (
@@ -386,10 +455,20 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                         className="flex items-start gap-2.5 rounded-xl p-3 text-left transition-colors hover:bg-black/4"
                         style={{ border: "1px solid var(--hairline)" }}
                       >
-                        <s.icon size={14} style={{ color: "var(--color-accent)", marginTop: 1, flexShrink: 0 }} />
+                        <s.icon
+                          size={14}
+                          style={{ color: "var(--color-accent)", marginTop: 1, flexShrink: 0 }}
+                        />
                         <div>
-                          <p className="text-[10px] font-bold" style={{ color: "var(--color-accent)" }}>{s.label}</p>
-                          <p className="mt-0.5 text-[11px]" style={{ color: "var(--ink-2)" }}>{s.sub}</p>
+                          <p
+                            className="text-[10px] font-bold"
+                            style={{ color: "var(--color-accent)" }}
+                          >
+                            {s.label}
+                          </p>
+                          <p className="mt-0.5 text-[11px]" style={{ color: "var(--ink-2)" }}>
+                            {s.sub}
+                          </p>
                         </div>
                       </button>
                     ))}
@@ -400,7 +479,11 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                       type="button"
                       onClick={handleSubmit}
                       className="mt-2 flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors hover:bg-black/4"
-                      style={{ color: "var(--color-accent)", border: "1px solid var(--accent-20)", background: "var(--accent-4)" }}
+                      style={{
+                        color: "var(--color-accent)",
+                        border: "1px solid var(--accent-20)",
+                        background: "var(--accent-4)",
+                      }}
                     >
                       <Sparkles size={14} />
                       Ask: "{query}"
@@ -417,10 +500,15 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                     type="button"
                     onClick={handleSubmit}
                     className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-                    style={{ color: "var(--color-accent)", background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
+                    style={{
+                      color: "var(--color-accent)",
+                      background: "var(--accent-6)",
+                      border: "1px solid var(--accent-15)",
+                    }}
                   >
                     <Sparkles size={14} />
-                    Ask Wab: "{query.slice(0, 60)}{query.length > 60 ? "…" : ""}"
+                    Ask Wab: "{query.slice(0, 60)}
+                    {query.length > 60 ? "…" : ""}"
                     <ArrowRight size={14} className="ml-auto" />
                   </button>
                 </div>
@@ -434,7 +522,10 @@ export function WabCommandBar({ open, onClose }: CommandBarProps) {
                 <span className="text-[11px]" style={{ color: "var(--ink-3)" }}>
                   Powered by Wab Intelligence · Numbers from your ledger
                 </span>
-                <div className="flex items-center gap-3 text-[11px]" style={{ color: "var(--ink-3)" }}>
+                <div
+                  className="flex items-center gap-3 text-[11px]"
+                  style={{ color: "var(--ink-3)" }}
+                >
                   <span>↵ Ask</span>
                   <span>Esc Close</span>
                 </div>

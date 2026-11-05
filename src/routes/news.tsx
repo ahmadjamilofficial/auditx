@@ -68,9 +68,21 @@ const posts = [
 ];
 
 const releases = [
-  ["v1.7.0", "12 Jul 2026", ["Confidence gating default-on", "Review queue bulk accept", "Faster PDF rasterisation"]],
-  ["v1.6.2", "28 Jun 2026", ["PSX WHT rate refresh", "Retroactive tax recompute", "Fix: duplicate ref_id false positives"]],
-  ["v1.6.0", "09 Jun 2026", ["Multi-page contract notes", "Dividend voucher template", "Ledger CSV column mapping"]],
+  [
+    "v1.7.0",
+    "12 Jul 2026",
+    ["Confidence gating default-on", "Review queue bulk accept", "Faster PDF rasterisation"],
+  ],
+  [
+    "v1.6.2",
+    "28 Jun 2026",
+    ["PSX WHT rate refresh", "Retroactive tax recompute", "Fix: duplicate ref_id false positives"],
+  ],
+  [
+    "v1.6.0",
+    "09 Jun 2026",
+    ["Multi-page contract notes", "Dividend voucher template", "Ledger CSV column mapping"],
+  ],
 ] as const;
 
 function News() {
@@ -105,7 +117,9 @@ function News() {
         {shown.map((p, i) => (
           <Reveal key={p.title} i={i % 3}>
             <Panel className="h-full">
-              <StatusPill tone={p.cat === "Compliance Updates" ? "warn" : "info"}>{p.cat}</StatusPill>
+              <StatusPill tone={p.cat === "Compliance Updates" ? "warn" : "info"}>
+                {p.cat}
+              </StatusPill>
               <h3 className="mt-4 text-base font-semibold">{p.title}</h3>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
                 {p.excerpt}

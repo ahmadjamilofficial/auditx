@@ -3,7 +3,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Sparkles, User, StopCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Message, MessageContent, MessageActions, MessageAction, MessageResponse } from "@/components/ai-elements/message";
+import {
+  Message,
+  MessageContent,
+  MessageActions,
+  MessageAction,
+  MessageResponse,
+} from "@/components/ai-elements/message";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -23,7 +29,9 @@ function ChatPage() {
   const { user, profile } = useAuth();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>(
+    [],
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
@@ -60,14 +68,17 @@ function ChatPage() {
         })
         .select("id")
         .single();
-      
+
       if (data) {
         currentThreadId = data.id;
         setThreadId(data.id);
       } else if (error) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: "Error: Could not create conversation thread. Please try again." },
+          {
+            role: "assistant",
+            content: "Error: Could not create conversation thread. Please try again.",
+          },
         ]);
         setIsLoading(false);
         return;
@@ -155,10 +166,7 @@ function ChatPage() {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: `Error: ${errorMessage}` },
-      ]);
+      setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${errorMessage}` }]);
     } finally {
       setIsLoading(false);
       setAbortController(null);
@@ -190,7 +198,13 @@ function ChatPage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", marginBottom: "0.5rem" }}>
+              <h1
+                style={{
+                  fontFamily: "var(--font-heading)",
+                  fontSize: "2rem",
+                  marginBottom: "0.5rem",
+                }}
+              >
                 Good evening.
               </h1>
               <p className="text-lg" style={{ color: "var(--ink-2)" }}>
@@ -261,9 +275,15 @@ function ChatPage() {
                 <Bot size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
                 <span>Wab is thinking</span>
                 <span className="flex gap-1">
-                  <span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span>
-                  <span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span>
-                  <span className="animate-bounce" style={{ animationDelay: "300ms" }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: "0ms" }}>
+                    .
+                  </span>
+                  <span className="animate-bounce" style={{ animationDelay: "150ms" }}>
+                    .
+                  </span>
+                  <span className="animate-bounce" style={{ animationDelay: "300ms" }}>
+                    .
+                  </span>
                 </span>
               </motion.div>
             )}
@@ -273,7 +293,10 @@ function ChatPage() {
       </div>
 
       {/* ── Composer ──────────────────────────────────────────────────────── */}
-      <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: "var(--hairline)", background: "var(--card)" }}>
+      <div
+        className="border-t px-4 py-4 sm:px-6"
+        style={{ borderColor: "var(--hairline)", background: "var(--card)" }}
+      >
         <div className="mx-auto max-w-3xl">
           <form
             onSubmit={handleSubmit}

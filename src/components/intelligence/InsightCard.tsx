@@ -136,11 +136,11 @@ export function InsightCard({ insight, index = 0 }: Props) {
 
             {insight.financialImpact !== undefined && (
               <div className="mt-3">
-                <span
-                  className="tnum text-sm font-bold"
-                  style={{ color: style.accent }}
-                >
-                  {insight.currency ?? "PKR"} {Math.abs(insight.financialImpact).toLocaleString("en-PK", { maximumFractionDigits: 0 })}
+                <span className="tnum text-sm font-bold" style={{ color: style.accent }}>
+                  {insight.currency ?? "PKR"}{" "}
+                  {Math.abs(insight.financialImpact).toLocaleString("en-PK", {
+                    maximumFractionDigits: 0,
+                  })}
                 </span>
                 <span className="ml-1 text-xs" style={{ color: "var(--ink-3)" }}>
                   potential impact
@@ -175,7 +175,10 @@ export function InsightCard({ insight, index = 0 }: Props) {
       {(insight.actionLabel || insight.secondaryActionLabel) && (
         <div
           className="flex items-center gap-2 border-t px-5 py-3"
-          style={{ borderColor: style.border, background: `color-mix(in srgb, ${style.bg} 50%, transparent)` }}
+          style={{
+            borderColor: style.border,
+            background: `color-mix(in srgb, ${style.bg} 50%, transparent)`,
+          }}
         >
           {insight.actionLabel && insight.actionLink && (
             <Link
@@ -191,7 +194,11 @@ export function InsightCard({ insight, index = 0 }: Props) {
             <Link
               to={insight.secondaryActionLink}
               className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
-              style={{ color: style.accent, background: style.badge, border: `1px solid color-mix(in srgb, ${style.accent} 20%, transparent)` }}
+              style={{
+                color: style.accent,
+                background: style.badge,
+                border: `1px solid color-mix(in srgb, ${style.accent} 20%, transparent)`,
+              }}
             >
               {insight.secondaryActionLabel}
             </Link>

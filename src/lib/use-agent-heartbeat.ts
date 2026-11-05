@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { supabase } from "./supabase";
 
 const THROTTLE_KEY = "wab.heartbeat.last";
-const THROTTLE_MS  = 5 * 60 * 1000; // 5 minutes
+const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 
 export function useAgentHeartbeat(enabled: boolean) {
   useEffect(() => {
@@ -23,13 +23,15 @@ export function useAgentHeartbeat(enabled: boolean) {
 
     void (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session?.access_token) return;
 
         const res = await fetch("/api/agent/heartbeat", {
-          method:  "POST",
+          method: "POST",
           headers: {
-            Authorization:  `Bearer ${session.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
           body: "{}",

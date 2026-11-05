@@ -18,25 +18,49 @@ import {
 // ── Suggestion chips ──────────────────────────────────────────────────────────
 
 export const LANDING_SUGGESTIONS = [
-  { label: "Analyze portfolio",           prompt: "Analyze my current portfolio performance, concentration risk, and cost basis from my ledger." },
-  { label: "Review financial statement",  prompt: "Review my uploaded statement or ledger, extract every field, and summarize what needs attention." },
-  { label: "Reconcile trades",            prompt: "Reconcile my recent trades against my ledger and list matched, unmatched and partial matches with evidence." },
-  { label: "Detect anomalies",            prompt: "Scan my ledger and open flags for anomalies, duplicates, fee surcharges and WHT mismatches." },
-  { label: "Calculate tax impact",        prompt: "Calculate my realised capital gains and estimated CGT using the FIFO engine on my ledger." },
-  { label: "Update unfinished records",   prompt: "Update my unfinished records that still need review, then prepare a spreadsheet template for new transactions." },
+  {
+    label: "Analyze portfolio",
+    prompt:
+      "Analyze my current portfolio performance, concentration risk, and cost basis from my ledger.",
+  },
+  {
+    label: "Review financial statement",
+    prompt:
+      "Review my uploaded statement or ledger, extract every field, and summarize what needs attention.",
+  },
+  {
+    label: "Reconcile trades",
+    prompt:
+      "Reconcile my recent trades against my ledger and list matched, unmatched and partial matches with evidence.",
+  },
+  {
+    label: "Detect anomalies",
+    prompt:
+      "Scan my ledger and open flags for anomalies, duplicates, fee surcharges and WHT mismatches.",
+  },
+  {
+    label: "Calculate tax impact",
+    prompt:
+      "Calculate my realised capital gains and estimated CGT using the FIFO engine on my ledger.",
+  },
+  {
+    label: "Update unfinished records",
+    prompt:
+      "Update my unfinished records that still need review, then prepare a spreadsheet template for new transactions.",
+  },
 ] as const;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function LandingComposer() {
   const { session, loading } = useAuth();
-  const navigate             = useNavigate();
-  const fileRef              = useRef<HTMLInputElement>(null);
-  const textareaRef          = useRef<HTMLTextAreaElement>(null);
+  const navigate = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Persist draft across page reloads
-  const [value, setValue]   = useState(() => loadComposerDraft("landing"));
-  const [files,  setFiles]  = useState<File[]>([]);
+  const [value, setValue] = useState(() => loadComposerDraft("landing"));
+  const [files, setFiles] = useState<File[]>([]);
   const [focused, setFocused] = useState(false);
 
   useEffect(() => {
@@ -54,7 +78,7 @@ export function LandingComposer() {
   const canSend = value.trim().length > 0 || files.length > 0;
 
   const goToWorkspace = (prompt: string, attached: File[]) => {
-    const text    = prompt.trim();
+    const text = prompt.trim();
     const message = text || "Analyse the attached document(s).";
     // Always persist the prompt first — it survives the auth redirect
     saveComposerDraft("landing", message);

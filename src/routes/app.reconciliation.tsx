@@ -31,28 +31,41 @@ type FlagSeverity = "ok" | "warn" | "bad";
 
 // ── Deterministic reconciliation engine (no LLM) ─────────────────────────────
 type TxRow = {
-  ticker: string; action: string; quantity: number; price: number;
-  trade_date: string; ref_id: string; broker: string; exchange: string;
+  ticker: string;
+  action: string;
+  quantity: number;
+  price: number;
+  trade_date: string;
+  ref_id: string;
+  broker: string;
+  exchange: string;
 };
 
 type LocalFlag = {
-  id: string; flag_type: string; severity: "warn" | "bad"; ticker: string;
-  ref_id: string; expected: number; actual: number;
-  description: string; suggested_resolution: string; status: "open";
+  id: string;
+  flag_type: string;
+  severity: "warn" | "bad";
+  ticker: string;
+  ref_id: string;
+  expected: number;
+  actual: number;
+  description: string;
+  suggested_resolution: string;
+  status: "open";
 };
 
 function runLocalReconciliation(
   transactions: TxRow[],
   brokerFilter: string,
   dateFrom: string,
-  dateTo:   string,
+  dateTo: string,
 ): LocalFlag[] {
   const findings: LocalFlag[] = [];
   if (!transactions.length) return findings;
 
   const filtered = transactions.filter((t) => {
     const inBroker = !brokerFilter || brokerFilter === "All" || t.broker === brokerFilter;
-    const inDate   = (!dateFrom || t.trade_date >= dateFrom) && (!dateTo || t.trade_date <= dateTo);
+    const inDate = (!dateFrom || t.trade_date >= dateFrom) && (!dateTo || t.trade_date <= dateTo);
     return inBroker && inDate;
   });
 
@@ -64,30 +77,56 @@ function runLocalReconciliation(
   for (const tx of filtered) {
     const key = `${tx.ticker}|${tx.action}|${tx.quantity}|${tx.price}|${tx.trade_date}`;
     if (seen.has(key)) {
-      findings.push({ id: id(), flag_type: "Duplicate Entry", severity: "warn",
-        ticker: tx.ticker, ref_id: tx.ref_id, expected: 1, actual: 2,
+      findings.push({
+        id: id(),
+        flag_type: "Duplicate Entry",
+        severity: "warn",
+        ticker: tx.ticker,
+        ref_id: tx.ref_id,
+        expected: 1,
+        actual: 2,
         description: `Duplicate: ${tx.ticker} ${tx.action} ${tx.quantity} @ ${tx.price} on ${tx.trade_date} appears twice.`,
-        suggested_resolution: "Remove one of the duplicate rows from the ledger.", status: "open" });
-    } else { seen.set(key, tx); }
+        suggested_resolution: "Remove one of the duplicate rows from the ledger.",
+        status: "open",
+      });
+    } else {
+      seen.set(key, tx);
+    }
   }
 
   // 2. Zero/negative quantity
   for (const tx of filtered) {
     if (Number(tx.quantity) <= 0) {
-      findings.push({ id: id(), flag_type: "Invalid Quantity", severity: "bad",
-        ticker: tx.ticker, ref_id: tx.ref_id, expected: 1, actual: Number(tx.quantity),
+      findings.push({
+        id: id(),
+        flag_type: "Invalid Quantity",
+        severity: "bad",
+        ticker: tx.ticker,
+        ref_id: tx.ref_id,
+        expected: 1,
+        actual: Number(tx.quantity),
         description: `${tx.ref_id}: quantity ${tx.quantity} ≤ 0.`,
-        suggested_resolution: "Correct or delete the transaction.", status: "open" });
+        suggested_resolution: "Correct or delete the transaction.",
+        status: "open",
+      });
     }
   }
 
   // 3. Zero price
   for (const tx of filtered) {
     if (Number(tx.price) <= 0) {
-      findings.push({ id: id(), flag_type: "Missing Price", severity: "bad",
-        ticker: tx.ticker, ref_id: tx.ref_id, expected: 1, actual: 0,
+      findings.push({
+        id: id(),
+        flag_type: "Missing Price",
+        severity: "bad",
+        ticker: tx.ticker,
+        ref_id: tx.ref_id,
+        expected: 1,
+        actual: 0,
         description: `${tx.ref_id}: price is 0 — likely extraction failure.`,
-        suggested_resolution: "Update price from original broker document.", status: "open" });
+        suggested_resolution: "Update price from original broker document.",
+        status: "open",
+      });
     }
   }
 
@@ -95,10 +134,18 @@ function runLocalReconciliation(
   for (const tx of filtered) {
     const ref = tx.ref_id ?? "";
     if (!ref || ref.startsWith("AUTO-") || ref.startsWith("AI-") || ref.startsWith("INGESTED-")) {
-      findings.push({ id: id(), flag_type: "Missing Reference", severity: "warn",
-        ticker: tx.ticker, ref_id: ref || "—", expected: 1, actual: 0,
+      findings.push({
+        id: id(),
+        flag_type: "Missing Reference",
+        severity: "warn",
+        ticker: tx.ticker,
+        ref_id: ref || "—",
+        expected: 1,
+        actual: 0,
         description: `${tx.ticker} on ${tx.trade_date} has no broker reference ID.`,
-        suggested_resolution: "Add the ref ID from your broker contract note.", status: "open" });
+        suggested_resolution: "Add the ref ID from your broker contract note.",
+        status: "open",
+      });
     }
   }
 
@@ -106,15 +153,25 @@ function runLocalReconciliation(
   const inv: Record<string, number> = {};
   for (const tx of [...filtered].sort((a, b) => a.trade_date.localeCompare(b.trade_date))) {
     inv[tx.ticker] = inv[tx.ticker] ?? 0;
-    if (tx.action === "BUY")  { inv[tx.ticker] += Number(tx.quantity); }
+    if (tx.action === "BUY") {
+      inv[tx.ticker] += Number(tx.quantity);
+    }
     if (tx.action === "SELL") {
       const available = inv[tx.ticker];
       inv[tx.ticker] -= Number(tx.quantity);
       if (inv[tx.ticker] < -0.001) {
-        findings.push({ id: id(), flag_type: "Oversell", severity: "bad",
-          ticker: tx.ticker, ref_id: tx.ref_id, expected: available, actual: Number(tx.quantity),
+        findings.push({
+          id: id(),
+          flag_type: "Oversell",
+          severity: "bad",
+          ticker: tx.ticker,
+          ref_id: tx.ref_id,
+          expected: available,
+          actual: Number(tx.quantity),
           description: `SELL of ${tx.quantity} ${tx.ticker} on ${tx.trade_date} exceeds available inventory (${available}).`,
-          suggested_resolution: "Check that all BUY records exist before this date.", status: "open" });
+          suggested_resolution: "Check that all BUY records exist before this date.",
+          status: "open",
+        });
       }
     }
   }
@@ -126,23 +183,23 @@ function runLocalReconciliation(
 
 function Reconciliation() {
   const { profile } = useAuth();
-  const qc          = useQueryClient();
+  const qc = useQueryClient();
 
   const [brokerFilter, setBrokerFilter] = useState("All");
-  const [dateFrom, setDateFrom]         = useState("");
-  const [dateTo,   setDateTo]           = useState("");
-  const [running,  setRunning]          = useState(false);
-  const [ran,      setRan]              = useState(false);
-  const [expanded, setExpanded]         = useState<string | null>(null);
-  const [resolved, setResolved]         = useState<Set<string>>(new Set());
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [running, setRunning] = useState(false);
+  const [ran, setRan] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<Set<string>>(new Set());
   const [aiExplanations, setAiExplanations] = useState<Record<string, string>>({});
-  const [loadingAI, setLoadingAI]           = useState<string | null>(null);
-  const [localFlags, setLocalFlags]         = useState<LocalFlag[]>([]);
+  const [loadingAI, setLoadingAI] = useState<string | null>(null);
+  const [localFlags, setLocalFlags] = useState<LocalFlag[]>([]);
 
-  const { data: allDbFlags  = [] } = useReconciliationFlags(profile?.org_id);
+  const { data: allDbFlags = [] } = useReconciliationFlags(profile?.org_id);
   const { data: transactions = [] } = useTransactions(profile?.org_id);
-  const { data: brokers      = [] } = useBrokerConnections(profile?.org_id);
-  const resolveMutation             = useResolveFlag();
+  const { data: brokers = [] } = useBrokerConnections(profile?.org_id);
+  const resolveMutation = useResolveFlag();
 
   const brokerOptions = useMemo(() => {
     const names = [...new Set(transactions.map((t) => t.broker).filter(Boolean))];
@@ -151,7 +208,7 @@ function Reconciliation() {
 
   const allFlags = useMemo(() => {
     const dbDescriptions = new Set(allDbFlags.map((f) => f.description));
-    const newLocalOnly   = localFlags.filter((f) => !dbDescriptions.has(f.description));
+    const newLocalOnly = localFlags.filter((f) => !dbDescriptions.has(f.description));
     return [
       ...allDbFlags.map((f) => ({ ...f, severity: f.severity as "ok" | "warn" | "bad" })),
       ...newLocalOnly,
@@ -168,9 +225,14 @@ function Reconciliation() {
 
     try {
       const castTx = transactions.map((t) => ({
-        ticker: t.ticker, action: t.action, quantity: Number(t.quantity),
-        price: Number(t.price), trade_date: t.trade_date, ref_id: t.ref_id,
-        broker: t.broker, exchange: t.exchange,
+        ticker: t.ticker,
+        action: t.action,
+        quantity: Number(t.quantity),
+        price: Number(t.price),
+        trade_date: t.trade_date,
+        ref_id: t.ref_id,
+        broker: t.broker,
+        exchange: t.exchange,
       }));
 
       const findings = runLocalReconciliation(castTx, brokerFilter, dateFrom, dateTo);
@@ -178,13 +240,24 @@ function Reconciliation() {
 
       // Persist critical flags to DB
       for (const f of findings.filter((x) => x.severity === "bad")) {
-        await supabase.from("reconciliation_flags").insert({
-          org_id: profile.org_id, flag_type: f.flag_type, severity: f.severity,
-          ticker: f.ticker, ref_id: f.ref_id,
-          expected: f.expected as never, actual: f.actual as never,
-          description: f.description, suggested_resolution: f.suggested_resolution,
-          status: "open",
-        } as never).then(() => undefined, () => undefined);
+        await supabase
+          .from("reconciliation_flags")
+          .insert({
+            org_id: profile.org_id,
+            flag_type: f.flag_type,
+            severity: f.severity,
+            ticker: f.ticker,
+            ref_id: f.ref_id,
+            expected: f.expected as never,
+            actual: f.actual as never,
+            description: f.description,
+            suggested_resolution: f.suggested_resolution,
+            status: "open",
+          } as never)
+          .then(
+            () => undefined,
+            () => undefined,
+          );
       }
 
       await qc.invalidateQueries({ queryKey: ["reconciliation_flags", profile.org_id] });
@@ -206,8 +279,11 @@ function Reconciliation() {
     setLoadingAI(flag.id);
     try {
       const result = await explainAnomaly(
-        flag.flag_type, flag.expected, flag.actual,
-        flag.ticker, profile?.jurisdiction ?? "PSX",
+        flag.flag_type,
+        flag.expected,
+        flag.actual,
+        flag.ticker,
+        profile?.jurisdiction ?? "PSX",
       );
       setAiExplanations((prev) => ({ ...prev, [flag.id]: result.summary }));
     } catch {
@@ -227,8 +303,12 @@ function Reconciliation() {
     resolveMutation.mutate(
       { flagId, orgId: profile.org_id },
       {
-        onSuccess: () => { setResolved((p) => new Set([...p, flagId])); setExpanded(null); toast.success("Resolved"); },
-        onError:   (e) => toast.error("Failed: " + (e as Error).message),
+        onSuccess: () => {
+          setResolved((p) => new Set([...p, flagId]));
+          setExpanded(null);
+          toast.success("Resolved");
+        },
+        onError: (e) => toast.error("Failed: " + (e as Error).message),
       },
     );
   }
@@ -247,30 +327,59 @@ function Reconciliation() {
         <p className="text-sm font-semibold">Run Reconciliation</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Broker</label>
-            <select value={brokerFilter} onChange={(e) => setBrokerFilter(e.target.value)}
+            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+              Broker
+            </label>
+            <select
+              value={brokerFilter}
+              onChange={(e) => setBrokerFilter(e.target.value)}
               className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
-              style={{ borderColor: "var(--hairline)" }}>
-              {brokerOptions.map((b) => <option key={b} value={b}>{b}</option>)}
+              style={{ borderColor: "var(--hairline)" }}
+            >
+              {brokerOptions.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Date from</label>
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+              Date from
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
               className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
-              style={{ borderColor: "var(--hairline)" }} />
+              style={{ borderColor: "var(--hairline)" }}
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>Date to</label>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+            <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+              Date to
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
               className="w-full rounded-[10px] border bg-surface px-3 py-2.5 text-sm outline-none"
-              style={{ borderColor: "var(--hairline)" }} />
+              style={{ borderColor: "var(--hairline)" }}
+            />
           </div>
           <div className="flex items-end">
             <Btn onClick={() => void runReconciliation()} disabled={running} className="w-full">
-              {running
-                ? <><Loader2 size={16} className="animate-spin" />Running…</>
-                : <><GitFork size={16} />Run Reconciliation</>}
+              {running ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Running…
+                </>
+              ) : (
+                <>
+                  <GitFork size={16} />
+                  Run Reconciliation
+                </>
+              )}
             </Btn>
           </div>
         </div>
@@ -279,99 +388,192 @@ function Reconciliation() {
       {/* Results */}
       <AnimatePresence>
         {ran && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-3 gap-4">
               {[
-                { label: "Issues found", value: localFlags.length, tone: localFlags.length > 0 ? "warn" as const : "ok" as const },
-                { label: "Open in DB",   value: allDbFlags.length, tone: allDbFlags.length > 0 ? "bad"  as const : "ok" as const },
-                { label: "Resolved",     value: resolved.size,      tone: "ok" as const },
+                {
+                  label: "Issues found",
+                  value: localFlags.length,
+                  tone: localFlags.length > 0 ? ("warn" as const) : ("ok" as const),
+                },
+                {
+                  label: "Open in DB",
+                  value: allDbFlags.length,
+                  tone: allDbFlags.length > 0 ? ("bad" as const) : ("ok" as const),
+                },
+                { label: "Resolved", value: resolved.size, tone: "ok" as const },
               ].map(({ label, value, tone }) => (
                 <Panel key={label} className="text-center">
                   <p className="tnum text-2xl font-semibold">{value}</p>
-                  <p className="mt-1 text-xs" style={{ color: "var(--ink-2)" }}>{label}</p>
+                  <p className="mt-1 text-xs" style={{ color: "var(--ink-2)" }}>
+                    {label}
+                  </p>
                   <div className="mt-2 flex justify-center">
-                    <StatusPill tone={tone}>{tone === "ok" ? "ok" : tone === "warn" ? "review" : "open"}</StatusPill>
+                    <StatusPill tone={tone}>
+                      {tone === "ok" ? "ok" : tone === "warn" ? "review" : "open"}
+                    </StatusPill>
                   </div>
                 </Panel>
               ))}
             </div>
 
             {active.length > 0 ? (
-              <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
+              <div
+                className="overflow-hidden rounded-2xl bg-surface"
+                style={{ border: "1px solid var(--hairline)" }}
+              >
                 <div className="border-b px-5 py-4" style={{ borderColor: "var(--hairline)" }}>
                   <p className="text-sm font-semibold">Open Issues ({active.length})</p>
                 </div>
                 <div className="divide-y" style={{ borderColor: "var(--hairline)" }}>
                   {active.map((flag) => (
                     <div key={flag.id}>
-                      <button type="button"
+                      <button
+                        type="button"
                         className="w-full px-5 py-4 text-left transition-colors hover:bg-black/5"
-                        onClick={() => setExpanded(expanded === flag.id ? null : flag.id)}>
+                        onClick={() => setExpanded(expanded === flag.id ? null : flag.id)}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <AlertTriangle size={16} strokeWidth={1.75}
-                              style={{ color: flag.severity === "bad" ? "var(--bad)" : "var(--warn)", flexShrink: 0 }} />
+                            <AlertTriangle
+                              size={16}
+                              strokeWidth={1.75}
+                              style={{
+                                color: flag.severity === "bad" ? "var(--bad)" : "var(--warn)",
+                                flexShrink: 0,
+                              }}
+                            />
                             <div>
                               <p className="text-sm font-medium">{flag.flag_type}</p>
-                              <p className="text-xs" style={{ color: "var(--ink-3)" }}>{flag.ticker} · {flag.ref_id}</p>
+                              <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                                {flag.ticker} · {flag.ref_id}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <StatusPill tone={flag.severity}>{flag.severity === "bad" ? "Critical" : "Warning"}</StatusPill>
-                            {expanded === flag.id
-                              ? <ChevronUp size={16} style={{ color: "var(--ink-3)" }} />
-                              : <ChevronDown size={16} style={{ color: "var(--ink-3)" }} />}
+                            <StatusPill tone={flag.severity}>
+                              {flag.severity === "bad" ? "Critical" : "Warning"}
+                            </StatusPill>
+                            {expanded === flag.id ? (
+                              <ChevronUp size={16} style={{ color: "var(--ink-3)" }} />
+                            ) : (
+                              <ChevronDown size={16} style={{ color: "var(--ink-3)" }} />
+                            )}
                           </div>
                         </div>
                       </button>
 
                       <AnimatePresence>
                         {expanded === flag.id && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="border-t px-5 pb-5 pt-4"
-                              style={{ borderColor: "var(--hairline)", background: "var(--accent-2)" }}>
-                              <p className="text-sm" style={{ color: "var(--ink-2)" }}>{flag.description}</p>
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div
+                              className="border-t px-5 pb-5 pt-4"
+                              style={{
+                                borderColor: "var(--hairline)",
+                                background: "var(--accent-2)",
+                              }}
+                            >
+                              <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                                {flag.description}
+                              </p>
 
                               <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div className="rounded-xl p-3" style={{ background: "color-mix(in srgb, var(--ok) 6%, transparent)" }}>
-                                  <p className="text-xs font-medium" style={{ color: "var(--ok)" }}>Expected</p>
+                                <div
+                                  className="rounded-xl p-3"
+                                  style={{
+                                    background: "color-mix(in srgb, var(--ok) 6%, transparent)",
+                                  }}
+                                >
+                                  <p className="text-xs font-medium" style={{ color: "var(--ok)" }}>
+                                    Expected
+                                  </p>
                                   <p className="tnum mt-1 text-lg font-semibold">
                                     {typeof flag.expected === "number"
-                                      ? flag.expected.toLocaleString("en-PK", { maximumFractionDigits: 2 })
+                                      ? flag.expected.toLocaleString("en-PK", {
+                                          maximumFractionDigits: 2,
+                                        })
                                       : String(flag.expected)}
                                   </p>
                                 </div>
-                                <div className="rounded-xl p-3" style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)" }}>
-                                  <p className="text-xs font-medium" style={{ color: "var(--bad)" }}>Actual</p>
+                                <div
+                                  className="rounded-xl p-3"
+                                  style={{
+                                    background: "color-mix(in srgb, var(--bad) 6%, transparent)",
+                                  }}
+                                >
+                                  <p
+                                    className="text-xs font-medium"
+                                    style={{ color: "var(--bad)" }}
+                                  >
+                                    Actual
+                                  </p>
                                   <p className="tnum mt-1 text-lg font-semibold">
                                     {typeof flag.actual === "number"
-                                      ? flag.actual.toLocaleString("en-PK", { maximumFractionDigits: 2 })
+                                      ? flag.actual.toLocaleString("en-PK", {
+                                          maximumFractionDigits: 2,
+                                        })
                                       : String(flag.actual)}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="mt-4 rounded-xl p-3 text-sm" style={{ background: "var(--accent-6)" }}>
-                                <span className="font-medium" style={{ color: "var(--color-accent)" }}>Suggested: </span>
-                                <span style={{ color: "var(--ink-2)" }}>{flag.suggested_resolution}</span>
+                              <div
+                                className="mt-4 rounded-xl p-3 text-sm"
+                                style={{ background: "var(--accent-6)" }}
+                              >
+                                <span
+                                  className="font-medium"
+                                  style={{ color: "var(--color-accent)" }}
+                                >
+                                  Suggested:{" "}
+                                </span>
+                                <span style={{ color: "var(--ink-2)" }}>
+                                  {flag.suggested_resolution}
+                                </span>
                               </div>
 
                               <div className="mt-3">
                                 {aiExplanations[flag.id] ? (
-                                  <div className="rounded-xl px-4 py-3 text-sm"
-                                    style={{ background: "var(--accent-4)", border: "1px solid var(--accent-12)" }}>
+                                  <div
+                                    className="rounded-xl px-4 py-3 text-sm"
+                                    style={{
+                                      background: "var(--accent-4)",
+                                      border: "1px solid var(--accent-12)",
+                                    }}
+                                  >
                                     <div className="flex items-center gap-1.5 mb-1">
-                                      <Sparkles size={13} style={{ color: "var(--color-accent)" }} />
-                                      <span className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>Wab AI</span>
+                                      <Sparkles
+                                        size={13}
+                                        style={{ color: "var(--color-accent)" }}
+                                      />
+                                      <span
+                                        className="text-xs font-semibold"
+                                        style={{ color: "var(--color-accent)" }}
+                                      >
+                                        Wab AI
+                                      </span>
                                     </div>
-                                    <p style={{ color: "var(--ink-2)" }}>{aiExplanations[flag.id]}</p>
+                                    <p style={{ color: "var(--ink-2)" }}>
+                                      {aiExplanations[flag.id]}
+                                    </p>
                                   </div>
                                 ) : (
-                                  <button type="button" onClick={() => void fetchAIExplanation(flag)}
+                                  <button
+                                    type="button"
+                                    onClick={() => void fetchAIExplanation(flag)}
                                     disabled={loadingAI === flag.id}
                                     className="flex items-center gap-1.5 text-xs font-medium disabled:opacity-50"
-                                    style={{ color: "var(--color-accent)" }}>
+                                    style={{ color: "var(--color-accent)" }}
+                                  >
                                     <Sparkles size={13} />
                                     {loadingAI === flag.id ? "Asking AI…" : "Explain with AI"}
                                   </button>
@@ -379,11 +581,16 @@ function Reconciliation() {
                               </div>
 
                               <div className="mt-4">
-                                <Btn variant="primary" onClick={() => handleResolve(flag.id)}
-                                  disabled={resolveMutation.isPending}>
-                                  {resolveMutation.isPending
-                                    ? <Loader2 size={15} className="animate-spin" />
-                                    : <CheckCircle2 size={15} />}
+                                <Btn
+                                  variant="primary"
+                                  onClick={() => handleResolve(flag.id)}
+                                  disabled={resolveMutation.isPending}
+                                >
+                                  {resolveMutation.isPending ? (
+                                    <Loader2 size={15} className="animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 size={15} />
+                                  )}
                                   {resolveMutation.isPending ? "Applying…" : "Mark resolved"}
                                 </Btn>
                               </div>
@@ -397,10 +604,16 @@ function Reconciliation() {
               </div>
             ) : (
               <Panel className="py-12 text-center">
-                <CheckCircle2 size={32} strokeWidth={1.5} className="mx-auto mb-3" style={{ color: "var(--ok)" }} />
+                <CheckCircle2
+                  size={32}
+                  strokeWidth={1.5}
+                  className="mx-auto mb-3"
+                  style={{ color: "var(--ok)" }}
+                />
                 <p className="font-semibold">No issues found</p>
                 <p className="mt-1 text-sm" style={{ color: "var(--ink-3)" }}>
-                  {transactions.length} transaction{transactions.length !== 1 ? "s" : ""} checked — all clear.
+                  {transactions.length} transaction{transactions.length !== 1 ? "s" : ""} checked —
+                  all clear.
                 </p>
               </Panel>
             )}
@@ -408,40 +621,54 @@ function Reconciliation() {
         )}
       </AnimatePresence>
 
-      {!ran && !running && (
-        allDbFlags.length > 0 ? (
+      {!ran &&
+        !running &&
+        (allDbFlags.length > 0 ? (
           <div>
-            <p className="mb-3 text-sm font-semibold">Open Flags from Previous Runs ({allDbFlags.length})</p>
-            <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
+            <p className="mb-3 text-sm font-semibold">
+              Open Flags from Previous Runs ({allDbFlags.length})
+            </p>
+            <div
+              className="overflow-hidden rounded-2xl bg-surface"
+              style={{ border: "1px solid var(--hairline)" }}
+            >
               <div className="divide-y" style={{ borderColor: "var(--hairline)" }}>
-                {allDbFlags.filter((f) => !resolved.has(f.id)).map((flag) => (
-                  <div key={flag.id} className="flex items-center justify-between px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <AlertTriangle size={15} style={{ color: flag.severity === "bad" ? "var(--bad)" : "var(--warn)" }} />
-                      <div>
-                        <p className="text-sm font-medium">{flag.flag_type}</p>
-                        <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                          {flag.ticker} · {flag.description?.slice(0, 60)}
-                        </p>
+                {allDbFlags
+                  .filter((f) => !resolved.has(f.id))
+                  .map((flag) => (
+                    <div key={flag.id} className="flex items-center justify-between px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle
+                          size={15}
+                          style={{ color: flag.severity === "bad" ? "var(--bad)" : "var(--warn)" }}
+                        />
+                        <div>
+                          <p className="text-sm font-medium">{flag.flag_type}</p>
+                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                            {flag.ticker} · {flag.description?.slice(0, 60)}
+                          </p>
+                        </div>
                       </div>
+                      <StatusPill tone={flag.severity}>
+                        {flag.severity === "bad" ? "Critical" : "Warning"}
+                      </StatusPill>
                     </div>
-                    <StatusPill tone={flag.severity}>{flag.severity === "bad" ? "Critical" : "Warning"}</StatusPill>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl py-20"
-            style={{ background: "var(--color-login-bg)" }}>
+          <div
+            className="flex flex-col items-center justify-center rounded-2xl py-20"
+            style={{ background: "var(--color-login-bg)" }}
+          >
             <GitFork size={36} strokeWidth={1.5} style={{ color: "var(--ink-3)" }} />
             <p className="mt-3 font-medium">No reconciliation run yet</p>
             <p className="mt-1 text-sm" style={{ color: "var(--ink-3)" }}>
               Choose filters above and click Run Reconciliation.
             </p>
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 }

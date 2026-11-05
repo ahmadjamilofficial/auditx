@@ -106,8 +106,29 @@ serve(async (req) => {
   }
 });
 
-async function executeTask(task: any) {
-  const { id, user_id, org_id, task_type, objective, steps } = task;
+async function executeTask(task: {
+  id: string;
+  user_id: string;
+  org_id: string;
+  task_type: string;
+  objective: string;
+  steps: string[];
+}) {
+  const {
+    id,
+    user_id,
+    org_id,
+    task_type,
+    objective,
+    steps,
+  }: {
+    id: string;
+    user_id: string;
+    org_id: string;
+    task_type: string;
+    objective: string;
+    steps: string[];
+  } = task;
 
   try {
     // Execute each step
@@ -129,10 +150,7 @@ async function executeTask(task: any) {
       // Mark step as completed
       const updatedSteps = [...steps];
       updatedSteps[i] = { ...step, status: "completed" };
-      await supabase
-        .from("agent_tasks")
-        .update({ steps: updatedSteps })
-        .eq("id", id);
+      await supabase.from("agent_tasks").update({ steps: updatedSteps }).eq("id", id);
     }
 
     // Mark task as completed
@@ -178,7 +196,18 @@ async function executeTask(task: any) {
   }
 }
 
-async function executeStep(task: any, step: string, stepIndex: number) {
+async function executeStep(
+  task: {
+    id: string;
+    user_id: string;
+    org_id: string;
+    task_type: string;
+    objective: string;
+    steps: string[];
+  },
+  step: string,
+  stepIndex: number,
+) {
   // Implement task-specific logic here
   // This is a placeholder - you'd need to implement actual logic for each task type
 

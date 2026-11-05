@@ -21,7 +21,10 @@ export function catalogDrift(): string[] {
   const adapterIds = new Set(Object.keys(ADAPTERS));
   const missingAdapter = [...catalogIds].filter((id) => !adapterIds.has(id));
   const missingCatalog = [...adapterIds].filter((id) => !catalogIds.has(id));
-  return [...missingAdapter.map((id) => `${id}: missing adapter`), ...missingCatalog.map((id) => `${id}: missing catalog entry`)];
+  return [
+    ...missingAdapter.map((id) => `${id}: missing adapter`),
+    ...missingCatalog.map((id) => `${id}: missing catalog entry`),
+  ];
 }
 
 export const PROVIDER_IDS = Object.keys(ADAPTERS);

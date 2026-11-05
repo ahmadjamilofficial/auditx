@@ -111,7 +111,11 @@ function Billing() {
     }
     // No customer-portal URL configured: send the user to the checkout page
     // where Kelviq lets them manage the existing subscription.
-    window.open(urlFor(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!), "_blank", "noopener");
+    window.open(
+      urlFor(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!),
+      "_blank",
+      "noopener",
+    );
     toast.info("Opened Kelviq checkout — manage or cancel your subscription there.");
   }
 
@@ -132,7 +136,9 @@ function Billing() {
       <Panel>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-medium" style={{ color: "var(--ink-3)" }}>CURRENT PLAN</p>
+            <p className="text-xs font-medium" style={{ color: "var(--ink-3)" }}>
+              CURRENT PLAN
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <p className="text-xl font-semibold capitalize">{currentPlan}</p>
               <StatusPill tone={onTrial ? "info" : trialExpired ? "bad" : "ok"}>
@@ -165,7 +171,11 @@ function Billing() {
         style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
       >
         <div className="flex items-start gap-3">
-          <Sparkles size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2 }} />
+          <Sparkles
+            size={16}
+            strokeWidth={1.75}
+            style={{ color: "var(--color-accent)", marginTop: 2 }}
+          />
           <div>
             <p className="text-sm font-semibold">
               {onTrial
@@ -175,13 +185,16 @@ function Billing() {
                 : "Start your 7-day free trial"}
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "var(--ink-2)" }}>
-              Every plan starts with 7 free days. Cancel any time before the trial ends and you are not charged.
+              Every plan starts with 7 free days. Cancel any time before the trial ends and you are
+              not charged.
             </p>
           </div>
         </div>
         <Btn
           variant="primary"
-          onClick={() => handleStartTrial(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!)}
+          onClick={() =>
+            handleStartTrial(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!)
+          }
         >
           {onTrial ? "Manage trial" : trialExpired ? "Resume with free trial" : "Start free trial"}
         </Btn>
@@ -218,21 +231,34 @@ function Billing() {
                     </span>
                   )}
                 </p>
-                <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>{plan.note}</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
+                  {plan.note}
+                </p>
                 <ul className="mt-4 space-y-2 text-sm" style={{ color: "var(--ink-2)" }}>
                   {plan.items.map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <BadgeCheck size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }} />
+                      <BadgeCheck
+                        size={15}
+                        strokeWidth={1.75}
+                        style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }}
+                      />
                       {item}
                     </li>
                   ))}
                 </ul>
                 <Btn
-                  variant={currentPlan === plan.name.toLowerCase() ? "secondary" : plan.popular ? "primary" : "secondary"}
+                  variant={
+                    currentPlan === plan.name.toLowerCase()
+                      ? "secondary"
+                      : plan.popular
+                        ? "primary"
+                        : "secondary"
+                  }
                   className="mt-5 w-full"
                   disabled={currentPlan === plan.name.toLowerCase() && !trialExpired}
                   onClick={() => {
-                    if (currentPlan !== plan.name.toLowerCase() || trialExpired) handleStartTrial(plan);
+                    if (currentPlan !== plan.name.toLowerCase() || trialExpired)
+                      handleStartTrial(plan);
                   }}
                 >
                   {currentPlan === plan.name.toLowerCase() && !trialExpired
@@ -249,13 +275,19 @@ function Billing() {
         </div>
       </div>
 
-<div
+      <div
         className="flex items-start gap-2.5 rounded-2xl px-5 py-4 text-sm"
         style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
       >
-        <ArrowUpRight size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }} />
+        <ArrowUpRight
+          size={15}
+          strokeWidth={1.75}
+          style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }}
+        />
         <p style={{ color: "var(--ink-2)" }}>
-          <strong>Subscription:</strong> Wab now uses a simple subscription model. Choose Standard ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is managed securely through Kelviq.
+          <strong>Subscription:</strong> Wab now uses a simple subscription model. Choose Standard
+          ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is
+          managed securely through Kelviq.
         </p>
       </div>
     </div>

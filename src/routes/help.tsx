@@ -32,12 +32,32 @@ export const Route = createFileRoute("/help")({
 });
 
 const cats = [
-  { icon: BookOpen, title: "Getting Started", desc: "Set up your org, jurisdiction and first broker account." },
-  { icon: FileSearch, title: "Uploading Statements", desc: "Supported formats, bulk uploads and sample documents." },
-  { icon: ScanSearch, title: "Reconciliation", desc: "Flag types, tolerances and resolution workflows." },
-  { icon: TrendingUp, title: "Tax & CGT", desc: "FIFO lots, holding periods, WHT and jurisdiction rules." },
+  {
+    icon: BookOpen,
+    title: "Getting Started",
+    desc: "Set up your org, jurisdiction and first broker account.",
+  },
+  {
+    icon: FileSearch,
+    title: "Uploading Statements",
+    desc: "Supported formats, bulk uploads and sample documents.",
+  },
+  {
+    icon: ScanSearch,
+    title: "Reconciliation",
+    desc: "Flag types, tolerances and resolution workflows.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Tax & CGT",
+    desc: "FIFO lots, holding periods, WHT and jurisdiction rules.",
+  },
   { icon: CreditCard, title: "Billing", desc: "Plans, usage metering, invoices and upgrades." },
-  { icon: LifeBuoy, title: "Troubleshooting", desc: "Low-confidence extractions and failed parses." },
+  {
+    icon: LifeBuoy,
+    title: "Troubleshooting",
+    desc: "Low-confidence extractions and failed parses.",
+  },
 ];
 
 const popular = [
@@ -91,7 +111,12 @@ function Help() {
       <Panel className="mt-5 p-0">
         {filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <Search size={24} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} className="mx-auto" />
+            <Search
+              size={24}
+              strokeWidth={1.75}
+              style={{ color: "var(--ink-3)" }}
+              className="mx-auto"
+            />
             <p className="mt-3 text-sm" style={{ color: "var(--ink-2)" }}>
               No articles match “{q}”. Try a broader term or contact support.
             </p>

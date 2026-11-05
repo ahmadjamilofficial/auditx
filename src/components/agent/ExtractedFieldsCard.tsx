@@ -57,10 +57,10 @@ export function ExtractedFieldsCard({
     const exchange = get("Exchange") || profile.jurisdiction;
 
     const fail = (m: string, dbError?: any) => {
-      console.error("[ExtractedFieldsCard] Transaction insert failed:", { 
-        error: m, 
-        dbError, 
-        payload: { ticker, action, quantity, price, trade_date, broker, exchange } 
+      console.error("[ExtractedFieldsCard] Transaction insert failed:", {
+        error: m,
+        dbError,
+        payload: { ticker, action, quantity, price, trade_date, broker, exchange },
       });
       setError(m);
       setPosting(false);
@@ -77,32 +77,43 @@ export function ExtractedFieldsCard({
     const overall = fields.reduce((s, f) => s + f.confidence, 0) / (fields.length || 1);
 
     console.log("[ExtractedFieldsCard] Attempting to insert transaction:", {
-      ticker, action, quantity, price, trade_date, broker, exchange, org_id: profile.org_id
-    });
-
-    const { data, error: dbError } = await supabase.from("transactions").insert({
-      org_id: profile.org_id,
       ticker,
       action,
       quantity,
       price,
-      fees,
-      wht,
       trade_date,
-      ref_id,
-      confidence_score: parseFloat(overall.toFixed(3)),
-      status: overall < 0.75 ? "needs_review" : "posted",
-      exchange,
       broker,
-      source: { filename: fileName, extracted_at: new Date().toISOString() },
-    }).select().single();
+      exchange,
+      org_id: profile.org_id,
+    });
+
+    const { data, error: dbError } = await supabase
+      .from("transactions")
+      .insert({
+        org_id: profile.org_id,
+        ticker,
+        action,
+        quantity,
+        price,
+        fees,
+        wht,
+        trade_date,
+        ref_id,
+        confidence_score: parseFloat(overall.toFixed(3)),
+        status: overall < 0.75 ? "needs_review" : "posted",
+        exchange,
+        broker,
+        source: { filename: fileName, extracted_at: new Date().toISOString() },
+      })
+      .select()
+      .single();
 
     if (dbError) {
       console.error("[ExtractedFieldsCard] Supabase error details:", {
         message: dbError.message,
         code: dbError.code,
         details: dbError.details,
-        hint: dbError.hint
+        hint: dbError.hint,
       });
       return fail(`Database error: ${dbError.message} (code: ${dbError.code})`, dbError);
     }
@@ -118,7 +129,10 @@ export function ExtractedFieldsCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-surface" style={{ border: "1px solid var(--hairline)" }}>
+    <div
+      className="overflow-hidden rounded-2xl bg-surface"
+      style={{ border: "1px solid var(--hairline)" }}
+    >
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -145,10 +159,30 @@ export function ExtractedFieldsCard({
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr style={{ borderTop: "1px solid var(--hairline)", background: "var(--color-login-bg)" }}>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold" style={{ color: "var(--ink-2)" }}>Field</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold" style={{ color: "var(--ink-2)" }}>Value</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold" style={{ color: "var(--ink-2)" }}>Confidence</th>
+                <tr
+                  style={{
+                    borderTop: "1px solid var(--hairline)",
+                    background: "var(--color-login-bg)",
+                  }}
+                >
+                  <th
+                    className="px-4 py-2.5 text-left text-xs font-semibold"
+                    style={{ color: "var(--ink-2)" }}
+                  >
+                    Field
+                  </th>
+                  <th
+                    className="px-4 py-2.5 text-left text-xs font-semibold"
+                    style={{ color: "var(--ink-2)" }}
+                  >
+                    Value
+                  </th>
+                  <th
+                    className="px-4 py-2.5 text-left text-xs font-semibold"
+                    style={{ color: "var(--ink-2)" }}
+                  >
+                    Confidence
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -160,10 +194,16 @@ export function ExtractedFieldsCard({
                     transition={{ delay: Math.min(i * 0.03, 0.3) }}
                     style={{
                       borderTop: "1px solid var(--hairline)",
-                      background: f.confidence < 0.75 ? "color-mix(in srgb, var(--bad) 4%, transparent)" : "transparent",
+                      background:
+                        f.confidence < 0.75
+                          ? "color-mix(in srgb, var(--bad) 4%, transparent)"
+                          : "transparent",
                     }}
                   >
-                    <td className="px-4 py-2.5 text-xs font-medium whitespace-nowrap" style={{ color: "var(--ink-2)" }}>
+                    <td
+                      className="px-4 py-2.5 text-xs font-medium whitespace-nowrap"
+                      style={{ color: "var(--ink-2)" }}
+                    >
                       {f.field}
                     </td>
                     <td className="px-4 py-2">
@@ -173,7 +213,10 @@ export function ExtractedFieldsCard({
                         onChange={(e) => setEdited((p) => ({ ...p, [f.field]: e.target.value }))}
                         disabled={posted}
                         className="w-full rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-white focus:ring-2"
-                        style={{ borderColor: "transparent", ["--tw-ring-color" as string]: "var(--color-accent)" }}
+                        style={{
+                          borderColor: "transparent",
+                          ["--tw-ring-color" as string]: "var(--color-accent)",
+                        }}
                       />
                     </td>
                     <td className="px-4 py-2.5">
@@ -185,9 +228,15 @@ export function ExtractedFieldsCard({
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 px-4 py-3" style={{ borderTop: "1px solid var(--hairline)" }}>
+          <div
+            className="flex flex-wrap items-center gap-3 px-4 py-3"
+            style={{ borderTop: "1px solid var(--hairline)" }}
+          >
             {posted ? (
-              <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--ok)" }}>
+              <span
+                className="inline-flex items-center gap-2 text-sm font-semibold"
+                style={{ color: "var(--ok)" }}
+              >
                 <CheckCircle2 size={16} strokeWidth={1.75} /> Posted to ledger
               </span>
             ) : (
@@ -199,14 +248,20 @@ export function ExtractedFieldsCard({
                 style={{ background: "var(--color-accent)", boxShadow: "var(--shadow-accent)" }}
               >
                 {posting ? (
-                  <><Loader2 size={14} strokeWidth={2} className="animate-spin" /> Saving…</>
+                  <>
+                    <Loader2 size={14} strokeWidth={2} className="animate-spin" /> Saving…
+                  </>
                 ) : (
-                  <><CheckCircle2 size={14} strokeWidth={2} /> Post to Ledger</>
+                  <>
+                    <CheckCircle2 size={14} strokeWidth={2} /> Post to Ledger
+                  </>
                 )}
               </button>
             )}
             {error && (
-              <span className="text-xs" style={{ color: "var(--bad)" }}>{error}</span>
+              <span className="text-xs" style={{ color: "var(--bad)" }}>
+                {error}
+              </span>
             )}
           </div>
         </div>

@@ -3,20 +3,9 @@
 // provider-specific shapes — only NormalizedAccount / NormalizedTransaction.
 
 export type ConnectionCategory =
-  | "exchange"
-  | "brokerage"
-  | "wallet"
-  | "bank"
-  | "accounting"
-  | "custom"
-  | "import";
+  "exchange" | "brokerage" | "wallet" | "bank" | "accounting" | "custom" | "import";
 
-export type ConnectionStatus =
-  | "unconfigured"
-  | "connected"
-  | "error"
-  | "paused"
-  | "disconnected";
+export type ConnectionStatus = "unconfigured" | "connected" | "error" | "paused" | "disconnected";
 
 export interface CredentialField {
   key: string;

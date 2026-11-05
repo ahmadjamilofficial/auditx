@@ -37,10 +37,14 @@ function SeverityIcon({ severity }: { severity: string }) {
 
 function severityDot(severity: string): string {
   switch (severity) {
-    case "error":   return "var(--bad)";
-    case "warning": return "var(--warn)";
-    case "success": return "var(--ok)";
-    default:        return "var(--info)";
+    case "error":
+      return "var(--bad)";
+    case "warning":
+      return "var(--warn)";
+    case "success":
+      return "var(--ok)";
+    default:
+      return "var(--info)";
   }
 }
 
@@ -60,7 +64,15 @@ function NotificationRow({
   n,
   onRead,
 }: {
-  n: { id: string; title: string; message: string; severity: string; read: boolean; link: string | null; created_at: string };
+  n: {
+    id: string;
+    title: string;
+    message: string;
+    severity: string;
+    read: boolean;
+    link: string | null;
+    created_at: string;
+  };
   onRead: (id: string) => void;
 }) {
   const nav = useNavigate();
@@ -114,13 +126,7 @@ function NotificationRow({
 
 // ── Main panel ────────────────────────────────────────────────────────────────
 
-export function NotificationCenter({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function NotificationCenter({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuth();
   const { data: notifications = [], isLoading } = useNotifications(user?.id);
   const markRead = useMarkNotificationsRead();

@@ -36,22 +36,33 @@ export interface TimelineEntry {
 
 function severityToIcon(severity: EventSeverity) {
   switch (severity) {
-    case "CRITICAL": return AlertCircle;
-    case "HIGH":     return AlertTriangle;
-    case "SUCCESS":  return CheckCircle2;
-    case "INFO":     return FileText;
-    default:         return RefreshCw;
+    case "CRITICAL":
+      return AlertCircle;
+    case "HIGH":
+      return AlertTriangle;
+    case "SUCCESS":
+      return CheckCircle2;
+    case "INFO":
+      return FileText;
+    default:
+      return RefreshCw;
   }
 }
 
 function severityToColor(severity: EventSeverity): string {
   switch (severity) {
-    case "CRITICAL": return "var(--bad)";
-    case "HIGH":     return "var(--warn)";
-    case "MEDIUM":   return "var(--warn)";
-    case "SUCCESS":  return "var(--ok)";
-    case "INFO":     return "var(--info)";
-    default:         return "var(--ink-3)";
+    case "CRITICAL":
+      return "var(--bad)";
+    case "HIGH":
+      return "var(--warn)";
+    case "MEDIUM":
+      return "var(--warn)";
+    case "SUCCESS":
+      return "var(--ok)";
+    case "INFO":
+      return "var(--info)";
+    default:
+      return "var(--ink-3)";
   }
 }
 
@@ -64,11 +75,13 @@ function formatDateLabel(dateStr: string): string {
   if (d.toDateString() === today) return "TODAY";
   if (d.toDateString() === yesterday) return "YESTERDAY";
 
-  return d.toLocaleDateString("en-PK", {
-    month: "long",
-    day: "numeric",
-    ...(d.getFullYear() !== now.getFullYear() && { year: "numeric" }),
-  }).toUpperCase();
+  return d
+    .toLocaleDateString("en-PK", {
+      month: "long",
+      day: "numeric",
+      ...(d.getFullYear() !== now.getFullYear() && { year: "numeric" }),
+    })
+    .toUpperCase();
 }
 
 // ── Event Entry ───────────────────────────────────────────────────────────────
@@ -88,25 +101,25 @@ function TimelineEntryRow({ entry }: { entry: TimelineEntry }) {
       <div className="flex flex-col items-center">
         <div
           className="flex size-8 shrink-0 items-center justify-center rounded-full"
-          style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 25%, transparent)` }}
+          style={{
+            background: `color-mix(in srgb, ${color} 12%, transparent)`,
+            border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
+          }}
         >
           <Icon size={14} style={{ color }} />
         </div>
-        <div className="mt-1 w-px flex-1" style={{ background: "var(--hairline)", minHeight: 16 }} />
+        <div
+          className="mt-1 w-px flex-1"
+          style={{ background: "var(--hairline)", minHeight: 16 }}
+        />
       </div>
 
       {/* Content */}
       <div className="min-w-0 flex-1 pb-4">
-        <p
-          className="text-sm font-medium"
-          style={{ color: "var(--color-text)" }}
-        >
+        <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
           {entry.title}
         </p>
-        <p
-          className="mt-0.5 text-xs leading-relaxed"
-          style={{ color: "var(--ink-2)" }}
-        >
+        <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "var(--ink-2)" }}>
           {entry.description}
         </p>
         {entry.confidence !== undefined && (
@@ -186,10 +199,19 @@ export function FinancialTimeline({ entries, isLoading, showEmpty = true }: Prop
       <div className="space-y-4">
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex gap-4">
-            <div className="size-8 animate-pulse rounded-full" style={{ background: "var(--hairline)" }} />
+            <div
+              className="size-8 animate-pulse rounded-full"
+              style={{ background: "var(--hairline)" }}
+            />
             <div className="flex-1 space-y-2 pt-1">
-              <div className="h-4 w-48 animate-pulse rounded" style={{ background: "var(--hairline)" }} />
-              <div className="h-3 w-full animate-pulse rounded" style={{ background: "var(--hairline)" }} />
+              <div
+                className="h-4 w-48 animate-pulse rounded"
+                style={{ background: "var(--hairline)" }}
+              />
+              <div
+                className="h-3 w-full animate-pulse rounded"
+                style={{ background: "var(--hairline)" }}
+              />
             </div>
           </div>
         ))}
@@ -298,7 +320,11 @@ export function generateTimelineFromTransactions(
         isYesterday,
         severity: "SUCCESS",
         title: `${postedCount} transaction${postedCount > 1 ? "s" : ""} processed`,
-        description: `${txs.map((t) => t.ticker).filter((v, i, a) => a.indexOf(v) === i).slice(0, 3).join(", ")} trades recorded.`,
+        description: `${txs
+          .map((t) => t.ticker)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .slice(0, 3)
+          .join(", ")} trades recorded.`,
         confidence: avgConf,
         eventType: "TRANSACTION_RECONCILED",
         actionLabel: "View in Ledger",

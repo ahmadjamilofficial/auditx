@@ -102,7 +102,11 @@ export function useDeleteTransaction() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, orgId }: { id: string; orgId: string }) => {
-      const { error } = await supabase.from("transactions").delete().eq("id", id).eq("org_id", orgId);
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", id)
+        .eq("org_id", orgId);
       if (error) throw new Error(error.message);
     },
     onSuccess: (_d, { orgId }) => qc.invalidateQueries({ queryKey: ["transactions", orgId] }),
@@ -173,7 +177,8 @@ export function useResolveFlag() {
         .eq("org_id", orgId);
       if (error) throw new Error(error.message);
     },
-    onSuccess: (_d, { orgId }) => qc.invalidateQueries({ queryKey: ["reconciliation_flags", orgId] }),
+    onSuccess: (_d, { orgId }) =>
+      qc.invalidateQueries({ queryKey: ["reconciliation_flags", orgId] }),
   });
 }
 
@@ -282,7 +287,10 @@ export async function pushNotification(input: {
       severity: input.severity ?? "info",
       link: input.link ?? null,
     })
-    .then(() => undefined, () => undefined);
+    .then(
+      () => undefined,
+      () => undefined,
+    );
 }
 
 // ── Broker accounts ───────────────────────────────────────────────────────────
@@ -338,7 +346,11 @@ export function useDeleteBroker() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, orgId }: { id: string; orgId: string }) => {
-      const { error } = await supabase.from("broker_accounts").delete().eq("id", id).eq("org_id", orgId);
+      const { error } = await supabase
+        .from("broker_accounts")
+        .delete()
+        .eq("id", id)
+        .eq("org_id", orgId);
       if (error) throw new Error(error.message);
     },
     onSuccess: (_d, { orgId }) => qc.invalidateQueries({ queryKey: ["broker_connections", orgId] }),
@@ -393,8 +405,7 @@ export function useDeleteChatThread() {
         .eq("user_id", userId);
       if (threadErr) throw new Error(threadErr.message);
     },
-    onSuccess: (_d, { userId }) =>
-      qc.invalidateQueries({ queryKey: ["chat_threads", userId] }),
+    onSuccess: (_d, { userId }) => qc.invalidateQueries({ queryKey: ["chat_threads", userId] }),
   });
 }
 
@@ -505,14 +516,14 @@ export function useDecideApproval() {
       orgId,
     }: {
       approvalId: string;
-      decision:   "approved" | "rejected" | "skipped";
-      userId:     string;
-      orgId:      string;
+      decision: "approved" | "rejected" | "skipped";
+      userId: string;
+      orgId: string;
     }) => {
       const { error } = await supabase
         .from("agent_approvals")
         .update({
-          status:     decision,
+          status: decision,
           decided_by: userId,
           decided_at: new Date().toISOString(),
         } as never)
@@ -535,8 +546,8 @@ export function useRevertRun() {
       return (data as number) ?? 0;
     },
     onSuccess: (_d, { orgId }) => {
-      void qc.invalidateQueries({ queryKey: ["agent_jobs",     orgId] });
-      void qc.invalidateQueries({ queryKey: ["transactions",   orgId] });
+      void qc.invalidateQueries({ queryKey: ["agent_jobs", orgId] });
+      void qc.invalidateQueries({ queryKey: ["transactions", orgId] });
     },
   });
 }
@@ -552,7 +563,9 @@ export function useConnectedSources(orgId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("connected_sources")
-        .select("id,org_id,source_type,external_id,display_name,last_hash,watch_expiry,paused,rules,last_synced_at,created_at,updated_at")
+        .select(
+          "id,org_id,source_type,external_id,display_name,last_hash,watch_expiry,paused,rules,last_synced_at,created_at,updated_at",
+        )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
@@ -565,7 +578,15 @@ export function useConnectedSources(orgId: string | undefined) {
 export function useUpdateSourceRules() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ sourceId, orgId, rules }: { sourceId: string; orgId: string; rules: SourceRules }) => {
+    mutationFn: async ({
+      sourceId,
+      orgId,
+      rules,
+    }: {
+      sourceId: string;
+      orgId: string;
+      rules: SourceRules;
+    }) => {
       const { error } = await supabase
         .from("connected_sources")
         .update({ rules: rules as never, updated_at: new Date().toISOString() } as never)
@@ -580,7 +601,15 @@ export function useUpdateSourceRules() {
 export function usePauseSource() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ sourceId, orgId, paused }: { sourceId: string; orgId: string; paused: boolean }) => {
+    mutationFn: async ({
+      sourceId,
+      orgId,
+      paused,
+    }: {
+      sourceId: string;
+      orgId: string;
+      paused: boolean;
+    }) => {
       const { error } = await supabase
         .from("connected_sources")
         .update({ paused, updated_at: new Date().toISOString() } as never)

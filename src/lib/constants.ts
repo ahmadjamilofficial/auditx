@@ -9,7 +9,10 @@ export function mailto(subject: string, body: string) {
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export function upgradeMailto(plan: string, context: { email?: string | undefined; org?: string | undefined }) {
+export function upgradeMailto(
+  plan: string,
+  context: { email?: string | undefined; org?: string | undefined },
+) {
   return mailto(
     `I want to upgrade my plan — ${plan}`,
     [

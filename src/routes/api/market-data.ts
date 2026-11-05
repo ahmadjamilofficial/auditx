@@ -5,7 +5,9 @@ export const Route = createFileRoute("/api/market-data")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const body = await request.json() as { tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }> };
+          const body = (await request.json()) as {
+            tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }>;
+          };
           const tickers = body.tickers || [];
 
           const prices = await fetchYahooPrices(tickers);

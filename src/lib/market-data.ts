@@ -29,7 +29,9 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ─── Fetch market prices from server-side API ───────────────────────────────
 
-async function fetchFromServer(tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }>): Promise<Map<string, MarketPrice>> {
+async function fetchFromServer(
+  tickers: Array<{ ticker: string; exchange: "PSX" | "NSE" }>,
+): Promise<Map<string, MarketPrice>> {
   try {
     const response = await fetch("/api/market-data", {
       method: "POST",
@@ -73,13 +75,11 @@ export async function fetchMarketPrices(
   }
 
   // Fetch uncached prices from server
-  const uncached = tickers.filter(
-    ({ ticker, exchange }) => {
-      const key = `${exchange}:${ticker}`;
-      const cached = PRICE_CACHE.get(key);
-      return !cached || cached.expires <= now;
-    },
-  );
+  const uncached = tickers.filter(({ ticker, exchange }) => {
+    const key = `${exchange}:${ticker}`;
+    const cached = PRICE_CACHE.get(key);
+    return !cached || cached.expires <= now;
+  });
 
   if (uncached.length > 0) {
     const serverPrices = await fetchFromServer(uncached);
@@ -121,10 +121,7 @@ export function getCachedPrice(ticker: string, exchange: "PSX" | "NSE"): MarketP
 
 // ─── Store daily price snapshots in database for historical analysis ─────────
 
-export async function storePriceSnapshot(
-  orgId: string,
-  prices: MarketPrice[],
-): Promise<void> {
+export async function storePriceSnapshot(orgId: string, prices: MarketPrice[]): Promise<void> {
   const { error } = await supabase.from("price_snapshots").insert(
     prices.map((p) => ({
       org_id: orgId,

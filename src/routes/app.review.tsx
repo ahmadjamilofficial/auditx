@@ -42,28 +42,35 @@ function ApprovalCard({
   userId,
   onDecision,
 }: {
-  approval:   AgentApproval;
-  orgId:      string;
-  userId:     string;
+  approval: AgentApproval;
+  orgId: string;
+  userId: string;
   onDecision: () => void;
 }) {
   const decideMutation = useDecideApproval();
   const [deciding, setDeciding] = useState<"approved" | "rejected" | "skipped" | null>(null);
 
-  const payload    = approval.action_payload as Record<string, unknown>;
-  const confidence = typeof payload["confidence"] === "number" ? (payload["confidence"] as number) : null;
-  const isStop     = approval.policy_tier === "STOP";
+  const payload = approval.action_payload as Record<string, unknown>;
+  const confidence =
+    typeof payload["confidence"] === "number" ? (payload["confidence"] as number) : null;
+  const isStop = approval.policy_tier === "STOP";
 
   async function handle(decision: "approved" | "rejected" | "skipped") {
     setDeciding(decision);
     try {
       await decideMutation.mutateAsync({ approvalId: approval.id, decision, userId, orgId });
       // Learn from repeated decisions (fire-and-forget)
-      learnFromDecision(orgId, approval.action_type, decision === "approved" ? "approved" : "rejected")
-        .catch(() => undefined);
+      learnFromDecision(
+        orgId,
+        approval.action_type,
+        decision === "approved" ? "approved" : "rejected",
+      ).catch(() => undefined);
       toast.success(
-        decision === "approved" ? "Change applied" :
-        decision === "rejected" ? "Change rejected" : "Skipped for now",
+        decision === "approved"
+          ? "Change applied"
+          : decision === "rejected"
+            ? "Change rejected"
+            : "Skipped for now",
       );
       onDecision();
     } catch (e) {
@@ -91,19 +98,20 @@ function ApprovalCard({
         <span
           className="flex size-8 shrink-0 items-center justify-center rounded-xl"
           style={{
-            background: isStop ? "color-mix(in srgb, var(--bad) 10%, transparent)" : "var(--accent-10)",
+            background: isStop
+              ? "color-mix(in srgb, var(--bad) 10%, transparent)"
+              : "var(--accent-10)",
           }}
         >
-          {isStop
-            ? <Shield size={14} strokeWidth={1.75} style={{ color: "var(--bad)" }} />
-            : <AlertTriangle size={14} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-          }
+          {isStop ? (
+            <Shield size={14} strokeWidth={1.75} style={{ color: "var(--bad)" }} />
+          ) : (
+            <AlertTriangle size={14} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
+          )}
         </span>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold">
-            {formatField(approval.action_type)}
-          </p>
+          <p className="text-sm font-semibold">{formatField(approval.action_type)}</p>
           <p className="text-xs" style={{ color: "var(--ink-3)" }}>
             {isStop ? "Requires explicit approval" : "Low confidence — needs your review"}
             {" · "}
@@ -114,7 +122,9 @@ function ApprovalCard({
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
           style={{
-            background: isStop ? "color-mix(in srgb, var(--bad) 10%, transparent)" : "var(--accent-10)",
+            background: isStop
+              ? "color-mix(in srgb, var(--bad) 10%, transparent)"
+              : "var(--accent-10)",
             color: isStop ? "var(--bad)" : "var(--color-accent)",
           }}
         >
@@ -126,7 +136,9 @@ function ApprovalCard({
       <div className="px-4 py-3">
         {confidence !== null && (
           <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs" style={{ color: "var(--ink-3)" }}>Confidence</span>
+            <span className="text-xs" style={{ color: "var(--ink-3)" }}>
+              Confidence
+            </span>
             <div
               className="h-1.5 flex-1 overflow-hidden rounded-full"
               style={{ background: "var(--hairline)" }}
@@ -134,7 +146,7 @@ function ApprovalCard({
               <div
                 className="h-full rounded-full"
                 style={{
-                  width:      `${Math.round(confidence * 100)}%`,
+                  width: `${Math.round(confidence * 100)}%`,
                   background: confidenceColor(confidence),
                 }}
               />
@@ -153,12 +165,13 @@ function ApprovalCard({
             .filter(([k]) => !["confidence", "org_id", "source", "agent_run_id"].includes(k))
             .map(([key, val]) => (
               <div key={key}>
-                <p className="text-[10px] uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
+                <p
+                  className="text-[10px] uppercase tracking-wide"
+                  style={{ color: "var(--ink-3)" }}
+                >
                   {formatField(key)}
                 </p>
-                <p className="truncate text-sm font-medium">
-                  {val == null ? "—" : String(val)}
-                </p>
+                <p className="truncate text-sm font-medium">{val == null ? "—" : String(val)}</p>
               </div>
             ))}
         </div>
@@ -176,9 +189,11 @@ function ApprovalCard({
           className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-40"
           style={{ borderColor: "var(--hairline)", color: "var(--ink-2)" }}
         >
-          {deciding === "skipped"
-            ? <Loader2 size={11} className="animate-spin" />
-            : <SkipForward size={11} />}
+          {deciding === "skipped" ? (
+            <Loader2 size={11} className="animate-spin" />
+          ) : (
+            <SkipForward size={11} />
+          )}
           Skip
         </button>
 
@@ -187,11 +202,16 @@ function ApprovalCard({
           onClick={() => void handle("rejected")}
           disabled={!!deciding}
           className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-40"
-          style={{ borderColor: "color-mix(in srgb, var(--bad) 30%, transparent)", color: "var(--bad)" }}
+          style={{
+            borderColor: "color-mix(in srgb, var(--bad) 30%, transparent)",
+            color: "var(--bad)",
+          }}
         >
-          {deciding === "rejected"
-            ? <Loader2 size={11} className="animate-spin" />
-            : <X size={11} />}
+          {deciding === "rejected" ? (
+            <Loader2 size={11} className="animate-spin" />
+          ) : (
+            <X size={11} />
+          )}
           Reject
         </button>
 
@@ -205,9 +225,11 @@ function ApprovalCard({
             color: isStop ? "#fff" : "var(--accent-fg)",
           }}
         >
-          {deciding === "approved"
-            ? <Loader2 size={11} className="animate-spin" />
-            : <Check size={11} />}
+          {deciding === "approved" ? (
+            <Loader2 size={11} className="animate-spin" />
+          ) : (
+            <Check size={11} />
+          )}
           {isStop ? "Approve & apply" : "Apply"}
         </button>
       </div>
@@ -219,10 +241,15 @@ function ApprovalCard({
 
 function ReviewInbox() {
   const { profile, user } = useAuth();
-  const orgId  = profile?.org_id ?? "";
+  const orgId = profile?.org_id ?? "";
   const userId = user?.id ?? "";
 
-  const { data: approvals, isLoading, refetch, isFetching } = usePendingApprovals(orgId || undefined);
+  const {
+    data: approvals,
+    isLoading,
+    refetch,
+    isFetching,
+  } = usePendingApprovals(orgId || undefined);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const visible = (approvals ?? []).filter((a) => !dismissed.has(a.id));

@@ -62,14 +62,14 @@ export interface FinancialInsight {
 // ── Health Score Components ───────────────────────────────────────────────────
 
 export interface HealthScoreBreakdown {
-  reconciliation: number;       // 30 pts — reconciled tx / total tx
+  reconciliation: number; // 30 pts — reconciled tx / total tx
   documentCompleteness: number; // 20 pts — tx with docs / total tx
-  dataConfidence: number;       // 15 pts — avg confidence score
-  taxConfidence: number;        // 15 pts — completeness of tax data
-  compliance: number;           // 10 pts — absence of compliance issues
-  riskExposure: number;         // 10 pts — absence of critical anomalies
-  total: number;                // 0–100
-  trend: number;                // change from last snapshot
+  dataConfidence: number; // 15 pts — avg confidence score
+  taxConfidence: number; // 15 pts — completeness of tax data
+  compliance: number; // 10 pts — absence of compliance issues
+  riskExposure: number; // 10 pts — absence of critical anomalies
+  total: number; // 0–100
+  trend: number; // change from last snapshot
 }
 
 // ── Financial Context ─────────────────────────────────────────────────────────
@@ -115,13 +115,13 @@ export async function computePortfolioSummary(
 ): Promise<PortfolioSummary> {
   // Detect actual exchange from transaction data — don't blindly trust org default.
   // If any transaction uses NSE, treat the ledger as NSE for currency purposes.
-  const hasNSE  = transactions.some((t) => t.exchange === "NSE");
-  const hasPSX  = transactions.some((t) => t.exchange === "PSX" || !t.exchange);
+  const hasNSE = transactions.some((t) => t.exchange === "NSE");
+  const hasPSX = transactions.some((t) => t.exchange === "PSX" || !t.exchange);
   // Mixed-exchange portfolios use the dominant one (more transactions)
   const nseCount = transactions.filter((t) => t.exchange === "NSE").length;
   const psxCount = transactions.length - nseCount;
   const detectedJurisdiction: "PSX" | "NSE" =
-    nseCount > psxCount ? "NSE" : (hasPSX ? "PSX" : (hasNSE ? "NSE" : jurisdiction));
+    nseCount > psxCount ? "NSE" : hasPSX ? "PSX" : hasNSE ? "NSE" : jurisdiction;
   const currency = detectedJurisdiction === "NSE" ? "INR" : "PKR";
 
   // Build current positions (net BUY - SELL) with avg cost
@@ -183,7 +183,11 @@ export async function computePortfolioSummary(
     }));
 
   // Tax computation uses the detected jurisdiction
-  const tax = computeTax(transactions, { jurisdiction: detectedJurisdiction, filerStatus: "Filer", taxYear });
+  const tax = computeTax(transactions, {
+    jurisdiction: detectedJurisdiction,
+    filerStatus: "Filer",
+    taxYear,
+  });
 
   const unreconciledCount = transactions.filter((t) => t.status === "needs_review").length;
 
@@ -222,8 +226,8 @@ export function computeHealthScore(
   }
 
   const reconciledCount = transactions.filter((t) => t.status === "posted").length;
-  const withDocs        = transactions.filter((t) => !!t.ref_id).length;
-  const avgConfidence   = transactions.reduce((s, t) => s + t.confidence_score, 0) / total;
+  const withDocs = transactions.filter((t) => !!t.ref_id).length;
+  const avgConfidence = transactions.reduce((s, t) => s + t.confidence_score, 0) / total;
 
   // 30 pts: reconciliation rate
   const reconciliation = Math.round((reconciledCount / total) * 30);
@@ -243,7 +247,13 @@ export function computeHealthScore(
   // 10 pts: risk (penalise critical flags heavily)
   const riskExposure = Math.max(0, 10 - Math.min(10, criticalFlagsCount * 5));
 
-  const scoreTotal = reconciliation + documentCompleteness + dataConfidence + taxConfidence + compliance + riskExposure;
+  const scoreTotal =
+    reconciliation +
+    documentCompleteness +
+    dataConfidence +
+    taxConfidence +
+    compliance +
+    riskExposure;
 
   return {
     reconciliation,
@@ -389,19 +399,31 @@ export function computeChanges(
   }
 
   addChange("Portfolio Value", currentSnapshot.totalValue, previousSnapshot.totalValue, "HIGH");
-  addChange("Tax Liability", currentSnapshot.taxLiability, previousSnapshot.taxLiability, "CRITICAL");
-  addChange("Realized Gains", currentSnapshot.realizedGains, previousSnapshot.realizedGains, "HIGH");
-  addChange("Unreconciled Items", currentSnapshot.unreconciledCount, previousSnapshot.unreconciledCount, "MEDIUM");
+  addChange(
+    "Tax Liability",
+    currentSnapshot.taxLiability,
+    previousSnapshot.taxLiability,
+    "CRITICAL",
+  );
+  addChange(
+    "Realized Gains",
+    currentSnapshot.realizedGains,
+    previousSnapshot.realizedGains,
+    "HIGH",
+  );
+  addChange(
+    "Unreconciled Items",
+    currentSnapshot.unreconciledCount,
+    previousSnapshot.unreconciledCount,
+    "MEDIUM",
+  );
 
   return changes.filter((c) => c.direction !== "UNCHANGED");
 }
 
 // ── Supabase Integration ──────────────────────────────────────────────────────
 
-export async function fetchFinancialEvents(
-  orgId: string,
-  limit = 20,
-): Promise<FinancialEvent[]> {
+export async function fetchFinancialEvents(orgId: string, limit = 20): Promise<FinancialEvent[]> {
   const { data, error } = await supabase
     .from("financial_events")
     .select("*")
@@ -446,7 +468,10 @@ export async function createFinancialEvent(
       confidence: event.confidence,
       status: event.status,
     })
-    .then(() => undefined, () => undefined);
+    .then(
+      () => undefined,
+      () => undefined,
+    );
 }
 
 // ── AI Context Builder ────────────────────────────────────────────────────────

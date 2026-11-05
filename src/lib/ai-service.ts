@@ -12,13 +12,11 @@
 //   • Per-task specialised system prompts (parse / anomaly / tax / portfolio)
 //   • safeParseJSON strips accidental markdown fences from model output
 
-// @ts-nocheck
-
 // ── Model registry ─────────────────────────────────────────────────────────────
 
 const MODELS = {
   /** Primary: Llama 3.3 70B — fast, strong reasoning */
-  PRIMARY:  "llama-3.3-70b-versatile",
+  PRIMARY: "llama-3.3-70b-versatile",
   /** Secondary: Llama 3.1 70B — good for complex tasks */
   SECONDARY: "llama-3.1-70b-versatile",
   /** Tertiary: Mixtral 8x7b — excellent tool calling */
@@ -34,48 +32,48 @@ type ModelKey = keyof typeof MODELS;
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export interface ExtractedField {
-  field:      string;
-  value:      string;
+  field: string;
+  value: string;
   confidence: number;
 }
 
 export interface ParsedStatement {
-  fields:           ExtractedField[];
+  fields: ExtractedField[];
   transaction_date?: string | undefined;
-  ticker?:           string | undefined;
-  action?:           "BUY" | "SELL" | "DIV" | undefined;
-  quantity?:         number | undefined;
-  price?:            number | undefined;
-  fees?:             number | undefined;
-  wht?:              number | undefined;
-  ref_id?:           string | undefined;
-  broker?:           string | undefined;
-  exchange?:         string | undefined;
+  ticker?: string | undefined;
+  action?: "BUY" | "SELL" | "DIV" | undefined;
+  quantity?: number | undefined;
+  price?: number | undefined;
+  fees?: number | undefined;
+  wht?: number | undefined;
+  ref_id?: string | undefined;
+  broker?: string | undefined;
+  exchange?: string | undefined;
   overall_confidence: number;
-  needs_review:       boolean;
-  model_used?:        string | undefined;
+  needs_review: boolean;
+  model_used?: string | undefined;
 }
 
 export interface AnomalyExplanation {
-  summary:              string;
-  severity:             "low" | "medium" | "high";
-  recommended_action:   string;
+  summary: string;
+  severity: "low" | "medium" | "high";
+  recommended_action: string;
 }
 
 export interface TaxExplanation {
   plain_english: string;
-  key_points:    string[];
-  disclaimer:    string;
+  key_points: string[];
+  disclaimer: string;
 }
 
 // ── Client factory ─────────────────────────────────────────────────────────────
 
 function getApiKey(): string {
-  const key = (import.meta.env['VITE_GROQ_API_KEY'] as string | undefined) ?? "";
+  const key = (import.meta.env["VITE_GROQ_API_KEY"] as string | undefined) ?? "";
   if (!key || key.length < 10) {
     throw new Error(
       "Wab Intelligence: AI API key not configured. Add VITE_GROQ_API_KEY to your .env file. " +
-      "Get a free key at https://console.groq.com",
+        "Get a free key at https://console.groq.com",
     );
   }
   return key;
@@ -111,7 +109,7 @@ async function groqChat(
     throw new Error(`Groq ${resp.status}: ${errText}`);
   }
 
-  const data = await resp.json() as { choices?: Array<{ message?: { content?: string } }> };
+  const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
   return data.choices?.[0]?.message?.content ?? "";
 }
 
@@ -140,11 +138,11 @@ function isQuotaError(e: unknown): boolean {
 
 function safeParseJSON(raw: string): Record<string, unknown> {
   // Strip markdown code fences the model may accidentally add
-  let cleaned = raw
+  const cleaned = raw
     .replace(/^```(?:json)?\s*/im, "")
     .replace(/\s*```\s*$/im, "")
     .trim();
-  
+
   try {
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch (e) {
@@ -154,7 +152,7 @@ function safeParseJSON(raw: string): Record<string, unknown> {
       rawPreview: cleaned.slice(0, 200),
       fullLength: cleaned.length,
     });
-    
+
     // Try to fix common issues
     try {
       // Fix unescaped quotes in string values by replacing them
@@ -163,11 +161,11 @@ function safeParseJSON(raw: string): Record<string, unknown> {
     } catch {
       // If still fails, try to escape newlines in string values
       try {
-        const fixedNewlines = cleaned.replace(/(?<!\\)\n/g, '\\n');
+        const fixedNewlines = cleaned.replace(/(?<!\\)\n/g, "\\n");
         return JSON.parse(fixedNewlines) as Record<string, unknown>;
       } catch {
         throw new Error(
-          `Failed to parse AI response as JSON. Raw output: ${cleaned.slice(0, 500)}...`
+          `Failed to parse AI response as JSON. Raw output: ${cleaned.slice(0, 500)}...`,
         );
       }
     }
@@ -178,12 +176,12 @@ function safeParseJSON(raw: string): Record<string, unknown> {
 // Tries PRIMARY first; on quota error cascades to FALLBACK; retries with backoff.
 
 interface RunOptions {
-  system:      string;
-  userText:    string;
+  system: string;
+  userText: string;
   temperature?: number;
-  maxTokens?:   number;
+  maxTokens?: number;
   responseFormat?: "json";
-  taskLabel?:  string;
+  taskLabel?: string;
 }
 
 async function runWithCascade(opts: RunOptions): Promise<string> {
@@ -201,18 +199,17 @@ async function runWithCascade(opts: RunOptions): Promise<string> {
 
         const messages = [
           { role: "system", content: opts.system },
-          { role: "user",   content: opts.userText },
+          { role: "user", content: opts.userText },
         ];
 
         const text = await groqChat(model, messages, {
           temperature: opts.temperature,
-          maxTokens:   opts.maxTokens,
+          maxTokens: opts.maxTokens,
           responseFormat: opts.responseFormat,
         });
 
         if (!text.trim()) throw new Error("Empty response from model.");
         return text;
-
       } catch (e) {
         const isLast = attempt === maxRetries && modelKey === cascade[cascade.length - 1];
 
@@ -228,9 +225,7 @@ async function runWithCascade(opts: RunOptions): Promise<string> {
     }
   }
 
-  throw new Error(
-    "All AI models are currently rate-limited. Please wait a minute and try again.",
-  );
+  throw new Error("All AI models are currently rate-limited. Please wait a minute and try again.");
 }
 
 // ── Document parsing system prompt ────────────────────────────────────────────
@@ -277,38 +272,74 @@ Return ONLY the JSON object — nothing else.`;
 
 // ── Field builder ──────────────────────────────────────────────────────────────
 
-function buildFields(parsed: Record<string, unknown>, conf: Record<string, number>): ExtractedField[] {
+function buildFields(
+  parsed: Record<string, unknown>,
+  conf: Record<string, number>,
+): ExtractedField[] {
   // Handle both old format (field_confidences) and new direct format
   const getConfidence = (field: string) => {
     // Try direct field name first
     if (conf[field] !== undefined) return conf[field];
     // Try mapped names
     const mappings: Record<string, string> = {
-      'transaction_date': 'transaction_date',
-      'ticker': 'ticker',
-      'action': 'action', 
-      'quantity': 'quantity',
-      'price': 'price',
-      'fees': 'fees',
-      'wht': 'wht',
-      'ref_id': 'ref_id',
-      'broker': 'broker',
-      'exchange': 'exchange',
+      transaction_date: "transaction_date",
+      ticker: "ticker",
+      action: "action",
+      quantity: "quantity",
+      price: "price",
+      fees: "fees",
+      wht: "wht",
+      ref_id: "ref_id",
+      broker: "broker",
+      exchange: "exchange",
     };
-    const key = mappings[field as keyof typeof mappings]; return key ? (conf[key as any] ?? 0.5) : 0.5;
+    const key = mappings[field as keyof typeof mappings];
+    return key ? (conf[key] ?? 0.5) : 0.5;
   };
 
   return [
-    { field: "Transaction Date",  value: String(parsed["transaction_date"] ?? ""), confidence: getConfidence('transaction_date') },
-    { field: "Ticker Symbol",     value: String(parsed["ticker"]   ?? ""),          confidence: getConfidence('ticker') },
-    { field: "Action",            value: String(parsed["action"]   ?? ""),          confidence: getConfidence('action') },
-    { field: "Quantity",          value: String(parsed["quantity"] ?? ""),          confidence: getConfidence('quantity') },
-    { field: "Execution Price",   value: String(parsed["price"]    ?? ""),          confidence: getConfidence('price') },
-    { field: "Commission / Fees", value: String(parsed["fees"]     ?? 0),           confidence: getConfidence('fees') },
-    { field: "WHT",               value: String(parsed["wht"]      ?? 0),           confidence: getConfidence('wht') },
-    { field: "Reference ID",      value: String(parsed["ref_id"]   ?? ""),          confidence: getConfidence('ref_id') },
-    { field: "Broker Name",       value: String(parsed["broker"]   ?? ""),          confidence: getConfidence('broker') },
-    { field: "Exchange",          value: String(parsed["exchange"] ?? ""),          confidence: getConfidence('exchange') },
+    {
+      field: "Transaction Date",
+      value: String(parsed["transaction_date"] ?? ""),
+      confidence: getConfidence("transaction_date"),
+    },
+    {
+      field: "Ticker Symbol",
+      value: String(parsed["ticker"] ?? ""),
+      confidence: getConfidence("ticker"),
+    },
+    { field: "Action", value: String(parsed["action"] ?? ""), confidence: getConfidence("action") },
+    {
+      field: "Quantity",
+      value: String(parsed["quantity"] ?? ""),
+      confidence: getConfidence("quantity"),
+    },
+    {
+      field: "Execution Price",
+      value: String(parsed["price"] ?? ""),
+      confidence: getConfidence("price"),
+    },
+    {
+      field: "Commission / Fees",
+      value: String(parsed["fees"] ?? 0),
+      confidence: getConfidence("fees"),
+    },
+    { field: "WHT", value: String(parsed["wht"] ?? 0), confidence: getConfidence("wht") },
+    {
+      field: "Reference ID",
+      value: String(parsed["ref_id"] ?? ""),
+      confidence: getConfidence("ref_id"),
+    },
+    {
+      field: "Broker Name",
+      value: String(parsed["broker"] ?? ""),
+      confidence: getConfidence("broker"),
+    },
+    {
+      field: "Exchange",
+      value: String(parsed["exchange"] ?? ""),
+      confidence: getConfidence("exchange"),
+    },
   ];
 }
 
@@ -321,15 +352,15 @@ function toStatement(
   return {
     fields,
     transaction_date: parsed["transaction_date"] as string | undefined,
-    ticker:           parsed["ticker"]           as string | undefined,
-    action:           parsed["action"]           as "BUY" | "SELL" | "DIV" | undefined,
-    quantity:         parsed["quantity"]         as number | undefined,
-    price:            parsed["price"]            as number | undefined,
-    fees:             parsed["fees"]             as number | undefined,
-    wht:              parsed["wht"]              as number | undefined,
-    ref_id:           parsed["ref_id"]           as string | undefined,
-    broker:           parsed["broker"]           as string | undefined,
-    exchange:         parsed["exchange"]         as string | undefined,
+    ticker: parsed["ticker"] as string | undefined,
+    action: parsed["action"] as "BUY" | "SELL" | "DIV" | undefined,
+    quantity: parsed["quantity"] as number | undefined,
+    price: parsed["price"] as number | undefined,
+    fees: parsed["fees"] as number | undefined,
+    wht: parsed["wht"] as number | undefined,
+    ref_id: parsed["ref_id"] as string | undefined,
+    broker: parsed["broker"] as string | undefined,
+    exchange: parsed["exchange"] as string | undefined,
     overall_confidence,
     needs_review: fields.some((f) => f.confidence < 0.75),
     model_used: modelUsed,
@@ -340,8 +371,8 @@ function toStatement(
 
 export async function parseDocument(
   fileBase64: string,
-  mimeType:   string,
-  filename:   string,
+  mimeType: string,
+  filename: string,
 ): Promise<ParsedStatement> {
   // OpenRouter text-only models can't process raw binary/base64.
   // We'll send the filename hint and ask the model to return a safe default
@@ -356,7 +387,7 @@ export async function parseDocument(
   });
 
   const parsed = safeParseJSON(text);
-  const conf   = (parsed["field_confidences"] as Record<string, number>) ?? {};
+  const conf = (parsed["field_confidences"] as Record<string, number>) ?? {};
   return toStatement(parsed, buildFields(parsed, conf));
 }
 
@@ -364,12 +395,12 @@ export async function parseDocument(
 
 export async function parseTextDocument(
   textContent: string,
-  filename:    string,
+  filename: string,
 ): Promise<ParsedStatement> {
   // Check if this looks like a CSV with multiple rows
-  const lines = textContent.split('\n').filter(line => line.trim());
-  const isCSV = filename.endsWith('.csv') || lines.length > 5; // Heuristic: CSV likely if many lines
-  
+  const lines = textContent.split("\n").filter((line) => line.trim());
+  const isCSV = filename.endsWith(".csv") || lines.length > 5; // Heuristic: CSV likely if many lines
+
   if (isCSV && lines.length > 2) {
     // For CSV files, parse programmatically instead of using AI
     return parseCSVProgrammatically(textContent, filename);
@@ -386,67 +417,67 @@ export async function parseTextDocument(
   });
 
   const parsed = safeParseJSON(text);
-  const conf   = (parsed["field_confidences"] as Record<string, number>) ?? {};
+  const conf = (parsed["field_confidences"] as Record<string, number>) ?? {};
   return toStatement(parsed, buildFields(parsed, conf));
 }
 
 // ── Programmatic CSV parser ───────────────────────────────────────────────────
 
 function parseCSVProgrammatically(csvContent: string, filename: string): ParsedStatement {
-  const lines = csvContent.split('\n').filter(line => line.trim());
-  
+  const lines = csvContent.split("\n").filter((line) => line.trim());
+
   if (lines.length < 2) {
     throw new Error("CSV file appears to be empty or invalid");
   }
 
   // Simple CSV parsing - assumes first row is headers
-  const headers = lines[0]!.split(',').map(h => h.trim().toLowerCase());
+  const headers = lines[0]!.split(",").map((h) => h.trim().toLowerCase());
   const dataRows = lines.slice(1);
-  
+
   // For now, just parse the first row as a single transaction
   // In a full implementation, you'd process all rows
-  const firstRow = dataRows[0]!.split(',').map(v => v.trim());
-  
+  const firstRow = dataRows[0]!.split(",").map((v) => v.trim());
+
   const parsed: Record<string, unknown> = {};
   const confidences: Record<string, number> = {};
-  
+
   // Map common CSV column names to our schema
   const fieldMapping: Record<string, string> = {
-    'date': 'transaction_date',
-    'ticker': 'ticker', 
-    'symbol': 'ticker',
-    'action': 'action',
-    'type': 'action',
-    'quantity': 'quantity',
-    'qty': 'quantity',
-    'price': 'price',
-    'fees': 'fees',
-    'commission': 'fees',
-    'wht': 'wht',
-    'tax': 'wht',
-    'withholding': 'wht',
-    'ref': 'ref_id',
-    'reference': 'ref_id',
-    'broker': 'broker',
-    'exchange': 'exchange',
+    date: "transaction_date",
+    ticker: "ticker",
+    symbol: "ticker",
+    action: "action",
+    type: "action",
+    quantity: "quantity",
+    qty: "quantity",
+    price: "price",
+    fees: "fees",
+    commission: "fees",
+    wht: "wht",
+    tax: "wht",
+    withholding: "wht",
+    ref: "ref_id",
+    reference: "ref_id",
+    broker: "broker",
+    exchange: "exchange",
   };
 
   headers.forEach((header, index) => {
     const mappedField = fieldMapping[header] || header;
-    const value = firstRow[index] || '';
-    
-    if (mappedField === 'transaction_date') {
+    const value = firstRow[index] || "";
+
+    if (mappedField === "transaction_date") {
       parsed[mappedField] = value;
       confidences[mappedField] = 0.95;
-    } else if (mappedField === 'ticker') {
+    } else if (mappedField === "ticker") {
       parsed[mappedField] = value.toUpperCase();
       confidences[mappedField] = 0.9;
-    } else if (mappedField === 'action') {
+    } else if (mappedField === "action") {
       const actionUpper = value.toUpperCase();
-      parsed[mappedField] = ['BUY', 'SELL', 'DIV'].includes(actionUpper) ? actionUpper : 'BUY';
+      parsed[mappedField] = ["BUY", "SELL", "DIV"].includes(actionUpper) ? actionUpper : "BUY";
       confidences[mappedField] = 0.85;
-    } else if (['quantity', 'price', 'fees', 'wht'].includes(mappedField)) {
-      const numValue = parseFloat(value.replace(/[^0-9.-]/g, '')) || 0;
+    } else if (["quantity", "price", "fees", "wht"].includes(mappedField)) {
+      const numValue = parseFloat(value.replace(/[^0-9.-]/g, "")) || 0;
       parsed[mappedField] = numValue;
       confidences[mappedField] = value ? 0.9 : 0.5;
     } else {
@@ -456,9 +487,10 @@ function parseCSVProgrammatically(csvContent: string, filename: string): ParsedS
   });
 
   // Set defaults for missing required fields
-  if (!parsed["transaction_date"]) parsed["transaction_date"] = new Date().toISOString().split('T')[0];
-  if (!parsed["ticker"]) parsed["ticker"] = 'UNKNOWN';
-  if (!parsed["action"]) parsed["action"] = 'BUY';
+  if (!parsed["transaction_date"])
+    parsed["transaction_date"] = new Date().toISOString().split("T")[0];
+  if (!parsed["ticker"]) parsed["ticker"] = "UNKNOWN";
+  if (!parsed["action"]) parsed["action"] = "BUY";
   if (!parsed["quantity"]) parsed["quantity"] = 0;
   if (!parsed["price"]) parsed["price"] = 0;
 
@@ -482,10 +514,10 @@ function parseCSVProgrammatically(csvContent: string, filename: string): ParsedS
 // ── Agent: explain anomaly / reconciliation flag ───────────────────────────────
 
 export async function explainAnomaly(
-  flagType:     string,
-  expected:     unknown,
-  actual:       unknown,
-  ticker:       string,
+  flagType: string,
+  expected: unknown,
+  actual: unknown,
+  ticker: string,
   jurisdiction: string,
 ): Promise<AnomalyExplanation> {
   try {
@@ -504,12 +536,13 @@ export async function explainAnomaly(
       responseFormat: "json",
     });
 
-    return safeParseJSON(text) as any as AnomalyExplanation;
+    return safeParseJSON(text) as AnomalyExplanation;
   } catch {
     return {
-      summary:            `${flagType} on ${ticker}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}.`,
-      severity:           "medium",
-      recommended_action: "Review the original document and contact your broker if the discrepancy persists.",
+      summary: `${flagType} on ${ticker}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}.`,
+      severity: "medium",
+      recommended_action:
+        "Review the original document and contact your broker if the discrepancy persists.",
     };
   }
 }
@@ -517,11 +550,11 @@ export async function explainAnomaly(
 // ── Agent: explain tax computation ────────────────────────────────────────────
 
 export async function explainTaxComputation(
-  jurisdiction:     string,
-  shortTermGain:    number,
-  longTermGain:     number,
-  estimatedTaxDue:  number,
-  filerStatus:      string,
+  jurisdiction: string,
+  shortTermGain: number,
+  longTermGain: number,
+  estimatedTaxDue: number,
+  filerStatus: string,
 ): Promise<TaxExplanation> {
   try {
     const currency = jurisdiction === "PSX" ? "PKR" : "INR";
@@ -541,7 +574,7 @@ export async function explainTaxComputation(
       responseFormat: "json",
     });
 
-    return safeParseJSON(text) as any as TaxExplanation;
+    return safeParseJSON(text) as TaxExplanation;
   } catch {
     const currency = jurisdiction === "PSX" ? "PKR" : "INR";
     return {
@@ -559,7 +592,7 @@ export async function explainTaxComputation(
 // ── Agent: portfolio health narrative ─────────────────────────────────────────
 
 export async function analyzePortfolio(
-  holdings:     Array<{ ticker: string; unrealizedPnl: number; holdingDays: number }>,
+  holdings: Array<{ ticker: string; unrealizedPnl: number; holdingDays: number }>,
   realizedGain: number,
   jurisdiction: string,
 ): Promise<string> {

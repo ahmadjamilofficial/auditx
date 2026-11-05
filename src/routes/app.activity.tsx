@@ -24,33 +24,36 @@ export const Route = createFileRoute("/app/activity")({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TIER_COLORS: Record<string, string> = {
-  AUTO:   "var(--ok)",
+  AUTO: "var(--ok)",
   NOTIFY: "var(--warn)",
   REVIEW: "var(--color-accent)",
-  STOP:   "var(--bad)",
+  STOP: "var(--bad)",
 };
 
 const TIER_BG: Record<string, string> = {
-  AUTO:   "color-mix(in srgb, var(--ok) 10%, transparent)",
+  AUTO: "color-mix(in srgb, var(--ok) 10%, transparent)",
   NOTIFY: "color-mix(in srgb, var(--warn) 10%, transparent)",
   REVIEW: "var(--accent-10)",
-  STOP:   "color-mix(in srgb, var(--bad) 10%, transparent)",
+  STOP: "color-mix(in srgb, var(--bad) 10%, transparent)",
 };
 
 const STATUS_ICON: Record<string, React.FC<{ size?: number; style?: React.CSSProperties }>> = {
-  done:              CheckCircle2,
-  running:           Loader2,
-  pending:           Clock,
-  failed:            AlertTriangle,
-  failed_invariant:  AlertTriangle,
-  dead_letter:       AlertTriangle,
+  done: CheckCircle2,
+  running: Loader2,
+  pending: Clock,
+  failed: AlertTriangle,
+  failed_invariant: AlertTriangle,
+  dead_letter: AlertTriangle,
 };
 
 function TierBadge({ tier }: { tier: string }) {
   return (
     <span
       className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-      style={{ background: TIER_BG[tier] ?? "rgba(0,0,0,0.06)", color: TIER_COLORS[tier] ?? "var(--ink-2)" }}
+      style={{
+        background: TIER_BG[tier] ?? "rgba(0,0,0,0.06)",
+        color: TIER_COLORS[tier] ?? "var(--ink-2)",
+      }}
     >
       {tier}
     </span>
@@ -59,20 +62,20 @@ function TierBadge({ tier }: { tier: string }) {
 
 function triggerLabel(type: string): string {
   const map: Record<string, string> = {
-    upload:         "Document upload",
-    sheet_change:   "Google Sheet changed",
-    email:          "Email ingestion",
-    cron_nightly:   "Nightly reconciliation",
-    cron_monthly:   "Monthly tax run",
-    manual:         "Manual run",
-    ingestion:      "Source ingestion",
+    upload: "Document upload",
+    sheet_change: "Google Sheet changed",
+    email: "Email ingestion",
+    cron_nightly: "Nightly reconciliation",
+    cron_monthly: "Monthly tax run",
+    manual: "Manual run",
+    ingestion: "Source ingestion",
   };
   return map[type] ?? type;
 }
 
 function timeAgo(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60)   return `${diff}s ago`;
+  if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
@@ -85,7 +88,7 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
   const [reverted, setReverted] = useState(false);
   const Icon = STATUS_ICON[job.status] ?? Info;
   const isRunning = job.status === "running" || job.status === "pending";
-  const isFailed  = job.status.startsWith("failed") || job.status === "dead_letter";
+  const isFailed = job.status.startsWith("failed") || job.status === "dead_letter";
   const canRevert = job.status === "done" && !reverted && !!job.run_id;
 
   const summary = job.result_summary as Record<string, unknown> | null;
@@ -116,15 +119,19 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
             background: isFailed
               ? "color-mix(in srgb, var(--bad) 8%, transparent)"
               : job.status === "done"
-              ? "color-mix(in srgb, var(--ok) 8%, transparent)"
-              : "var(--accent-8)",
+                ? "color-mix(in srgb, var(--ok) 8%, transparent)"
+                : "var(--accent-8)",
           }}
         >
           <Icon
             size={15}
             strokeWidth={1.75}
             style={{
-              color: isFailed ? "var(--bad)" : job.status === "done" ? "var(--ok)" : "var(--color-accent)",
+              color: isFailed
+                ? "var(--bad)"
+                : job.status === "done"
+                  ? "var(--ok)"
+                  : "var(--color-accent)",
             }}
             className={isRunning ? "animate-spin" : ""}
           />
@@ -133,7 +140,9 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-semibold">{triggerLabel(job.trigger_type)}</span>
-            <span className="text-xs" style={{ color: "var(--ink-3)" }}>{timeAgo(job.created_at)}</span>
+            <span className="text-xs" style={{ color: "var(--ink-3)" }}>
+              {timeAgo(job.created_at)}
+            </span>
             {summary && Object.keys(summary).length > 0 && (
               <span className="text-xs" style={{ color: "var(--ink-2)" }}>
                 {summary["processed"] != null && `${summary["processed"]} rows`}
@@ -144,11 +153,15 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
           </div>
 
           {job.error_message && (
-            <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>{job.error_message}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--bad)" }}>
+              {job.error_message}
+            </p>
           )}
 
           {reverted && (
-            <p className="mt-1 text-xs font-medium" style={{ color: "var(--ok)" }}>✓ Reverted</p>
+            <p className="mt-1 text-xs font-medium" style={{ color: "var(--ok)" }}>
+              ✓ Reverted
+            </p>
           )}
         </div>
 
@@ -161,9 +174,13 @@ function JobRow({ job, orgId }: { job: AgentJob; orgId: string }) {
               background: isFailed
                 ? "color-mix(in srgb, var(--bad) 10%, transparent)"
                 : job.status === "done"
-                ? "color-mix(in srgb, var(--ok) 10%, transparent)"
-                : "var(--accent-10)",
-              color: isFailed ? "var(--bad)" : job.status === "done" ? "var(--ok)" : "var(--color-accent)",
+                  ? "color-mix(in srgb, var(--ok) 10%, transparent)"
+                  : "var(--accent-10)",
+              color: isFailed
+                ? "var(--bad)"
+                : job.status === "done"
+                  ? "var(--ok)"
+                  : "var(--color-accent)",
             }}
           >
             {job.status.replace("_", " ")}

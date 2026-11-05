@@ -93,7 +93,11 @@ function IntelligenceMessage({ text, isStreaming }: { text: string; isStreaming:
       {text.split("\n").map((line, i) => {
         if (line.startsWith("## ")) {
           return (
-            <p key={i} className="mb-1 mt-3 text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--color-text)" }}>
+            <p
+              key={i}
+              className="mb-1 mt-3 text-[11px] font-bold uppercase tracking-wide"
+              style={{ color: "var(--color-text)" }}
+            >
               {line.slice(3)}
             </p>
           );
@@ -106,10 +110,17 @@ function IntelligenceMessage({ text, isStreaming }: { text: string; isStreaming:
           );
         }
         if (line.trim() === "") return <div key={i} className="h-2" />;
-        return <p key={i} className="mb-1">{line}</p>;
+        return (
+          <p key={i} className="mb-1">
+            {line}
+          </p>
+        );
       })}
       {isStreaming && (
-        <span className="inline-block h-3 w-1.5 animate-pulse rounded-sm" style={{ background: "var(--color-accent)" }} />
+        <span
+          className="inline-block h-3 w-1.5 animate-pulse rounded-sm"
+          style={{ background: "var(--color-accent)" }}
+        />
       )}
     </div>
   );
@@ -124,7 +135,12 @@ interface Props {
   onClose?: () => void;
 }
 
-export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = true, onClose }: Props) {
+export function ContextualIntelligencePanel({
+  currentPage,
+  entityId,
+  isOpen = true,
+  onClose,
+}: Props) {
   const { profile } = useAuth();
   const { jurisdiction, taxYear } = useLedgerContext();
   const [query, setQuery] = useState("");
@@ -189,7 +205,8 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemPrompt: "You are Wab Intelligence. Provide concise, evidence-based financial analysis. Only use numbers from the data provided.",
+            systemPrompt:
+              "You are Wab Intelligence. Provide concise, evidence-based financial analysis. Only use numbers from the data provided.",
             userPrompt: finalPrompt,
             maxTokens: 512,
             temperature: 0.3,
@@ -287,7 +304,10 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
       {/* Suggestions */}
       {!hasResponse && (
         <div className="px-4">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
+          <p
+            className="mb-2 text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--ink-3)" }}
+          >
             Suggestions
           </p>
           <div className="space-y-1.5">
@@ -295,7 +315,10 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
               <button
                 key={s}
                 type="button"
-                onClick={() => { setQuery(s); void runQuery(s); }}
+                onClick={() => {
+                  setQuery(s);
+                  void runQuery(s);
+                }}
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs transition-colors hover:bg-black/4"
                 style={{ border: "1px solid var(--hairline)", color: "var(--ink-2)" }}
               >
@@ -313,7 +336,9 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
         <div className="px-4 py-2">
           <div className="flex items-center gap-2">
             <Loader2 size={12} className="animate-spin" style={{ color: "var(--color-accent)" }} />
-            <span className="text-[11px]" style={{ color: "var(--ink-2)" }}>{loadingState}</span>
+            <span className="text-[11px]" style={{ color: "var(--ink-2)" }}>
+              {loadingState}
+            </span>
           </div>
         </div>
       )}
@@ -351,10 +376,7 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
       )}
 
       {/* Input */}
-      <div
-        className="mt-auto border-t p-3"
-        style={{ borderColor: "var(--hairline)" }}
-      >
+      <div className="mt-auto border-t p-3" style={{ borderColor: "var(--hairline)" }}>
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2"
           style={{ border: "1px solid var(--hairline)", background: "var(--color-login-bg)" }}
@@ -375,7 +397,10 @@ export function ContextualIntelligencePanel({ currentPage, entityId, isOpen = tr
           />
           <button
             type="button"
-            onClick={() => { const t = query.trim(); if (t) void runQuery(t); }}
+            onClick={() => {
+              const t = query.trim();
+              if (t) void runQuery(t);
+            }}
             disabled={!query.trim() || isStreaming}
             className="flex size-6 items-center justify-center rounded-lg disabled:opacity-40 transition-colors"
             style={{ background: "var(--color-accent)" }}

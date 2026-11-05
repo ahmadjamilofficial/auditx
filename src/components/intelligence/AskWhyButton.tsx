@@ -59,7 +59,10 @@ export function AskWhyButton({ context, className }: Props) {
       if (context.metric.toLowerCase().includes("tax")) {
         const tax = await getTaxLiability(toolCtx);
         toolResults.push(tax);
-      } else if (context.metric.toLowerCase().includes("portfolio") || context.metric.toLowerCase().includes("value")) {
+      } else if (
+        context.metric.toLowerCase().includes("portfolio") ||
+        context.metric.toLowerCase().includes("value")
+      ) {
         const portfolio = await getPortfolioSummary(toolCtx);
         toolResults.push(portfolio);
       } else if (context.metric.toLowerCase().includes("unreconciled")) {
@@ -82,7 +85,8 @@ export function AskWhyButton({ context, className }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt: "You are Wab Intelligence. Explain financial metrics clearly and concisely. Only reference numbers from the provided data.",
+          systemPrompt:
+            "You are Wab Intelligence. Explain financial metrics clearly and concisely. Only reference numbers from the provided data.",
           userPrompt: finalPrompt,
           maxTokens: 400,
           temperature: 0.3,
@@ -159,7 +163,10 @@ export function AskWhyButton({ context, className }: Props) {
             >
               <div
                 className="mx-4 overflow-hidden rounded-2xl bg-surface"
-                style={{ border: "1px solid var(--hairline)", boxShadow: "0 20px 60px rgba(10,18,28,0.15)" }}
+                style={{
+                  border: "1px solid var(--hairline)",
+                  boxShadow: "0 20px 60px rgba(10,18,28,0.15)",
+                }}
               >
                 {/* Header */}
                 <div
@@ -176,7 +183,10 @@ export function AskWhyButton({ context, className }: Props) {
                     <div>
                       <p className="text-sm font-semibold">Why {context.metric}?</p>
                       <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                        <span className="tnum font-semibold" style={{ color: "var(--color-accent)" }}>
+                        <span
+                          className="tnum font-semibold"
+                          style={{ color: "var(--color-accent)" }}
+                        >
                           {typeof context.value === "number"
                             ? context.value.toLocaleString()
                             : context.value}
@@ -185,7 +195,11 @@ export function AskWhyButton({ context, className }: Props) {
                       </p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setOpen(false)} style={{ color: "var(--ink-3)" }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    style={{ color: "var(--ink-3)" }}
+                  >
                     <X size={16} />
                   </button>
                 </div>
@@ -203,19 +217,34 @@ export function AskWhyButton({ context, className }: Props) {
                       {response.split("\n").map((line, i) => {
                         if (line.startsWith("## ")) {
                           return (
-                            <p key={i} className="mb-1 mt-3 font-semibold" style={{ color: "var(--color-text)", fontSize: "13px" }}>
+                            <p
+                              key={i}
+                              className="mb-1 mt-3 font-semibold"
+                              style={{ color: "var(--color-text)", fontSize: "13px" }}
+                            >
                               {line.slice(3)}
                             </p>
                           );
                         }
                         if (line.startsWith("- ")) {
-                          return <p key={i} className="mb-0.5 pl-3">• {line.slice(2)}</p>;
+                          return (
+                            <p key={i} className="mb-0.5 pl-3">
+                              • {line.slice(2)}
+                            </p>
+                          );
                         }
                         if (line.trim() === "") return <div key={i} className="h-2" />;
-                        return <p key={i} className="mb-1 text-[13px]">{line}</p>;
+                        return (
+                          <p key={i} className="mb-1 text-[13px]">
+                            {line}
+                          </p>
+                        );
                       })}
                       {isStreaming && (
-                        <span className="inline-block h-3.5 w-1.5 animate-pulse rounded-sm" style={{ background: "var(--color-accent)" }} />
+                        <span
+                          className="inline-block h-3.5 w-1.5 animate-pulse rounded-sm"
+                          style={{ background: "var(--color-accent)" }}
+                        />
                       )}
                     </div>
                   )}

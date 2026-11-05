@@ -8,7 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 const CORS: Record<string, string> = {
-  "Access-Control-Allow-Origin":  "*",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, content-type",
 };
@@ -24,18 +24,25 @@ export const Route = createFileRoute("/api/documents/upload")({
           return new Response("Unauthorized", { status: 401, headers: CORS });
         }
 
-        const supabaseUrl  = process.env["SUPABASE_URL"]
-          ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined) ?? "";
-        const anonKey      = process.env["SUPABASE_PUBLISHABLE_KEY"]
-          ?? (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string | undefined)
-          ?? (import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined) ?? "";
+        const supabaseUrl =
+          process.env["SUPABASE_URL"] ??
+          (import.meta.env["VITE_SUPABASE_URL"] as string | undefined) ??
+          "";
+        const anonKey =
+          process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+          (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string | undefined) ??
+          (import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined) ??
+          "";
 
         const db = createClient<Database>(supabaseUrl, anonKey, {
           global: { headers: { Authorization: auth } },
-          auth:   { persistSession: false, autoRefreshToken: false },
+          auth: { persistSession: false, autoRefreshToken: false },
         });
 
-        const { data: { user }, error: authErr } = await db.auth.getUser();
+        const {
+          data: { user },
+          error: authErr,
+        } = await db.auth.getUser();
         if (authErr || !user) {
           return new Response("Unauthorized", { status: 401, headers: CORS });
         }
@@ -60,19 +67,20 @@ export const Route = createFileRoute("/api/documents/upload")({
           return new Response("Invalid form data", { status: 400, headers: CORS });
         }
 
-        const uploaded: Array<{ document_id: string; filename: string; job_id: string | null }> = [];
+        const uploaded: Array<{ document_id: string; filename: string; job_id: string | null }> =
+          [];
 
         for (const [, value] of form.entries()) {
           if (!(value instanceof File)) continue;
 
-          const filename  = value.name;
-          const mimeType  = value.type || "application/octet-stream";
-          const ext       = filename.split(".").pop()?.toLowerCase() ?? "";
+          const filename = value.name;
+          const mimeType = value.type || "application/octet-stream";
+          const ext = filename.split(".").pop()?.toLowerCase() ?? "";
 
-          const allowed   = ["pdf", "png", "jpg", "jpeg", "webp", "csv", "xlsx", "xls", "txt"];
+          const allowed = ["pdf", "png", "jpg", "jpeg", "webp", "csv", "xlsx", "xls", "txt"];
           if (!allowed.includes(ext)) continue;
 
-          const bytes       = await value.arrayBuffer();
+          const bytes = await value.arrayBuffer();
           const storagePath = `${orgId}/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
           // Upload to Supabase Storage bucket "documents"
@@ -89,11 +97,11 @@ export const Route = createFileRoute("/api/documents/upload")({
           const { data: doc, error: docErr } = await db
             .from("documents")
             .insert({
-              org_id:       orgId,
+              org_id: orgId,
               storage_path: storagePath,
-              doc_type:     "trade_confirmation",
-              status:       "processing",
-              uploaded_by:  user.id,
+              doc_type: "trade_confirmation",
+              status: "processing",
+              uploaded_by: user.id,
             } as never)
             .select("id")
             .single();
@@ -110,12 +118,12 @@ export const Route = createFileRoute("/api/documents/upload")({
           const { data: job, error: jobErr } = await db
             .from("agent_jobs")
             .insert({
-              org_id:          orgId,
-              trigger_type:    "upload",
+              org_id: orgId,
+              trigger_type: "upload",
               trigger_payload: {
-                document_id:  doc.id,
+                document_id: doc.id,
                 storage_path: storagePath,
-                mime_type:    mimeType,
+                mime_type: mimeType,
                 filename,
               } as never,
               idempotency_key: idempotencyKey,
@@ -134,9 +142,9 @@ export const Route = createFileRoute("/api/documents/upload")({
                 ".supabase.co/functions/v1/agent-runner",
               );
               fetch(runnerUrl, {
-                method:  "POST",
+                method: "POST",
                 headers: {
-                  Authorization:  `Bearer ${serviceKey}`,
+                  Authorization: `Bearer ${serviceKey}`,
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ job_id: jobId }),
@@ -149,7 +157,7 @@ export const Route = createFileRoute("/api/documents/upload")({
 
         const body = JSON.stringify({ ok: true, uploaded });
         return new Response(body, {
-          status:  200,
+          status: 200,
           headers: { ...CORS, "Content-Type": "application/json" },
         });
       },

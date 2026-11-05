@@ -8,11 +8,11 @@ import { Btn, Container } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
 
 const links = [
-  { label: "Product",      to: "/how-it-works" },
-  { label: "Pricing",      to: "/pricing" },
-  { label: "Security",     to: "/security" },
-  { label: "News",         to: "/news" },
-  { label: "Help",         to: "/help" },
+  { label: "Product", to: "/how-it-works" },
+  { label: "Pricing", to: "/pricing" },
+  { label: "Security", to: "/security" },
+  { label: "News", to: "/news" },
+  { label: "Help", to: "/help" },
 ] as const;
 
 export function Navbar() {
@@ -123,24 +123,36 @@ export function Navbar() {
                   transition={{ delay: 0.18 + links.length * 0.07, duration: 0.4 }}
                 >
                   <button
-                    onClick={() => { setOpen(false); window.open("https://github.com/Ahmadjamilofficial/wab", "_blank"); }}
+                    onClick={() => {
+                      setOpen(false);
+                      window.open("https://github.com/Ahmadjamilofficial/wab", "_blank");
+                    }}
                     className="flex items-center gap-2 py-2.5 text-lg font-medium"
                     type="button"
                   >
                     <Github size={18} strokeWidth={1.75} />
-                    
                   </button>
                 </motion.div>
               </nav>
               <div className="mt-auto flex flex-col gap-2">
                 <Btn
                   className="w-full"
-                  onClick={() => { setOpen(false); nav({ to: isLoggedIn ? "/app/parser" : "/signup" }); }}
+                  onClick={() => {
+                    setOpen(false);
+                    nav({ to: isLoggedIn ? "/app/parser" : "/signup" });
+                  }}
                 >
                   {isLoggedIn ? "Dashboard" : "Start Free Audit"}
                 </Btn>
                 {!isLoggedIn && (
-                  <Btn variant="secondary" className="w-full" onClick={() => { setOpen(false); nav({ to: "/signin" }); }}>
+                  <Btn
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                      setOpen(false);
+                      nav({ to: "/signin" });
+                    }}
+                  >
                     Sign In
                   </Btn>
                 )}

@@ -16,16 +16,16 @@ import {
 function ctx(overrides: Partial<OrgPolicyConfig> = {}): PolicyContext {
   return {
     config: { ...DEFAULT_POLICY, ...overrides },
-    runId:  "test-run-001",
+    runId: "test-run-001",
   };
 }
 
 function action(overrides: Partial<AgentAction> = {}): AgentAction {
   return {
-    tool:           "flag_anomaly",
-    confidence:     0.95,
-    affects:        "flag",
-    isDestructive:  false,
+    tool: "flag_anomaly",
+    confidence: 0.95,
+    affects: "flag",
+    isDestructive: false,
     isClosedPeriod: false,
     ...overrides,
   };
@@ -42,71 +42,102 @@ describe("classifyAction — AUTO tier", () => {
   });
 
   it("returns AUTO for categorize at exactly the auto threshold", () => {
-    expect(classifyAction(action({ tool: "categorize", confidence: 0.90 }), ctx())).toBe("AUTO");
+    expect(classifyAction(action({ tool: "categorize", confidence: 0.9 }), ctx())).toBe("AUTO");
   });
 
   it("returns AUTO for remove_duplicate under amount limit", () => {
-    const c = ctx({ auto_fix_duplicate_under_amount: 500, allowed_auto_actions: ["remove_duplicate"] });
-    expect(classifyAction(action({ tool: "remove_duplicate", confidence: 0.95, amountUsd: 100 }), c)).toBe("AUTO");
+    const c = ctx({
+      auto_fix_duplicate_under_amount: 500,
+      allowed_auto_actions: ["remove_duplicate"],
+    });
+    expect(
+      classifyAction(action({ tool: "remove_duplicate", confidence: 0.95, amountUsd: 100 }), c),
+    ).toBe("AUTO");
   });
 
   it("does NOT return AUTO when amount exceeds limit", () => {
-    const c = ctx({ auto_fix_duplicate_under_amount: 500, allowed_auto_actions: ["remove_duplicate"] });
-    expect(classifyAction(action({ tool: "remove_duplicate", confidence: 0.95, amountUsd: 600 }), c)).not.toBe("AUTO");
+    const c = ctx({
+      auto_fix_duplicate_under_amount: 500,
+      allowed_auto_actions: ["remove_duplicate"],
+    });
+    expect(
+      classifyAction(action({ tool: "remove_duplicate", confidence: 0.95, amountUsd: 600 }), c),
+    ).not.toBe("AUTO");
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe("classifyAction — NOTIFY tier", () => {
   it("returns NOTIFY for an unlisted tool at confidence 0.80", () => {
-    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.80 }), ctx())).toBe("NOTIFY");
+    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.8 }), ctx())).toBe(
+      "NOTIFY",
+    );
   });
 
   it("returns NOTIFY when confidence is just below auto threshold", () => {
-    expect(classifyAction(action({ tool: "flag_anomaly", confidence: 0.89 }), ctx())).toBe("NOTIFY");
+    expect(classifyAction(action({ tool: "flag_anomaly", confidence: 0.89 }), ctx())).toBe(
+      "NOTIFY",
+    );
   });
 
   it("returns NOTIFY for high-confidence field fill from source doc", () => {
-    expect(classifyAction(action({ tool: "update_transaction", confidence: 0.82, affects: "ledger" }), ctx())).toBe("NOTIFY");
+    expect(
+      classifyAction(
+        action({ tool: "update_transaction", confidence: 0.82, affects: "ledger" }),
+        ctx(),
+      ),
+    ).toBe("NOTIFY");
   });
 
   it("returns NOTIFY when confidence exactly equals notify threshold", () => {
-    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.75 }), ctx())).toBe("NOTIFY");
+    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.75 }), ctx())).toBe(
+      "NOTIFY",
+    );
   });
 
   it("returns NOTIFY not AUTO when tool is not in allowed list at high confidence", () => {
-    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.95 }), ctx())).toBe("NOTIFY");
+    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.95 }), ctx())).toBe(
+      "NOTIFY",
+    );
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe("classifyAction — REVIEW tier", () => {
   it("returns REVIEW for confidence below notify threshold", () => {
-    expect(classifyAction(action({ confidence: 0.70 }), ctx())).toBe("REVIEW");
+    expect(classifyAction(action({ confidence: 0.7 }), ctx())).toBe("REVIEW");
   });
 
   it("returns REVIEW for very low confidence 0.50", () => {
-    expect(classifyAction(action({ confidence: 0.50 }), ctx())).toBe("REVIEW");
+    expect(classifyAction(action({ confidence: 0.5 }), ctx())).toBe("REVIEW");
   });
 
   it("returns REVIEW for unknown tool at 0.74 confidence", () => {
-    expect(classifyAction(action({ tool: "unknown_tool", confidence: 0.74 }), ctx())).toBe("REVIEW");
+    expect(classifyAction(action({ tool: "unknown_tool", confidence: 0.74 }), ctx())).toBe(
+      "REVIEW",
+    );
   });
 
   it("returns REVIEW just below notify threshold 0.74", () => {
-    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.74 }), ctx())).toBe("REVIEW");
+    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.74 }), ctx())).toBe(
+      "REVIEW",
+    );
   });
 
   it("returns REVIEW with custom low notify threshold override", () => {
     const c = ctx({ confidence_threshold_notify: 0.85 });
-    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.80 }), c)).toBe("REVIEW");
+    expect(classifyAction(action({ tool: "insert_transaction", confidence: 0.8 }), c)).toBe(
+      "REVIEW",
+    );
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe("classifyAction — STOP tier", () => {
   it("returns STOP for delete_transaction regardless of confidence", () => {
-    expect(classifyAction(action({ tool: "delete_transaction", confidence: 1.0 }), ctx())).toBe("STOP");
+    expect(classifyAction(action({ tool: "delete_transaction", confidence: 1.0 }), ctx())).toBe(
+      "STOP",
+    );
   });
 
   it("returns STOP for destructive actions", () => {
@@ -118,7 +149,9 @@ describe("classifyAction — STOP tier", () => {
   });
 
   it("returns STOP for export_tax_report", () => {
-    expect(classifyAction(action({ tool: "export_tax_report", confidence: 0.99 }), ctx())).toBe("STOP");
+    expect(classifyAction(action({ tool: "export_tax_report", confidence: 0.99 }), ctx())).toBe(
+      "STOP",
+    );
   });
 
   it("returns STOP for closed-period transaction", () => {

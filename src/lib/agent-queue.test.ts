@@ -21,9 +21,14 @@ function makeMonthlyKey(orgId: string, yearMonth: string): string {
 
 // ── Loop-prevention logic (pure) ──────────────────────────────────────────────
 
-interface JobSummary { output_hash?: string }
+interface JobSummary {
+  output_hash?: string;
+}
 
-function wasAgentWrite(recentJobs: Array<{ result_summary: JobSummary | null }>, hash: string): boolean {
+function wasAgentWrite(
+  recentJobs: Array<{ result_summary: JobSummary | null }>,
+  hash: string,
+): boolean {
   return recentJobs.some((j) => j.result_summary?.output_hash === hash);
 }
 

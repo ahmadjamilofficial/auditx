@@ -15,7 +15,8 @@ export const Route = createFileRoute("/security")({
       { property: "og:title", content: "Security & Audit Architecture — Wab" },
       {
         property: "og:description",
-        content: "Immutable hash-chained audit logging, RLS isolation and encrypted document storage.",
+        content:
+          "Immutable hash-chained audit logging, RLS isolation and encrypted document storage.",
       },
     ],
   }),

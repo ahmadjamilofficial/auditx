@@ -40,7 +40,10 @@ async function authenticate(request: Request) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) return null;
 
   const { data: profile } = await supabase
@@ -121,9 +124,10 @@ export const Route = createFileRoute("/api/integrations/action")({
           });
           return json({ ok: true });
         } catch (error) {
-          const status = typeof (error as { status?: number }).status === "number"
-            ? (error as { status: number }).status
-            : 500;
+          const status =
+            typeof (error as { status?: number }).status === "number"
+              ? (error as { status: number }).status
+              : 500;
           return json({ error: (error as Error).message }, status);
         }
       },

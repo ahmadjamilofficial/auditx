@@ -8,11 +8,11 @@ import { resolveAgentModel, type ResolvedModel } from "./audit-agent.server";
 // ── Task types ────────────────────────────────────────────────────────────────
 
 export type TaskType =
-  | "extraction"    // Parse unstructured docs → JSON  (fast, cheap)
+  | "extraction" // Parse unstructured docs → JSON  (fast, cheap)
   | "classification" // Classify action type / category (fast, cheap)
-  | "dedup"          // Detect duplicate rows            (fast, cheap)
-  | "reasoning"      // Ambiguous multi-doc reasoning    (strong model)
-  | "explanation";   // User-facing plain-English text   (mid-tier)
+  | "dedup" // Detect duplicate rows            (fast, cheap)
+  | "reasoning" // Ambiguous multi-doc reasoning    (strong model)
+  | "explanation"; // User-facing plain-English text   (mid-tier)
 
 export interface ModelRoute {
   primary: string;
@@ -30,28 +30,19 @@ function buildRoutingTable(): Record<TaskType, ModelRoute> {
 
   return {
     extraction: {
-      primary:   "openai/gpt-4o-mini",
-      fallbacks: [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "mistralai/mistral-7b-instruct:free",
-      ],
+      primary: "openai/gpt-4o-mini",
+      fallbacks: ["meta-llama/llama-3.3-70b-instruct:free", "mistralai/mistral-7b-instruct:free"],
     },
     classification: {
-      primary:   "openai/gpt-4o-mini",
-      fallbacks: [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "mistralai/mistral-7b-instruct:free",
-      ],
+      primary: "openai/gpt-4o-mini",
+      fallbacks: ["meta-llama/llama-3.3-70b-instruct:free", "mistralai/mistral-7b-instruct:free"],
     },
     dedup: {
-      primary:   "openai/gpt-4o-mini",
-      fallbacks: [
-        "mistralai/mistral-7b-instruct:free",
-        "meta-llama/llama-3.1-8b-instruct:free",
-      ],
+      primary: "openai/gpt-4o-mini",
+      fallbacks: ["mistralai/mistral-7b-instruct:free", "meta-llama/llama-3.1-8b-instruct:free"],
     },
     reasoning: {
-      primary:   reasoningModel,
+      primary: reasoningModel,
       fallbacks: [
         "openai/gpt-4o-mini",
         "anthropic/claude-3-haiku",
@@ -59,11 +50,8 @@ function buildRoutingTable(): Record<TaskType, ModelRoute> {
       ],
     },
     explanation: {
-      primary:   "openai/gpt-4o-mini",
-      fallbacks: [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "mistralai/mistral-7b-instruct:free",
-      ],
+      primary: "openai/gpt-4o-mini",
+      fallbacks: ["meta-llama/llama-3.3-70b-instruct:free", "mistralai/mistral-7b-instruct:free"],
     },
   };
 }

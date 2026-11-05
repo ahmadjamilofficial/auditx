@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const body = await request.json() as KelviqWebhookEvent;
+          const body = (await request.json()) as KelviqWebhookEvent;
 
           // Verify webhook secret if configured
           const signature = request.headers.get("x-kelviq-signature");
@@ -26,8 +26,13 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
             // }
           }
 
-          const supabaseUrl = process.env["SUPABASE_URL"] ?? (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
-          const supabaseKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? ((import.meta.env["VITE_SUPABASE_SERVICE_ROLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
+          const supabaseUrl =
+            process.env["SUPABASE_URL"] ??
+            (import.meta.env["VITE_SUPABASE_URL"] as string | undefined);
+          const supabaseKey =
+            process.env["SUPABASE_SERVICE_ROLE_KEY"] ??
+            ((import.meta.env["VITE_SUPABASE_SERVICE_ROLE_KEY"] ??
+              import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined);
 
           if (!supabaseUrl || !supabaseKey) {
             return new Response("Database configuration missing", { status: 500 });
@@ -78,7 +83,10 @@ export const Route = createFileRoute("/api/webhooks/kelviq")({
   },
 });
 
-async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnType<typeof createClient<Database>>) {
+async function processKelviqEvent(
+  event: KelviqWebhookEvent,
+  supabase: ReturnType<typeof createClient<Database>>,
+) {
   const eventType = event.type;
   const data = event.data;
 
@@ -101,19 +109,24 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
       }
 
       // Create or update subscription
-      const { error: subError } = await supabase.from("subscriptions").upsert({
-        org_id: orgId,
-        kelviq_customer_id: customerId,
-        kelviq_subscription_id: subscriptionId,
-        plan,
-        status: "active",
-        charge_period: data.charge_period as string || "MONTHLY",
-        trial_end_at: data.trial_end ? new Date(data.trial_end as string).toISOString() : null,
-        current_period_end: data.current_period_end ? new Date(data.current_period_end as string).toISOString() : null,
-        metadata: data.metadata as never,
-      }, {
-        onConflict: "kelviq_subscription_id"
-      });
+      const { error: subError } = await supabase.from("subscriptions").upsert(
+        {
+          org_id: orgId,
+          kelviq_customer_id: customerId,
+          kelviq_subscription_id: subscriptionId,
+          plan,
+          status: "active",
+          charge_period: (data.charge_period as string) || "MONTHLY",
+          trial_end_at: data.trial_end ? new Date(data.trial_end as string).toISOString() : null,
+          current_period_end: data.current_period_end
+            ? new Date(data.current_period_end as string).toISOString()
+            : null,
+          metadata: data.metadata as never,
+        },
+        {
+          onConflict: "kelviq_subscription_id",
+        },
+      );
 
       if (subError) {
         // Silent error handling
@@ -141,9 +154,11 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .from("subscriptions")
         .update({
           plan,
-          status: data.status as string || "active",
-          current_period_end: data.current_period_end ? new Date(data.current_period_end as string).toISOString() : null,
-          cancel_at_period_end: data.cancel_at_period_end as boolean || false,
+          status: (data.status as string) || "active",
+          current_period_end: data.current_period_end
+            ? new Date(data.current_period_end as string).toISOString()
+            : null,
+          cancel_at_period_end: (data.cancel_at_period_end as boolean) || false,
           metadata: data.metadata as never,
         })
         .eq("kelviq_subscription_id", subscriptionId);
@@ -181,7 +196,7 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .update({
           status: "cancelled",
           cancelled_at: new Date().toISOString(),
-          cancel_at_period_end: data.cancel_at_period_end as boolean || false,
+          cancel_at_period_end: (data.cancel_at_period_end as boolean) || false,
         })
         .eq("kelviq_subscription_id", subscriptionId);
 
@@ -218,7 +233,9 @@ async function processKelviqEvent(event: KelviqWebhookEvent, supabase: ReturnTyp
         .from("subscriptions")
         .update({
           status: "active",
-          current_period_end: data.current_period_end ? new Date(data.current_period_end as string).toISOString() : null,
+          current_period_end: data.current_period_end
+            ? new Date(data.current_period_end as string).toISOString()
+            : null,
         })
         .eq("kelviq_subscription_id", subscriptionId);
 

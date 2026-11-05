@@ -15,7 +15,8 @@ function clean(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   if (!trimmed) return undefined;
-  if (trimmed.startsWith("your-") || trimmed === "changeme" || trimmed === "placeholder") return undefined;
+  if (trimmed.startsWith("your-") || trimmed === "changeme" || trimmed === "placeholder")
+    return undefined;
   return trimmed;
 }
 
@@ -32,12 +33,11 @@ function fromImportMeta(name: string): unknown {
 /** Read a server configuration value from every supported source. */
 export function serverEnv(name: string, env?: EnvBag): string | undefined {
   const fromProcess = typeof process !== "undefined" ? process.env?.[name] : undefined;
-  const fromRuntime = (globalThis as { __VERCEL_ENV__?: Record<string, unknown> }).__VERCEL_ENV__?.[name];
+  const fromRuntime = (globalThis as { __VERCEL_ENV__?: Record<string, unknown> }).__VERCEL_ENV__?.[
+    name
+  ];
   return (
-    clean(fromProcess) ??
-    clean(env?.[name]) ??
-    clean(fromRuntime) ??
-    clean(fromImportMeta(name))
+    clean(fromProcess) ?? clean(env?.[name]) ?? clean(fromRuntime) ?? clean(fromImportMeta(name))
   );
 }
 

@@ -61,7 +61,10 @@ async function loadConnection(orgId: string, connectionId: string) {
   return data as Record<string, unknown>;
 }
 
-async function loadCredentials(orgId: string, connectionId: string): Promise<Record<string, string>> {
+async function loadCredentials(
+  orgId: string,
+  connectionId: string,
+): Promise<Record<string, string>> {
   const { data } = await db
     .from("provider_credentials")
     .select("ciphertext,iv,auth_tag,key_version")
@@ -79,7 +82,10 @@ async function loadCredentials(orgId: string, connectionId: string): Promise<Rec
   } catch {
     // Ciphertext unreadable (rotated key or tampering). Treat as unconfigured
     // rather than guessing — the user must re-enter credentials.
-    throw new IntegrationError("Stored credentials could not be decrypted. Re-enter them to reconnect.", 409);
+    throw new IntegrationError(
+      "Stored credentials could not be decrypted. Re-enter them to reconnect.",
+      409,
+    );
   }
 }
 
@@ -282,9 +288,10 @@ export async function syncConnection(input: SyncInput): Promise<SyncResult> {
 
   try {
     const accounts = await adapter.fetchAccounts({ credentials, config });
-    const transactions = (
-      await adapter.fetchTransactions({ credentials, config }, since)
-    ).slice(0, MAX_RECORDS_PER_SYNC);
+    const transactions = (await adapter.fetchTransactions({ credentials, config }, since)).slice(
+      0,
+      MAX_RECORDS_PER_SYNC,
+    );
 
     for (const account of accounts) {
       await db.from("provider_accounts").upsert(

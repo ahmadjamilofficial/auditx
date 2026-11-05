@@ -27,7 +27,6 @@ import {
 } from "@/lib/data-hooks";
 import { DirectSourceConnect } from "@/components/app/DirectSourceConnect";
 
-
 export const Route = createFileRoute("/app/settings")({
   component: Settings,
 });
@@ -35,12 +34,12 @@ export const Route = createFileRoute("/app/settings")({
 type Tab = "org" | "tax-profiles" | "brokers" | "import" | "team" | "notifications" | "api";
 
 const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
-  { id: "org",          label: "Organisation",      icon: Building2  },
-  { id: "tax-profiles", label: "Tax Profiles",       icon: CreditCard },
-  { id: "brokers",      label: "Broker Accounts",    icon: Key        },
-  { id: "import",       label: "Import Data",         icon: Download   },
-  { id: "team",         label: "Team & Roles",        icon: Users      },
-  { id: "notifications",label: "Notifications",      icon: Bell       },
+  { id: "org", label: "Organisation", icon: Building2 },
+  { id: "tax-profiles", label: "Tax Profiles", icon: CreditCard },
+  { id: "brokers", label: "Broker Accounts", icon: Key },
+  { id: "import", label: "Import Data", icon: Download },
+  { id: "team", label: "Team & Roles", icon: Users },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 function Settings() {
@@ -74,7 +73,6 @@ function Settings() {
     type: b.broker_name,
   }));
 
-
   const [notifications, setNotifications] = useState({
     lowConfidenceAlert: true,
     reconciliationFlag: true,
@@ -84,25 +82,26 @@ function Settings() {
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName.charAt(0).toUpperCase();
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.["avatar_url"] as string | undefined;
+  const avatarUrl =
+    profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string | undefined);
 
   async function save() {
     if (!profile?.org_id) return;
-    
+
     setSaving(true);
     try {
       const { error } = await supabase
         .from("organizations")
-        .update({ 
+        .update({
           name: orgName,
-          jurisdiction_default: jurisdiction 
+          jurisdiction_default: jurisdiction,
         })
         .eq("id", profile.org_id);
 
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
@@ -120,9 +119,12 @@ function Settings() {
       return;
     }
     if (!withinLimit(profile.plan, "brokerAccounts", brokers.length)) {
-      toast.error(`Your ${profile.plan.toUpperCase()} plan allows ${limitLabel(profile.plan, "brokerAccounts")} broker account(s).`, {
-        description: "Upgrade to connect more brokers.",
-      });
+      toast.error(
+        `Your ${profile.plan.toUpperCase()} plan allows ${limitLabel(profile.plan, "brokerAccounts")} broker account(s).`,
+        {
+          description: "Upgrade to connect more brokers.",
+        },
+      );
       return;
     }
     setConnectingBroker(true);
@@ -138,7 +140,13 @@ function Settings() {
         },
       });
       toast.success("Broker account added");
-      setBrokerForm({ name: "", broker_name: "", currency: "PKR", exchange: "PSX", external_ref: "" });
+      setBrokerForm({
+        name: "",
+        broker_name: "",
+        currency: "PKR",
+        exchange: "PSX",
+        external_ref: "",
+      });
       setBrokerFormOpen(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add broker");
@@ -176,20 +184,17 @@ function Settings() {
     }
   }
 
-
   async function updateNotificationSettings() {
     if (!profile?.org_id) return;
-    
+
     try {
-      const { error } = await supabase
-        .from("org_settings" as any)
-        .upsert({
-          org_id: profile.org_id,
-          notification_preferences: notifications,
-        });
+      const { error } = await supabase.from("org_settings").upsert({
+        org_id: profile.org_id,
+        notification_preferences: notifications,
+      });
 
       if (error) throw error;
-      
+
       queryClient.invalidateQueries({ queryKey: ["org_settings"] });
       toast.success("Notification preferences updated");
     } catch (error) {
@@ -202,11 +207,11 @@ function Settings() {
     setNotifications(newPrefs);
     setNotificationPrefs(newPrefs);
     updateNotificationSettings();
-    
+
     if (value) {
       const messages: Record<keyof typeof notifications, string> = {
         lowConfidenceAlert: "Low-confidence extraction alerts enabled",
-        reconciliationFlag: "Reconciliation flag notifications enabled", 
+        reconciliationFlag: "Reconciliation flag notifications enabled",
         taxComputationUpdate: "Tax computation updates enabled",
         monthlyDigest: "Monthly ledger digest enabled",
       };
@@ -271,7 +276,10 @@ function Settings() {
                 <p className="mb-4 text-sm font-semibold">Organisation Details</p>
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+                    <label
+                      className="mb-1.5 block text-xs font-medium"
+                      style={{ color: "var(--ink-2)" }}
+                    >
                       Organisation name
                     </label>
                     <input
@@ -279,11 +287,18 @@ function Settings() {
                       value={orgName}
                       onChange={(e) => setOrgName(e.target.value)}
                       className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none focus:ring-2"
-                      style={{ borderColor: "var(--hairline)", maxWidth: 400, ["--tw-ring-color" as string]: "var(--color-accent)" }}
+                      style={{
+                        borderColor: "var(--hairline)",
+                        maxWidth: 400,
+                        ["--tw-ring-color" as string]: "var(--color-accent)",
+                      }}
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+                    <label
+                      className="mb-1.5 block text-xs font-medium"
+                      style={{ color: "var(--ink-2)" }}
+                    >
                       Default jurisdiction
                     </label>
                     <select
@@ -302,12 +317,18 @@ function Settings() {
                         <Loader2 size={15} strokeWidth={1.75} className="animate-spin" />
                         Saving...
                       </>
-                    ) : saved ? "Saved ✓" : "Save changes"}
+                    ) : saved ? (
+                      "Saved ✓"
+                    ) : (
+                      "Save changes"
+                    )}
                   </Btn>
                 </div>
               </Panel>
 
-              <Panel style={{ border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)" }}>
+              <Panel
+                style={{ border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)" }}
+              >
                 <p className="mb-2 text-sm font-semibold" style={{ color: "var(--bad)" }}>
                   Danger Zone
                 </p>
@@ -336,7 +357,6 @@ function Settings() {
                   )}
                   Delete organisation
                 </Btn>
-
               </Panel>
             </motion.div>
           )}
@@ -347,8 +367,16 @@ function Settings() {
                 <p className="mb-4 text-sm font-semibold">Tax Profiles</p>
                 <div className="space-y-3">
                   {[
-                    { name: "PSX — Pakistan", key: "PSX", rules: "CGT 15% ST / 12.5% LT, Filer WHT 10%" },
-                    { name: "NSE — India",    key: "NSE", rules: "STCG 20%, LTCG 12.5% (post Budget 2024)" },
+                    {
+                      name: "PSX — Pakistan",
+                      key: "PSX",
+                      rules: "CGT 15% ST / 12.5% LT, Filer WHT 10%",
+                    },
+                    {
+                      name: "NSE — India",
+                      key: "NSE",
+                      rules: "STCG 20%, LTCG 12.5% (post Budget 2024)",
+                    },
                   ].map((p) => {
                     const isActive = jurisdiction === p.key;
                     return (
@@ -362,7 +390,9 @@ function Settings() {
                       >
                         <div>
                           <p className="text-sm font-medium">{p.name}</p>
-                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>{p.rules}</p>
+                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                            {p.rules}
+                          </p>
                         </div>
                         {isActive && (
                           <span
@@ -399,7 +429,9 @@ function Settings() {
                     <input
                       type="text"
                       value={brokerForm.broker_name}
-                      onChange={(e) => setBrokerForm({ ...brokerForm, broker_name: e.target.value })}
+                      onChange={(e) =>
+                        setBrokerForm({ ...brokerForm, broker_name: e.target.value })
+                      }
                       placeholder="Broker name (e.g. AKD Securities)"
                       className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
                       style={{ borderColor: "var(--hairline)" }}
@@ -434,7 +466,9 @@ function Settings() {
                     <input
                       type="text"
                       value={brokerForm.external_ref}
-                      onChange={(e) => setBrokerForm({ ...brokerForm, external_ref: e.target.value })}
+                      onChange={(e) =>
+                        setBrokerForm({ ...brokerForm, external_ref: e.target.value })
+                      }
                       placeholder="Account / client code (optional)"
                       className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none sm:col-span-2"
                       style={{ borderColor: "var(--hairline)" }}
@@ -460,7 +494,8 @@ function Settings() {
                     <p className="text-sm font-medium">No broker accounts added</p>
                     <p className="text-xs text-center" style={{ color: "var(--ink-3)" }}>
                       Broker names are inferred automatically when you parse statements.
-                      <br />Use "Add broker" to link an account manually.
+                      <br />
+                      Use "Add broker" to link an account manually.
                     </p>
                   </div>
                 ) : (
@@ -473,12 +508,17 @@ function Settings() {
                       >
                         <div>
                           <p className="text-sm font-medium">{broker.name}</p>
-                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>{broker.type}</p>
+                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                            {broker.type}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span
                             className="rounded-full px-2.5 py-1 text-xs font-medium"
-                            style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)", color: "var(--ok)" }}
+                            style={{
+                              background: "color-mix(in srgb, var(--ok) 10%, transparent)",
+                              color: "var(--ok)",
+                            }}
                           >
                             Connected
                           </span>
@@ -496,7 +536,6 @@ function Settings() {
                     ))}
                   </div>
                 )}
-
               </Panel>
             </motion.div>
           )}
@@ -518,21 +557,22 @@ function Settings() {
                   >
                     <div
                       className="flex size-8 shrink-0 items-center justify-center rounded-full overflow-hidden text-xs font-semibold"
-                      style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "var(--accent-fg)" }}
+                      style={{
+                        background: avatarUrl ? "transparent" : "var(--color-accent)",
+                        color: "var(--accent-fg)",
+                      }}
                     >
                       {avatarUrl ? (
-                        <img 
-                          src={avatarUrl} 
-                          alt={displayName}
-                          className="size-full object-cover"
-                        />
+                        <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
                       ) : (
                         initials
                       )}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{displayName}</p>
-                      <p className="text-xs" style={{ color: "var(--ink-3)" }}>{user?.email ?? ""}</p>
+                      <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                        {user?.email ?? ""}
+                      </p>
                     </div>
                     <span
                       className="rounded-full px-2.5 py-1 text-xs font-medium"
@@ -542,7 +582,8 @@ function Settings() {
                     </span>
                   </div>
                   <p className="pt-2 text-center text-xs" style={{ color: "var(--ink-3)" }}>
-                    Team invitations require additional setup. Contact support to enable team collaboration.
+                    Team invitations require additional setup. Contact support to enable team
+                    collaboration.
                   </p>
                 </div>
               </Panel>
@@ -554,8 +595,8 @@ function Settings() {
               <Panel>
                 <p className="mb-1 text-sm font-semibold">Import Data</p>
                 <p className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
-                  Upload an Excel / CSV file or connect a Google Sheet. Wab will ask for
-                  permission before touching any of your data.
+                  Upload an Excel / CSV file or connect a Google Sheet. Wab will ask for permission
+                  before touching any of your data.
                 </p>
                 <DirectSourceConnect
                   orgId={profile?.org_id ?? ""}
@@ -571,15 +612,33 @@ function Settings() {
                 <p className="mb-4 text-sm font-semibold">Notification Preferences</p>
                 <div className="space-y-4">
                   {[
-                    { key: "lowConfidenceAlert" as const, label: "Low-confidence extraction alert", desc: "When a parsed field falls below 0.75" },
-                    { key: "reconciliationFlag" as const, label: "Reconciliation flag detected", desc: "When a discrepancy is found" },
-                    { key: "taxComputationUpdate" as const, label: "Tax computation update", desc: "When new gains are computed" },
-                    { key: "monthlyDigest" as const, label: "Monthly ledger digest", desc: "Summary of your monthy performance" },
+                    {
+                      key: "lowConfidenceAlert" as const,
+                      label: "Low-confidence extraction alert",
+                      desc: "When a parsed field falls below 0.75",
+                    },
+                    {
+                      key: "reconciliationFlag" as const,
+                      label: "Reconciliation flag detected",
+                      desc: "When a discrepancy is found",
+                    },
+                    {
+                      key: "taxComputationUpdate" as const,
+                      label: "Tax computation update",
+                      desc: "When new gains are computed",
+                    },
+                    {
+                      key: "monthlyDigest" as const,
+                      label: "Monthly ledger digest",
+                      desc: "Summary of your monthy performance",
+                    },
                   ].map((n) => (
                     <div key={n.key} className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">{n.label}</p>
-                        <p className="text-xs" style={{ color: "var(--ink-3)" }}>{n.desc}</p>
+                        <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                          {n.desc}
+                        </p>
                       </div>
                       <input
                         type="checkbox"

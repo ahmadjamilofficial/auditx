@@ -71,7 +71,9 @@ function formatWhen(iso: string | null): string {
 }
 
 async function callAction(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) throw new Error("Your session expired. Sign in again.");
 
   const res = await fetch("/api/integrations/action", {
@@ -144,7 +146,9 @@ function IntegrationsPage() {
       const test = result["test"] as { ok?: boolean; message?: string } | undefined;
       setNotice({
         tone: test?.ok ? "ok" : "bad",
-        text: test?.message ?? (test?.ok ? "Connection verified." : "Connection could not be verified."),
+        text:
+          test?.message ??
+          (test?.ok ? "Connection verified." : "Connection could not be verified."),
       });
       setOpenProvider(null);
       setForm({});
@@ -207,7 +211,10 @@ function IntegrationsPage() {
         <div
           className="mb-6 flex items-start gap-2 rounded-xl px-4 py-3 text-sm"
           style={{
-            background: notice.tone === "ok" ? "var(--accent-4)" : "color-mix(in srgb, var(--bad) 8%, transparent)",
+            background:
+              notice.tone === "ok"
+                ? "var(--accent-4)"
+                : "color-mix(in srgb, var(--bad) 8%, transparent)",
             border: `1px solid ${notice.tone === "ok" ? "var(--hairline)" : "color-mix(in srgb, var(--bad) 25%, transparent)"}`,
             color: notice.tone === "ok" ? "var(--ink-2)" : "var(--bad)",
           }}
@@ -232,7 +239,7 @@ function IntegrationsPage() {
         </div>
 
         {loading ? (
-          <Panel className="flex items-center gap-2 text-sm" >
+          <Panel className="flex items-center gap-2 text-sm">
             <Loader2 size={14} className="animate-spin" />
             <span style={{ color: "var(--ink-2)" }}>Loading connections…</span>
           </Panel>
@@ -245,7 +252,8 @@ function IntegrationsPage() {
             <p className="text-sm font-semibold">No connections yet</p>
             <p className="mt-1 max-w-xl text-sm" style={{ color: "var(--ink-2)" }}>
               Start with a statement import to normalize historical records, or connect an exchange,
-              brokerage, or read-only wallet below. Each connection is verified before it is trusted.
+              brokerage, or read-only wallet below. Each connection is verified before it is
+              trusted.
             </p>
           </Panel>
         ) : (
@@ -269,8 +277,9 @@ function IntegrationsPage() {
                         )}
                       </div>
                       <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
-                        {provider?.label ?? c.provider} · {CATEGORY_LABELS[c.category] ?? c.category} ·
-                        last sync {formatWhen(c.last_sync_at)}
+                        {provider?.label ?? c.provider} ·{" "}
+                        {CATEGORY_LABELS[c.category] ?? c.category} · last sync{" "}
+                        {formatWhen(c.last_sync_at)}
                       </p>
                       {c.last_error && (
                         <p
@@ -339,11 +348,17 @@ function IntegrationsPage() {
                     </p>
                   </div>
                   {provider.requiresCredentials ? (
-                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: "var(--ink-3)" }}
+                    >
                       <KeyRound size={11} /> key required
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: "var(--ink-3)" }}
+                    >
                       <ShieldCheck size={11} /> read-only
                     </span>
                   )}
@@ -355,7 +370,11 @@ function IntegrationsPage() {
 
                 <ul className="mt-2 space-y-1">
                   {provider.capabilities.map((cap) => (
-                    <li key={cap} className="flex items-start gap-1.5 text-xs" style={{ color: "var(--ink-2)" }}>
+                    <li
+                      key={cap}
+                      className="flex items-start gap-1.5 text-xs"
+                      style={{ color: "var(--ink-2)" }}
+                    >
                       <span style={{ color: "var(--color-accent)" }}>·</span>
                       {cap}
                     </li>
@@ -419,7 +438,9 @@ function IntegrationsPage() {
                         className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold disabled:opacity-50"
                         style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
                       >
-                        {busyId === provider.id ? <Loader2 size={12} className="animate-spin" /> : null}
+                        {busyId === provider.id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : null}
                         Save & verify
                       </button>
                       <button
@@ -500,7 +521,8 @@ function Field({
 }) {
   const shared = {
     value,
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      onChange(e.target.value),
     placeholder,
     className: "w-full rounded-lg border bg-transparent px-2.5 py-1.5 text-xs outline-none",
     style: { borderColor: "var(--hairline)", color: "var(--color-text)" },
@@ -510,7 +532,11 @@ function Field({
       <span className="mb-1 block text-[11px] font-medium" style={{ color: "var(--ink-2)" }}>
         {label}
       </span>
-      {multiline ? <textarea {...shared} rows={4} /> : <input {...shared} type={secret ? "password" : "text"} autoComplete="off" />}
+      {multiline ? (
+        <textarea {...shared} rows={4} />
+      ) : (
+        <input {...shared} type={secret ? "password" : "text"} autoComplete="off" />
+      )}
       {help && (
         <span className="mt-1 block text-[10px]" style={{ color: "var(--ink-3)" }}>
           {help}

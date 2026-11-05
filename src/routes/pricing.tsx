@@ -17,7 +17,10 @@ export const Route = createFileRoute("/pricing")({
       },
       { property: "og:title", content: "Wab Pricing" },
       {
-        property: "og:description", content: "Standard and Pro plans with 7-day free trials for trade reconciliation and CGT reporting." },
+        property: "og:description",
+        content:
+          "Standard and Pro plans with 7-day free trials for trade reconciliation and CGT reporting.",
+      },
     ],
   }),
   component: Pricing,
@@ -47,7 +50,9 @@ function Cell({ v }: { v: string | boolean }) {
 function Pricing() {
   const navigate = useNavigate();
   const { session, profile } = useAuth();
-  const KELVIQ_CHECKOUT_URL = import.meta.env['VITE_KELVIQ_CHECKOUT_URL'] || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+  const KELVIQ_CHECKOUT_URL =
+    import.meta.env["VITE_KELVIQ_CHECKOUT_URL"] ||
+    "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   function handlePlanClick(planName: string) {
     // If not logged in, redirect to signup first, then to checkout
@@ -57,7 +62,10 @@ function Pricing() {
     }
 
     // Construct checkout URL with org_id in metadata
-    const baseUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", `plan_identifier=${planName.toLowerCase()}-plan`);
+    const baseUrl = KELVIQ_CHECKOUT_URL.replace(
+      "plan_identifier=pro-plan",
+      `plan_identifier=${planName.toLowerCase()}-plan`,
+    );
     const checkoutUrl = `${baseUrl}&metadata[org_id]=${profile?.org_id}`;
     window.location.href = checkoutUrl;
   }
@@ -77,7 +85,9 @@ function Pricing() {
             <Panel
               className="h-full"
               style={
-                t.popular ? { border: "2px solid var(--color-accent)", boxShadow: "var(--shadow-hover)" } : {}
+                t.popular
+                  ? { border: "2px solid var(--color-accent)", boxShadow: "var(--shadow-hover)" }
+                  : {}
               }
             >
               <div className="flex items-center justify-between">

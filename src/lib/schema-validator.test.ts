@@ -1,12 +1,16 @@
 // ─── Schema Validator Unit Tests ──────────────────────────────────────────────
 import { describe, it, expect } from "vitest";
-import { validateAgentOutput, SchemaValidationError, ExtractionOutputSchema } from "./schema-validator";
+import {
+  validateAgentOutput,
+  SchemaValidationError,
+  ExtractionOutputSchema,
+} from "./schema-validator";
 import { z } from "zod";
 
 const SimpleSchema = z.object({
-  ticker:   z.string(),
+  ticker: z.string(),
   quantity: z.number().positive(),
-  price:    z.number().positive(),
+  price: z.number().positive(),
 });
 
 describe("validateAgentOutput — happy path", () => {
@@ -23,13 +27,13 @@ describe("validateAgentOutput — happy path", () => {
   });
 
   it("strips markdown code fences from JSON string", () => {
-    const raw = "```json\n{\"ticker\":\"HBL\",\"quantity\":200,\"price\":148.5}\n```";
+    const raw = '```json\n{"ticker":"HBL","quantity":200,"price":148.5}\n```';
     const result = validateAgentOutput(raw, SimpleSchema);
     expect(result.ticker).toBe("HBL");
   });
 
   it("strips bare code fences", () => {
-    const raw = "```\n{\"ticker\":\"UBL\",\"quantity\":300,\"price\":182}\n```";
+    const raw = '```\n{"ticker":"UBL","quantity":300,"price":182}\n```';
     const result = validateAgentOutput(raw, SimpleSchema);
     expect(result.ticker).toBe("UBL");
   });
@@ -38,7 +42,9 @@ describe("validateAgentOutput — happy path", () => {
 describe("validateAgentOutput — error cases", () => {
   it("throws SchemaValidationError when a required field is missing", () => {
     const raw = JSON.stringify({ ticker: "OGDC", quantity: 100 }); // missing price
-    expect(() => validateAgentOutput(raw, SimpleSchema, "extraction")).toThrow(SchemaValidationError);
+    expect(() => validateAgentOutput(raw, SimpleSchema, "extraction")).toThrow(
+      SchemaValidationError,
+    );
   });
 
   it("throws SchemaValidationError when quantity is zero (not positive)", () => {
@@ -47,7 +53,9 @@ describe("validateAgentOutput — error cases", () => {
   });
 
   it("throws SchemaValidationError for completely invalid JSON string", () => {
-    expect(() => validateAgentOutput("not json at all", SimpleSchema)).toThrow(SchemaValidationError);
+    expect(() => validateAgentOutput("not json at all", SimpleSchema)).toThrow(
+      SchemaValidationError,
+    );
   });
 
   it("error message contains the context string when provided", () => {
@@ -73,15 +81,15 @@ describe("ExtractionOutputSchema", () => {
   it("accepts a full extraction result", () => {
     const raw = {
       transaction_date: "2025-01-15",
-      ticker:           "OGDC",
-      action:           "BUY",
-      quantity:         500,
-      price:            108.5,
-      fees:             250,
-      wht:              0,
-      ref_id:           "TXN-001",
-      broker:           "AKD",
-      exchange:         "PSX",
+      ticker: "OGDC",
+      action: "BUY",
+      quantity: 500,
+      price: 108.5,
+      fees: 250,
+      wht: 0,
+      ref_id: "TXN-001",
+      broker: "AKD",
+      exchange: "PSX",
       field_confidences: { ticker: 0.99, quantity: 0.95, price: 0.95 },
     };
     const result = validateAgentOutput(raw, ExtractionOutputSchema);
@@ -91,16 +99,16 @@ describe("ExtractionOutputSchema", () => {
 
   it("accepts null values for optional fields", () => {
     const raw = {
-      transaction_date:  null,
-      ticker:            null,
-      action:            null,
-      quantity:          null,
-      price:             null,
-      fees:              null,
-      wht:               null,
-      ref_id:            null,
-      broker:            null,
-      exchange:          null,
+      transaction_date: null,
+      ticker: null,
+      action: null,
+      quantity: null,
+      price: null,
+      fees: null,
+      wht: null,
+      ref_id: null,
+      broker: null,
+      exchange: null,
       field_confidences: {},
     };
     expect(() => validateAgentOutput(raw, ExtractionOutputSchema)).not.toThrow();

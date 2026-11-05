@@ -382,9 +382,7 @@ export class MemoryService {
       query = query.eq("status", status);
     }
 
-    const { data, error } = await query
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
 
     if (error) throw new Error(`Failed to get tasks: ${error.message}`);
     return (data ?? []) as AgentTask[];

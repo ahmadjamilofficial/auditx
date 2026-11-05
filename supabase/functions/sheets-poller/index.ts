@@ -5,7 +5,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const db = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
@@ -15,8 +15,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
 // ── Hash a string using Web Crypto (available in Deno/Edge) ──────────────────
 async function sha256(text: string): Promise<string> {
   const encoded = new TextEncoder().encode(text);
-  const buf     = await crypto.subtle.digest("SHA-256", encoded);
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const buf = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // ── Fetch CSV from a Google Sheet (must be shared publicly) ──────────────────
@@ -67,18 +69,24 @@ Deno.serve(async (_req: Request) => {
   }
 
   let enqueued = 0;
-  let skipped  = 0;
+  let skipped = 0;
 
   for (const source of sources ?? []) {
     try {
       const csv = await fetchSheetCSV(source.external_id as string);
-      if (!csv) { skipped++; continue; }
+      if (!csv) {
+        skipped++;
+        continue;
+      }
 
       const newHash = await sha256(csv);
       const oldHash = source.last_hash as string | null;
 
       // No change
-      if (newHash === oldHash) { skipped++; continue; }
+      if (newHash === oldHash) {
+        skipped++;
+        continue;
+      }
 
       // Loop prevention: this hash was produced by an agent write
       if (await wasAgentWrite(source.org_id as string, newHash)) {
@@ -92,25 +100,32 @@ Deno.serve(async (_req: Request) => {
 
       // Enqueue ingestion job (idempotent on source_id:hash)
       const idempotencyKey = `sheet:${source.id as string}:${newHash}`;
-      await db.from("agent_jobs").insert({
-        org_id:          source.org_id,
-        trigger_type:    "sheet_change",
-        trigger_payload: { source_id: source.id, csv, new_hash: newHash } as never,
-        idempotency_key: idempotencyKey,
-        next_run_at:     // 8-second debounce
-          new Date(Date.now() + 8_000).toISOString(),
-      } as never).then(
-        () => undefined,
-        (e: unknown) => {
-          const code = (e as { code?: string })?.code;
-          if (code !== "23505") console.warn("[sheets-poller] enqueue err:", e);
-        },
-      );
+      await db
+        .from("agent_jobs")
+        .insert({
+          org_id: source.org_id,
+          trigger_type: "sheet_change",
+          trigger_payload: { source_id: source.id, csv, new_hash: newHash } as never,
+          idempotency_key: idempotencyKey,
+          // 8-second debounce
+          next_run_at: new Date(Date.now() + 8_000).toISOString(),
+        } as never)
+        .then(
+          () => undefined,
+          (e: unknown) => {
+            const code = (e as { code?: string })?.code;
+            if (code !== "23505") console.warn("[sheets-poller] enqueue err:", e);
+          },
+        );
 
       // Update stored hash immediately so the next tick sees the new baseline
       await db
         .from("connected_sources")
-        .update({ last_hash: newHash, last_synced_at: new Date().toISOString(), updated_at: new Date().toISOString() } as never)
+        .update({
+          last_hash: newHash,
+          last_synced_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as never)
         .eq("id", source.id);
 
       enqueued++;

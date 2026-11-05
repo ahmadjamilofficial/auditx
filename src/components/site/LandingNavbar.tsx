@@ -9,20 +9,20 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 
 const links = [
-  { label: "Product",  to: "/how-it-works" },
-  { label: "Pricing",  to: "/pricing" },
+  { label: "Product", to: "/how-it-works" },
+  { label: "Pricing", to: "/pricing" },
   { label: "Security", to: "/security" },
-  { label: "News",     to: "/news" },
-  { label: "Help",     to: "/help" },
+  { label: "News", to: "/news" },
+  { label: "Help", to: "/help" },
 ] as const;
 
 export function LandingNavbar() {
-  const [open, setOpen]        = useState(false);
-  const { session, loading }   = useAuth();
-  const nav                    = useNavigate();
-  const isLoggedIn             = !loading && !!session;
-  const primaryTo              = isLoggedIn ? "/app/parser" : "/signup";
-  const primaryLabel           = isLoggedIn ? "Dashboard" : "Start Free";
+  const [open, setOpen] = useState(false);
+  const { session, loading } = useAuth();
+  const nav = useNavigate();
+  const isLoggedIn = !loading && !!session;
+  const primaryTo = isLoggedIn ? "/app/parser" : "/signup";
+  const primaryLabel = isLoggedIn ? "Dashboard" : "Start Free";
 
   return (
     <>
@@ -60,7 +60,7 @@ export function LandingNavbar() {
             type="button"
             onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
-            >
+          >
             <Github size={18} strokeWidth={1.75} />
           </button>
           <ThemeToggle surface={false} />
@@ -164,7 +164,9 @@ export function LandingNavbar() {
                 >
                   <button
                     type="button"
-                    onClick={() => window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")}
+                    onClick={() =>
+                      window.open("https://github.com/Ahmadjamilofficial/wab", "_blank")
+                    }
                     className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-60"
                   >
                     <Github size={18} strokeWidth={1.75} />
@@ -175,7 +177,10 @@ export function LandingNavbar() {
               <div className="mt-auto flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => { setOpen(false); nav({ to: primaryTo }); }}
+                  onClick={() => {
+                    setOpen(false);
+                    nav({ to: primaryTo });
+                  }}
                   className="w-full rounded-full py-3 text-sm font-semibold"
                   style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
                 >
@@ -184,7 +189,10 @@ export function LandingNavbar() {
                 {!isLoggedIn && (
                   <button
                     type="button"
-                    onClick={() => { setOpen(false); nav({ to: "/signin" }); }}
+                    onClick={() => {
+                      setOpen(false);
+                      nav({ to: "/signin" });
+                    }}
                     className="w-full rounded-full border py-3 text-sm font-medium"
                     style={{ borderColor: "var(--hairline)", color: "var(--ink-2)" }}
                   >

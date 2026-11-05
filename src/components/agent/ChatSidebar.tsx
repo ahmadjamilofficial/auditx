@@ -42,7 +42,11 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
     if (!user || creating) return;
     setCreating(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").eq("user_id", user.id).maybeSingle();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("org_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
       if (!prof?.org_id) throw new Error("Workspace not ready yet");
       const { data, error } = await supabase
         .from("chat_threads")
@@ -75,11 +79,24 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
 
   if (!open) {
     return (
-      <div className="hidden shrink-0 flex-col items-center gap-2 border-r bg-card p-2 md:flex" style={{ borderColor: "var(--hairline)" }}>
-        <button type="button" onClick={() => setOpen(true)} aria-label="Show chats" className="flex size-8 items-center justify-center rounded-lg hover:bg-muted">
+      <div
+        className="hidden shrink-0 flex-col items-center gap-2 border-r bg-card p-2 md:flex"
+        style={{ borderColor: "var(--hairline)" }}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Show chats"
+          className="flex size-8 items-center justify-center rounded-lg hover:bg-muted"
+        >
           <PanelLeftOpen size={16} />
         </button>
-        <button type="button" onClick={newChat} aria-label="New chat" className="flex size-8 items-center justify-center rounded-lg hover:bg-muted">
+        <button
+          type="button"
+          onClick={newChat}
+          aria-label="New chat"
+          className="flex size-8 items-center justify-center rounded-lg hover:bg-muted"
+        >
           <Plus size={16} />
         </button>
       </div>
@@ -87,7 +104,10 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
   }
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex" style={{ borderColor: "var(--hairline)" }}>
+    <aside
+      className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex"
+      style={{ borderColor: "var(--hairline)" }}
+    >
       <div className="flex items-center gap-2 p-3">
         <button
           type="button"
@@ -98,12 +118,20 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
         >
           <Plus size={15} /> New chat
         </button>
-        <button type="button" onClick={() => setOpen(false)} aria-label="Hide chats" className="flex size-9 items-center justify-center rounded-lg hover:bg-muted">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Hide chats"
+          className="flex size-9 items-center justify-center rounded-lg hover:bg-muted"
+        >
           <PanelLeftClose size={16} />
         </button>
       </div>
       <div className="px-3 pb-2">
-        <div className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5" style={{ borderColor: "var(--hairline)" }}>
+        <div
+          className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5"
+          style={{ borderColor: "var(--hairline)" }}
+        >
           <Search size={13} className="text-muted-foreground" />
           <input
             value={query}
@@ -115,10 +143,14 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
       </div>
       <nav className="flex-1 overflow-y-auto px-2 pb-3">
         {isLoading && <p className="px-2 py-3 text-xs text-muted-foreground">Loading chats…</p>}
-        {!isLoading && groups.length === 0 && <p className="px-2 py-3 text-xs text-muted-foreground">No chats yet</p>}
+        {!isLoading && groups.length === 0 && (
+          <p className="px-2 py-3 text-xs text-muted-foreground">No chats yet</p>
+        )}
         {groups.map(([label, items]) => (
           <div key={label} className="mb-3">
-            <p className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
             {items.map((t) => (
               <div
                 key={t.id}

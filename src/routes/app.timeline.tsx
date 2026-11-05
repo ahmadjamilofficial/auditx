@@ -54,9 +54,7 @@ function FinancialTimelinePage() {
       : generateTimelineFromTransactions(transactions, flags, currency);
 
   const filteredEntries =
-    filter === "ALL"
-      ? rawEntries
-      : rawEntries.filter((e) => e.severity === filter);
+    filter === "ALL" ? rawEntries : rawEntries.filter((e) => e.severity === filter);
 
   const isLoading = (eventsLoading || txLoading) && rawEntries.length === 0;
 
@@ -137,7 +135,11 @@ function FinancialTimelinePage() {
       {rawEntries.length > 0 && (
         <div
           className="flex flex-wrap items-center gap-4 rounded-xl px-4 py-3 text-xs"
-          style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
+          style={{
+            background: "var(--accent-3)",
+            border: "1px solid var(--hairline)",
+            color: "var(--ink-3)",
+          }}
         >
           <span className="font-semibold">Event types:</span>
           {[

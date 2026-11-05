@@ -3,7 +3,6 @@
 //   ChatComposer → AgentRequest → (extraction + streaming AI) → AgentActivity / AIMessage
 // Model cascade: nvidia/nemotron-3-ultra-550b-a55b:free → inclusionai/ling-3.0-flash-fin:free → openrouter/free
 
-// @ts-nocheck
 import { parseDocument, parseTextDocument, type ExtractedField } from "@/lib/ai-service";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -110,7 +109,6 @@ function getApiKey(): string {
   return key;
 }
 
-
 // ── Streaming cascade: primary → fallback ─────────────────────────────────────
 
 const STREAM_MODELS = [
@@ -164,8 +162,13 @@ async function streamWithCascade(
       if (!resp.ok) {
         const errText = await resp.text().catch(() => resp.statusText);
         const err = new Error(`OpenRouter ${resp.status}: ${errText}`);
-        if ((resp.status === 429 || resp.status === 502 || resp.status === 503) && i < STREAM_MODELS.length - 1) {
-          console.warn(`[Wab agent] Provider error ${resp.status} on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
+        if (
+          (resp.status === 429 || resp.status === 502 || resp.status === 503) &&
+          i < STREAM_MODELS.length - 1
+        ) {
+          console.warn(
+            `[Wab agent] Provider error ${resp.status} on ${model}, trying ${STREAM_MODELS[i + 1]}…`,
+          );
           continue;
         }
         throw err;
@@ -198,7 +201,16 @@ async function streamWithCascade(
       return full;
     } catch (e) {
       const msg = String((e as Error)?.message ?? "").toLowerCase();
-      const isQuota = msg.includes("429") || msg.includes("502") || msg.includes("503") || msg.includes("quota") || msg.includes("rate limit") || msg.includes("rate-limit") || msg.includes("overloaded") || msg.includes("upstream error") || msg.includes("provider_unavailable");
+      const isQuota =
+        msg.includes("429") ||
+        msg.includes("502") ||
+        msg.includes("503") ||
+        msg.includes("quota") ||
+        msg.includes("rate limit") ||
+        msg.includes("rate-limit") ||
+        msg.includes("overloaded") ||
+        msg.includes("upstream error") ||
+        msg.includes("provider_unavailable");
       if (isQuota && i < STREAM_MODELS.length - 1) {
         console.warn(`[Wab agent] Quota on ${model}, trying ${STREAM_MODELS[i + 1]}…`);
         continue;
@@ -246,17 +258,24 @@ export async function runAgent(req: AgentRequest): Promise<string> {
   const steps: AgentStep[] = [];
 
   if (hasNew) {
-    steps.push({ id: "read",    label: "Reading uploaded document",          status: "pending" });
-    steps.push({ id: "extract", label: "Extracting financial records",        status: "pending" });
+    steps.push({ id: "read", label: "Reading uploaded document", status: "pending" });
+    steps.push({ id: "extract", label: "Extracting financial records", status: "pending" });
   }
   steps.push({ id: "context", label: "Applying your instruction to the data", status: "pending" });
-  steps.push({ id: "analyze", label: "Analysing transactions and tax exposure", status: "pending" });
-  steps.push({ id: "compose", label: "Preparing recommended actions",          status: "pending" });
+  steps.push({
+    id: "analyze",
+    label: "Analysing transactions and tax exposure",
+    status: "pending",
+  });
+  steps.push({ id: "compose", label: "Preparing recommended actions", status: "pending" });
 
   const emit = () => req.onStep(steps.map((s) => ({ ...s })));
   const set = (id: string, status: StepStatus, detail?: string) => {
     const s = steps.find((x) => x.id === id);
-    if (s) { s.status = status; if (detail !== undefined) s.detail = detail; }
+    if (s) {
+      s.status = status;
+      if (detail !== undefined) s.detail = detail;
+    }
     emit();
   };
   emit();
@@ -294,7 +313,9 @@ export async function runAgent(req: AgentRequest): Promise<string> {
     const summary = fieldsSummary(a);
     if (summary) parts.push({ text: summary });
   }
-  parts.push({ text: `Jurisdiction: ${req.jurisdiction ?? "PSX"}.\n\nUser instruction:\n${req.prompt}` });
+  parts.push({
+    text: `Jurisdiction: ${req.jurisdiction ?? "PSX"}.\n\nUser instruction:\n${req.prompt}`,
+  });
 
   const contents = [
     ...req.history.map((t) => ({

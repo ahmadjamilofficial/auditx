@@ -53,7 +53,10 @@ function MetricDelta({ label, value, delta, currency, isGoodWhenDown }: MetricDe
   const Icon = !delta ? Minus : isUp ? ArrowUp : ArrowDown;
 
   return (
-    <div className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--hairline)" }}>
+    <div
+      className="flex items-center justify-between py-2"
+      style={{ borderBottom: "1px solid var(--hairline)" }}
+    >
       <span className="text-xs" style={{ color: "var(--ink-2)" }}>
         {label}
       </span>
@@ -87,8 +90,14 @@ export function DailyBriefing() {
         style={{ background: HUD_GRADIENT, border: "1px solid oklch(1 0 0 / 0.09)" }}
       >
         <div className="p-6">
-          <div className="h-6 w-48 animate-pulse rounded" style={{ background: "rgba(255,255,255,0.08)" }} />
-          <div className="mt-2 h-4 w-72 animate-pulse rounded" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div
+            className="h-6 w-48 animate-pulse rounded"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
+          <div
+            className="mt-2 h-4 w-72 animate-pulse rounded"
+            style={{ background: "rgba(255,255,255,0.06)" }}
+          />
         </div>
       </div>
     );
@@ -114,7 +123,10 @@ export function DailyBriefing() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sun size={14} style={{ color: "oklch(1 0 0 / 55%)" }} />
-              <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <p
+                className="text-xs font-medium uppercase tracking-widest"
+                style={{ color: "rgba(255,255,255,0.45)" }}
+              >
                 {getDayOfWeek()}
               </p>
             </div>
@@ -148,51 +160,100 @@ export function DailyBriefing() {
         <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div
             className="rounded-xl p-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
-            <p className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p
+              className="text-[10px] uppercase tracking-wide"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               Health Score
             </p>
-            <p className="tnum mt-1 text-xl font-bold" style={{ color: briefing.healthScore >= 80 ? "#4ade80" : briefing.healthScore >= 60 ? "#fbbf24" : "#f87171" }}>
+            <p
+              className="tnum mt-1 text-xl font-bold"
+              style={{
+                color:
+                  briefing.healthScore >= 80
+                    ? "#4ade80"
+                    : briefing.healthScore >= 60
+                      ? "#fbbf24"
+                      : "#f87171",
+              }}
+            >
               {briefing.healthScore}
             </p>
-            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>/100</p>
+            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              /100
+            </p>
           </div>
 
           <div
             className="rounded-xl p-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
-            <p className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p
+              className="text-[10px] uppercase tracking-wide"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               Reconciled Today
             </p>
-            <p className="tnum mt-1 text-xl font-bold" style={{ color: briefing.reconciledToday > 0 ? "#4ade80" : "rgba(255,255,255,0.5)" }}>
+            <p
+              className="tnum mt-1 text-xl font-bold"
+              style={{ color: briefing.reconciledToday > 0 ? "#4ade80" : "rgba(255,255,255,0.5)" }}
+            >
               {briefing.reconciledToday}
             </p>
-            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>transactions</p>
+            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              transactions
+            </p>
           </div>
 
           <div
             className="rounded-xl p-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
-            <p className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p
+              className="text-[10px] uppercase tracking-wide"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               Open Issues
             </p>
-            <p className="tnum mt-1 text-xl font-bold" style={{ color: briefing.newDiscrepancies > 0 ? "#f87171" : "#4ade80" }}>
+            <p
+              className="tnum mt-1 text-xl font-bold"
+              style={{ color: briefing.newDiscrepancies > 0 ? "#f87171" : "#4ade80" }}
+            >
               {briefing.newDiscrepancies}
             </p>
-            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>flags</p>
+            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              flags
+            </p>
           </div>
 
           <div
             className="rounded-xl p-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
-            <p className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p
+              className="text-[10px] uppercase tracking-wide"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               Critical Issues
             </p>
-            <p className="tnum mt-1 text-xl font-bold" style={{ color: criticalIssues > 0 ? "#f87171" : "#4ade80" }}>
+            <p
+              className="tnum mt-1 text-xl font-bold"
+              style={{ color: criticalIssues > 0 ? "#f87171" : "#4ade80" }}
+            >
               {criticalIssues}
             </p>
             <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
@@ -213,7 +274,10 @@ export function DailyBriefing() {
             <div className="flex items-center gap-2.5">
               <AlertCircle size={14} style={{ color: "#f87171", flexShrink: 0 }} />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#f87171" }}>
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-wide"
+                  style={{ color: "#f87171" }}
+                >
                   Top Priority
                 </p>
                 <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>
@@ -224,7 +288,11 @@ export function DailyBriefing() {
             <Link
               to={briefing.topPriority.actionLink}
               className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
-              style={{ background: "color-mix(in srgb, var(--bad) 20%, transparent)", color: "#fca5a5", border: "1px solid color-mix(in srgb, var(--bad) 30%, transparent)" }}
+              style={{
+                background: "color-mix(in srgb, var(--bad) 20%, transparent)",
+                color: "#fca5a5",
+                border: "1px solid color-mix(in srgb, var(--bad) 30%, transparent)",
+              }}
             >
               {briefing.topPriority.action}
               <ArrowRight size={11} />
@@ -235,7 +303,10 @@ export function DailyBriefing() {
         {criticalIssues === 0 && !briefing.topPriority && (
           <div
             className="mt-4 flex items-center gap-2.5 rounded-xl p-3"
-            style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 15%, transparent)" }}
+            style={{
+              background: "color-mix(in srgb, var(--ok) 8%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--ok) 15%, transparent)",
+            }}
           >
             <CheckCircle2 size={14} style={{ color: "#4ade80" }} />
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>

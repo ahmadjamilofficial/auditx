@@ -49,7 +49,10 @@ async function fetchText(
   const onAbort = () => controller.abort();
   signal?.addEventListener("abort", onAbort);
   try {
-    const res = await fetch(url, { signal: controller.signal, headers: { accept: "text/csv,text/plain,*/*" } });
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { accept: "text/csv,text/plain,*/*" },
+    });
     return { status: res.status, text: await res.text() };
   } finally {
     clearTimeout(timer);
@@ -140,14 +143,21 @@ export const csvImportAdapter: ProviderAdapter = {
   async test(ctx: AdapterContext): Promise<AdapterTestResult> {
     const rows = parseCsv(ctx.config["csv"] ?? "");
     if (!rows.length) {
-      return { ok: false, message: "No data rows found. A header row plus at least one row is required." };
+      return {
+        ok: false,
+        message: "No data rows found. A header row plus at least one row is required.",
+      };
     }
-    const hasDate = rows.every((r) => Boolean(pick(r, ["date", "trade_date", "occurred_at", "time"])));
+    const hasDate = rows.every((r) =>
+      Boolean(pick(r, ["date", "trade_date", "occurred_at", "time"])),
+    );
     return {
       ok: true,
       message: `Parsed ${rows.length} row${rows.length === 1 ? "" : "s"}.`,
       permissions: { read: true, trade: false, withdraw: false },
-      ...(hasDate ? {} : { warnings: ["Some rows have no date column; they will be skipped during sync."] }),
+      ...(hasDate
+        ? {}
+        : { warnings: ["Some rows have no date column; they will be skipped during sync."] }),
     };
   },
   async fetchAccounts(): Promise<NormalizedAccount[]> {
@@ -168,10 +178,27 @@ export const csvImportAdapter: ProviderAdapter = {
       const sideRaw = (pick(row, ["side", "action", "type"]) ?? "").toLowerCase();
       const kindRaw = (pick(row, ["kind", "category"]) ?? "").toLowerCase();
       const side =
-        sideRaw === "buy" || sideRaw === "b" ? "buy" : sideRaw === "sell" || sideRaw === "s" ? "sell"
-          : sideRaw === "deposit" ? "deposit" : sideRaw === "withdrawal" ? "withdrawal" : undefined;
+        sideRaw === "buy" || sideRaw === "b"
+          ? "buy"
+          : sideRaw === "sell" || sideRaw === "s"
+            ? "sell"
+            : sideRaw === "deposit"
+              ? "deposit"
+              : sideRaw === "withdrawal"
+                ? "withdrawal"
+                : undefined;
       const kind: TransactionKind = (
-        ["trade", "order", "execution", "cash", "fee", "dividend", "settlement", "transfer", "adjustment"] as const
+        [
+          "trade",
+          "order",
+          "execution",
+          "cash",
+          "fee",
+          "dividend",
+          "settlement",
+          "transfer",
+          "adjustment",
+        ] as const
       ).includes(kindRaw as TransactionKind)
         ? (kindRaw as TransactionKind)
         : side === "buy" || side === "sell"
@@ -180,14 +207,19 @@ export const csvImportAdapter: ProviderAdapter = {
 
       const quantity = num(pick(row, ["quantity", "qty", "shares"]));
       const price = num(pick(row, ["price", "rate"]));
-      const amount = num(pick(row, ["amount", "value", "total"])) ?? (quantity && price ? quantity * price : null);
-      const externalId = pick(row, ["id", "ref", "ref_id", "reference", "trade_id"]) ?? `csv-row-${index + 1}`;
+      const amount =
+        num(pick(row, ["amount", "value", "total"])) ??
+        (quantity && price ? quantity * price : null);
+      const externalId =
+        pick(row, ["id", "ref", "ref_id", "reference", "trade_id"]) ?? `csv-row-${index + 1}`;
 
       out.push({
         externalId,
         kind,
         ...(side ? { side } : {}),
-        ...(pick(row, ["symbol", "ticker", "instrument"]) ? { instrument: pick(row, ["symbol", "ticker", "instrument"])! } : {}),
+        ...(pick(row, ["symbol", "ticker", "instrument"])
+          ? { instrument: pick(row, ["symbol", "ticker", "instrument"])! }
+          : {}),
         ...(quantity !== null ? { quantity } : {}),
         ...(price !== null ? { price } : {}),
         ...(amount !== null ? { amount } : {}),
@@ -221,7 +253,10 @@ export const evmWalletAdapter: ProviderAdapter = {
   async test(ctx: AdapterContext): Promise<AdapterTestResult> {
     const address = (ctx.config["address"] ?? "").trim();
     if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
-      return { ok: false, message: "A valid 0x-prefixed wallet address is required. Never paste a recovery phrase." };
+      return {
+        ok: false,
+        message: "A valid 0x-prefixed wallet address is required. Never paste a recovery phrase.",
+      };
     }
     const rpc = ctx.config["rpc_url"] || DEFAULT_RPC;
     try {
@@ -230,13 +265,21 @@ export const evmWalletAdapter: ProviderAdapter = {
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "eth_getBalance",
+            params: [address, "latest"],
+          }),
         },
         ctx.signal,
       );
       const payload = body as { result?: string; error?: { message?: string } };
       if (status !== 200 || payload?.error) {
-        return { ok: false, message: `RPC refused the request: ${payload?.error?.message ?? `HTTP ${status}`}` };
+        return {
+          ok: false,
+          message: `RPC refused the request: ${payload?.error?.message ?? `HTTP ${status}`}`,
+        };
       }
       if (typeof payload.result !== "string") {
         return { ok: false, message: "RPC returned an unexpected payload for eth_getBalance." };
@@ -247,7 +290,10 @@ export const evmWalletAdapter: ProviderAdapter = {
         permissions: { read: true, trade: false, withdraw: false, sign: false },
       };
     } catch (error) {
-      return { ok: false, message: `Could not reach the RPC endpoint: ${(error as Error).message}` };
+      return {
+        ok: false,
+        message: `Could not reach the RPC endpoint: ${(error as Error).message}`,
+      };
     }
   },
   async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
@@ -258,7 +304,12 @@ export const evmWalletAdapter: ProviderAdapter = {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_getBalance",
+          params: [address, "latest"],
+        }),
       },
       ctx.signal,
     );
@@ -294,7 +345,11 @@ export const evmWalletAdapter: ProviderAdapter = {
 const BINANCE_BASE = "https://api.binance.com";
 
 function binanceSignedQuery(params: Record<string, string>, secret: string): string {
-  const query = new URLSearchParams({ ...params, recvWindow: "5000", timestamp: String(Date.now()) }).toString();
+  const query = new URLSearchParams({
+    ...params,
+    recvWindow: "5000",
+    timestamp: String(Date.now()),
+  }).toString();
   const signature = createHmac("sha256", secret).update(query).digest("hex");
   return `${query}&signature=${signature}`;
 }
@@ -324,7 +379,10 @@ export const binanceAdapter: ProviderAdapter = {
         ctx.signal,
       );
       if (account.status === 401 || account.status === 403) {
-        return { ok: false, message: "Binance rejected the key (invalid, expired, or IP-restricted)." };
+        return {
+          ok: false,
+          message: "Binance rejected the key (invalid, expired, or IP-restricted).",
+        };
       }
       const payload = account.body as {
         code?: number;
@@ -334,7 +392,10 @@ export const binanceAdapter: ProviderAdapter = {
         balances?: unknown[];
       };
       if (account.status !== 200 || payload?.code) {
-        return { ok: false, message: `Binance error ${payload?.code ?? account.status}: ${payload?.msg ?? "unknown"}` };
+        return {
+          ok: false,
+          message: `Binance error ${payload?.code ?? account.status}: ${payload?.msg ?? "unknown"}`,
+        };
       }
       const warnings: string[] = [];
       if (payload.canWithdraw) {
@@ -343,7 +404,11 @@ export const binanceAdapter: ProviderAdapter = {
       return {
         ok: true,
         message: "Signed request accepted by Binance.",
-        permissions: { read: true, trade: Boolean(payload.canTrade), withdraw: Boolean(payload.canWithdraw) },
+        permissions: {
+          read: true,
+          trade: Boolean(payload.canTrade),
+          withdraw: Boolean(payload.canWithdraw),
+        },
         ...(warnings.length ? { warnings } : {}),
       };
     } catch (error) {
@@ -359,7 +424,9 @@ export const binanceAdapter: ProviderAdapter = {
       ctx.signal,
     );
     if (status !== 200) throw new Error(`Binance account request failed (HTTP ${status})`);
-    const balances = ((body as { balances?: Array<{ asset: string; free: string; locked: string }> }).balances) ?? [];
+    const balances =
+      (body as { balances?: Array<{ asset: string; free: string; locked: string }> }).balances ??
+      [];
     const asOf = new Date().toISOString();
     return balances
       .map((b) => {
@@ -396,8 +463,19 @@ export const binanceAdapter: ProviderAdapter = {
         { headers: { "X-MBX-APIKEY": apiKey } },
         ctx.signal,
       );
-      if (status !== 200) throw new Error(`Binance trades request failed for ${symbol} (HTTP ${status})`);
-      const trades = (body as Array<{ id: number; orderId: number; price: string; qty: string; commission: string; commissionAsset: string; time: number; isBuyer: boolean }>) ?? [];
+      if (status !== 200)
+        throw new Error(`Binance trades request failed for ${symbol} (HTTP ${status})`);
+      const trades =
+        (body as Array<{
+          id: number;
+          orderId: number;
+          price: string;
+          qty: string;
+          commission: string;
+          commissionAsset: string;
+          time: number;
+          isBuyer: boolean;
+        }>) ?? [];
       for (const t of trades) {
         const base = symbol.replace(/(USDT|BUSD|USDC|BTC|ETH|BNB|TRY|EUR)$/, "") || symbol;
         const quote = symbol.slice(base.length) || "USDT";
@@ -431,7 +509,11 @@ export const alpacaAdapter: ProviderAdapter = {
   label: "Alpaca",
   category: "brokerage",
   summary: "Brokerage account, cash and activity via the official Alpaca API.",
-  capabilities: ["Account equity and buying power", "Account activities", "Connectivity verification"],
+  capabilities: [
+    "Account equity and buying power",
+    "Account activities",
+    "Connectivity verification",
+  ],
   requiresCredentials: true,
   credentialFields: [],
   configFields: [],
@@ -440,7 +522,10 @@ export const alpacaAdapter: ProviderAdapter = {
     const secretKey = ctx.credentials["secretKey"];
     if (!keyId || !secretKey) return { ok: false, message: "API key ID and secret are required." };
 
-    const base = ctx.config["environment"] === "live" ? "https://api.alpaca.markets" : "https://paper-api.alpaca.markets";
+    const base =
+      ctx.config["environment"] === "live"
+        ? "https://api.alpaca.markets"
+        : "https://paper-api.alpaca.markets";
     try {
       const { status, body } = await requestJson(
         `${base}/v2/account`,
@@ -456,7 +541,8 @@ export const alpacaAdapter: ProviderAdapter = {
       const account = body as { status?: string; account_number?: string };
       return {
         ok: true,
-        message: `Connected to Alpaca account ${account.account_number ?? ""} (${account.status ?? "active"}).`.trim(),
+        message:
+          `Connected to Alpaca account ${account.account_number ?? ""} (${account.status ?? "active"}).`.trim(),
         permissions: { read: true, trade: true, withdraw: false },
       };
     } catch (error) {
@@ -464,7 +550,10 @@ export const alpacaAdapter: ProviderAdapter = {
     }
   },
   async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
-    const base = ctx.config["environment"] === "live" ? "https://api.alpaca.markets" : "https://paper-api.alpaca.markets";
+    const base =
+      ctx.config["environment"] === "live"
+        ? "https://api.alpaca.markets"
+        : "https://paper-api.alpaca.markets";
     const { status, body } = await requestJson(
       `${base}/v2/account`,
       {
@@ -476,7 +565,13 @@ export const alpacaAdapter: ProviderAdapter = {
       ctx.signal,
     );
     if (status !== 200) throw new Error(`Alpaca account request failed (HTTP ${status})`);
-    const a = body as { account_number?: string; cash?: string; equity?: string; buying_power?: string; currency?: string };
+    const a = body as {
+      account_number?: string;
+      cash?: string;
+      equity?: string;
+      buying_power?: string;
+      currency?: string;
+    };
     const asOf = new Date().toISOString();
     return [
       {
@@ -492,7 +587,10 @@ export const alpacaAdapter: ProviderAdapter = {
     ];
   },
   async fetchTransactions(ctx: AdapterContext, since?: string): Promise<NormalizedTransaction[]> {
-    const base = ctx.config["environment"] === "live" ? "https://api.alpaca.markets" : "https://paper-api.alpaca.markets";
+    const base =
+      ctx.config["environment"] === "live"
+        ? "https://api.alpaca.markets"
+        : "https://paper-api.alpaca.markets";
     const params = new URLSearchParams({ page_size: "100" });
     if (since) params.set("after", since);
     const { status, body } = await requestJson(
@@ -510,11 +608,16 @@ export const alpacaAdapter: ProviderAdapter = {
     return activities.map((activity) => {
       const type = String(activity["activity_type"] ?? activity["type"] ?? "FILL").toLowerCase();
       const side = String(activity["side"] ?? "").toLowerCase();
-      const kind: TransactionKind = type.includes("fill") || type.includes("trade") ? "trade"
-        : type.includes("div") ? "dividend"
-        : type.includes("fee") ? "fee"
-        : type.includes("transfer") ? "transfer"
-        : "cash";
+      const kind: TransactionKind =
+        type.includes("fill") || type.includes("trade")
+          ? "trade"
+          : type.includes("div")
+            ? "dividend"
+            : type.includes("fee")
+              ? "fee"
+              : type.includes("transfer")
+                ? "transfer"
+                : "cash";
       return {
         externalId: `alpaca:${String(activity["id"] ?? activity["transaction_time"] ?? Math.random())}`,
         kind,
@@ -524,7 +627,9 @@ export const alpacaAdapter: ProviderAdapter = {
         ...(num(activity["price"]) !== null ? { price: num(activity["price"])! } : {}),
         ...(num(activity["net_amount"]) !== null ? { amount: num(activity["net_amount"])! } : {}),
         currency: "USD",
-        occurredAt: new Date(String(activity["transaction_time"] ?? activity["date"] ?? Date.now())).toISOString(),
+        occurredAt: new Date(
+          String(activity["transaction_time"] ?? activity["date"] ?? Date.now()),
+        ).toISOString(),
         sourceRef: `alpaca:${type}`,
         raw: activity,
       };
@@ -557,7 +662,8 @@ async function solanaBalance(address: string, rpc: string, signal?: AbortSignal)
     throw new Error(`RPC refused the request: ${payload?.error?.message ?? `HTTP ${status}`}`);
   }
   const lamports = payload?.result?.value;
-  if (typeof lamports !== "number") throw new Error("RPC returned an unexpected payload for getBalance.");
+  if (typeof lamports !== "number")
+    throw new Error("RPC returned an unexpected payload for getBalance.");
   return lamports / 1e9;
 }
 
@@ -576,22 +682,36 @@ export const solanaWalletAdapter: ProviderAdapter = {
   async test(ctx: AdapterContext): Promise<AdapterTestResult> {
     const address = (ctx.config["address"] ?? "").trim();
     if (!isSolanaAddress(address)) {
-      return { ok: false, message: "A valid Base58 Solana address is required. Never paste a recovery phrase." };
+      return {
+        ok: false,
+        message: "A valid Base58 Solana address is required. Never paste a recovery phrase.",
+      };
     }
     try {
-      const balance = await solanaBalance(address, ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC, ctx.signal);
+      const balance = await solanaBalance(
+        address,
+        ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC,
+        ctx.signal,
+      );
       return {
         ok: true,
         message: `Address is readable — ${balance.toLocaleString(undefined, { maximumFractionDigits: 6 })} SOL.`,
         permissions: { read: true, trade: false, withdraw: false, sign: false },
       };
     } catch (error) {
-      return { ok: false, message: `Could not reach the RPC endpoint: ${(error as Error).message}` };
+      return {
+        ok: false,
+        message: `Could not reach the RPC endpoint: ${(error as Error).message}`,
+      };
     }
   },
   async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
     const address = (ctx.config["address"] ?? "").trim();
-    const balance = await solanaBalance(address, ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC, ctx.signal);
+    const balance = await solanaBalance(
+      address,
+      ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC,
+      ctx.signal,
+    );
     return [
       {
         externalId: address,
@@ -651,7 +771,10 @@ export const bankAccountAdapter: ProviderAdapter = {
     const bank = (ctx.config["bank_name"] ?? "").trim();
     if (!bank) return { ok: false, message: "Enter the bank name." };
     if (!/^[A-Za-z0-9-]{6,34}$/.test(account)) {
-      return { ok: false, message: "Enter a valid account number or IBAN (6–34 letters, digits or hyphens)." };
+      return {
+        ok: false,
+        message: "Enter a valid account number or IBAN (6–34 letters, digits or hyphens).",
+      };
     }
 
     const url = (ctx.config["statement_url"] ?? "").trim();
@@ -672,15 +795,21 @@ export const bankAccountAdapter: ProviderAdapter = {
       const { status, text } = await fetchText(url, ctx.signal);
       if (status >= 400) return { ok: false, message: `Statement URL returned HTTP ${status}.` };
       const rows = parseCsv(text);
-      if (!rows.length) return { ok: false, message: "The statement URL did not return CSV rows with a header." };
+      if (!rows.length)
+        return { ok: false, message: "The statement URL did not return CSV rows with a header." };
       return {
         ok: true,
         message: `${bank} account linked — read ${rows.length} statement row${rows.length === 1 ? "" : "s"}.`,
         permissions: { read: true, transfer: false, payment: false },
-        warnings: ["Statement feeds are pull-based, so balances update on each sync rather than in real time."],
+        warnings: [
+          "Statement feeds are pull-based, so balances update on each sync rather than in real time.",
+        ],
       };
     } catch (error) {
-      return { ok: false, message: `Could not fetch the statement URL: ${(error as Error).message}` };
+      return {
+        ok: false,
+        message: `Could not fetch the statement URL: ${(error as Error).message}`,
+      };
     }
   },
   async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
@@ -701,7 +830,10 @@ export const bankAccountAdapter: ProviderAdapter = {
       },
     ];
   },
-  async fetchTransactions(ctx: AdapterContext, since: string | undefined): Promise<NormalizedTransaction[]> {
+  async fetchTransactions(
+    ctx: AdapterContext,
+    since: string | undefined,
+  ): Promise<NormalizedTransaction[]> {
     const url = (ctx.config["statement_url"] ?? "").trim();
     if (!url) return [];
     const { status, text } = await fetchText(url, ctx.signal);
@@ -716,7 +848,10 @@ export const bankAccountAdapter: ProviderAdapter = {
       .map((row) => ({
         ...row,
         // Content hash keeps re-syncs idempotent even when a sheet gains rows.
-        externalId: createHash("sha256").update(`${last4}|${JSON.stringify(row.raw)}`).digest("hex").slice(0, 32),
+        externalId: createHash("sha256")
+          .update(`${last4}|${JSON.stringify(row.raw)}`)
+          .digest("hex")
+          .slice(0, 32),
         sourceRef: `bank:${last4}`,
         raw: { ...row.raw, provider: "bank_account", bank: ctx.config["bank_name"] ?? "" },
       }))

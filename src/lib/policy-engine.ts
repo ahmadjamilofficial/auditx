@@ -41,13 +41,13 @@ export interface PolicyContext {
 // ── Defaults ──────────────────────────────────────────────────────────────────
 
 export const DEFAULT_POLICY: OrgPolicyConfig = {
-  auto_fix_duplicate_under_amount:   null,
+  auto_fix_duplicate_under_amount: null,
   never_touch_closed_periods_before: null,
-  confidence_threshold_auto:         0.90,
-  confidence_threshold_notify:       0.75,
-  allowed_auto_actions:              ["flag_anomaly", "run_fifo", "categorize", "remove_duplicate"],
-  daily_token_budget:                null,
-  daily_cost_budget_usd:             null,
+  confidence_threshold_auto: 0.9,
+  confidence_threshold_notify: 0.75,
+  allowed_auto_actions: ["flag_anomaly", "run_fifo", "categorize", "remove_duplicate"],
+  daily_token_budget: null,
+  daily_cost_budget_usd: null,
 };
 
 // ── PolicyViolationError ──────────────────────────────────────────────────────
@@ -66,7 +66,10 @@ export class PolicyViolationError extends Error {
 // ── SchemaValidationError (exported here for convenience) ─────────────────────
 
 export class SchemaValidationError extends Error {
-  constructor(message: string, public readonly raw?: unknown) {
+  constructor(
+    message: string,
+    public readonly raw?: unknown,
+  ) {
     super(message);
     this.name = "SchemaValidationError";
   }
@@ -78,16 +81,16 @@ export function classifyAction(action: AgentAction, ctx: PolicyContext): PolicyT
   const cfg = ctx.config;
 
   // ── STOP: hard overrides (order matters) ──────────────────────────────────
-  if (action.isDestructive)              return "STOP";
-  if (action.affects === "source")       return "STOP";
-  if (action.isClosedPeriod)             return "STOP";
+  if (action.isDestructive) return "STOP";
+  if (action.affects === "source") return "STOP";
+  if (action.isClosedPeriod) return "STOP";
   if (action.tool === "export_tax_report") return "STOP";
   if (action.tool === "delete_transaction") return "STOP";
-  if (action.tool === "overwrite_source")   return "STOP";
+  if (action.tool === "overwrite_source") return "STOP";
 
   // ── AUTO: fast-path for allowed tools at high confidence ──────────────────
-  const inAllowedList    = cfg.allowed_auto_actions.includes(action.tool);
-  const aboveAutoConf    = action.confidence >= cfg.confidence_threshold_auto;
+  const inAllowedList = cfg.allowed_auto_actions.includes(action.tool);
+  const aboveAutoConf = action.confidence >= cfg.confidence_threshold_auto;
   const underAmountLimit =
     action.amountUsd == null ||
     cfg.auto_fix_duplicate_under_amount == null ||
@@ -127,13 +130,14 @@ export async function loadOrgPolicy(orgId: string): Promise<OrgPolicyConfig> {
   if (error || !data) return { ...DEFAULT_POLICY };
 
   return {
-    auto_fix_duplicate_under_amount:   data.auto_fix_duplicate_under_amount ?? null,
+    auto_fix_duplicate_under_amount: data.auto_fix_duplicate_under_amount ?? null,
     never_touch_closed_periods_before: data.never_touch_closed_periods_before ?? null,
-    confidence_threshold_auto:         Number(data.confidence_threshold_auto ?? 0.9),
-    confidence_threshold_notify:       Number(data.confidence_threshold_notify ?? 0.75),
-    allowed_auto_actions:              (data.allowed_auto_actions as string[]) ?? DEFAULT_POLICY.allowed_auto_actions,
-    daily_token_budget:                data.daily_token_budget ?? null,
-    daily_cost_budget_usd:             data.daily_cost_budget_usd ?? null,
+    confidence_threshold_auto: Number(data.confidence_threshold_auto ?? 0.9),
+    confidence_threshold_notify: Number(data.confidence_threshold_notify ?? 0.75),
+    allowed_auto_actions:
+      (data.allowed_auto_actions as string[]) ?? DEFAULT_POLICY.allowed_auto_actions,
+    daily_token_budget: data.daily_token_budget ?? null,
+    daily_cost_budget_usd: data.daily_cost_budget_usd ?? null,
   };
 }
 
@@ -150,10 +154,7 @@ export async function isAutonomousEnabled(orgId: string): Promise<boolean> {
 
 // ── Check whether a trade date falls in a closed period ──────────────────────
 
-export function isInClosedPeriod(
-  tradeDate: string,
-  config: OrgPolicyConfig,
-): boolean {
+export function isInClosedPeriod(tradeDate: string, config: OrgPolicyConfig): boolean {
   if (!config.never_touch_closed_periods_before) return false;
   return tradeDate < config.never_touch_closed_periods_before;
 }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ─── Wab Agent Tool Layer ──────────────────────────────────────────────────
 // Exposes Supabase read/write operations as callable tools for Gemini.
 // Every write is confirmed by the user before execution.
@@ -8,7 +7,7 @@ import { supabase } from "./supabase";
 // ── Tool result type ──────────────────────────────────────────────────────────
 
 export interface ToolResult {
-  ok:    boolean;
+  ok: boolean;
   data?: unknown;
   error?: string;
 }
@@ -16,11 +15,11 @@ export interface ToolResult {
 // ── Context needed for every tool call ───────────────────────────────────────
 
 export interface ToolContext {
-  orgId:        string;
-  userId:       string;
-  userEmail:    string;
+  orgId: string;
+  userId: string;
+  userEmail: string;
   jurisdiction: string;
-  invalidate:   (keys: string[][]) => void;
+  invalidate: (keys: string[][]) => void;
 }
 
 // ── Tool definitions (schema for Gemini function-calling) ─────────────────────
@@ -28,7 +27,8 @@ export interface ToolContext {
 export const TOOL_DECLARATIONS = [
   {
     name: "get_transactions",
-    description: "Read the user's transaction ledger. Use to answer questions about their trades, holdings, or history.",
+    description:
+      "Read the user's transaction ledger. Use to answer questions about their trades, holdings, or history.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -49,21 +49,22 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "insert_transaction",
-    description: "Add a new transaction to the user's ledger. Use after extracting fields from a document and confirming with the user.",
+    description:
+      "Add a new transaction to the user's ledger. Use after extracting fields from a document and confirming with the user.",
     parameters: {
       type: "OBJECT",
       required: ["ticker", "action", "quantity", "price", "trade_date"],
       properties: {
-        ticker:     { type: "STRING", description: "Stock symbol e.g. OGDC" },
-        action:     { type: "STRING", description: "BUY, SELL, or DIV" },
-        quantity:   { type: "NUMBER", description: "Number of shares" },
-        price:      { type: "NUMBER", description: "Price per share" },
-        fees:       { type: "NUMBER", description: "Total brokerage fees" },
-        wht:        { type: "NUMBER", description: "Withholding tax deducted" },
+        ticker: { type: "STRING", description: "Stock symbol e.g. OGDC" },
+        action: { type: "STRING", description: "BUY, SELL, or DIV" },
+        quantity: { type: "NUMBER", description: "Number of shares" },
+        price: { type: "NUMBER", description: "Price per share" },
+        fees: { type: "NUMBER", description: "Total brokerage fees" },
+        wht: { type: "NUMBER", description: "Withholding tax deducted" },
         trade_date: { type: "STRING", description: "Date in YYYY-MM-DD format" },
-        ref_id:     { type: "STRING", description: "Broker reference ID" },
-        broker:     { type: "STRING", description: "Broker name" },
-        exchange:   { type: "STRING", description: "PSX or NSE" },
+        ref_id: { type: "STRING", description: "Broker reference ID" },
+        broker: { type: "STRING", description: "Broker name" },
+        exchange: { type: "STRING", description: "PSX or NSE" },
       },
     },
   },
@@ -74,18 +75,18 @@ export const TOOL_DECLARATIONS = [
       type: "OBJECT",
       required: ["id"],
       properties: {
-        id:         { type: "STRING", description: "Transaction ID to update" },
-        ticker:     { type: "STRING" },
-        action:     { type: "STRING" },
-        quantity:   { type: "NUMBER" },
-        price:      { type: "NUMBER" },
-        fees:       { type: "NUMBER" },
-        wht:        { type: "NUMBER" },
+        id: { type: "STRING", description: "Transaction ID to update" },
+        ticker: { type: "STRING" },
+        action: { type: "STRING" },
+        quantity: { type: "NUMBER" },
+        price: { type: "NUMBER" },
+        fees: { type: "NUMBER" },
+        wht: { type: "NUMBER" },
         trade_date: { type: "STRING" },
-        ref_id:     { type: "STRING" },
-        broker:     { type: "STRING" },
-        exchange:   { type: "STRING" },
-        status:     { type: "STRING", description: "posted or needs_review" },
+        ref_id: { type: "STRING" },
+        broker: { type: "STRING" },
+        exchange: { type: "STRING" },
+        status: { type: "STRING", description: "posted or needs_review" },
       },
     },
   },
@@ -96,13 +97,16 @@ export const TOOL_DECLARATIONS = [
       type: "OBJECT",
       required: ["flag_type", "ticker", "description"],
       properties: {
-        flag_type:           { type: "STRING", description: "e.g. Fee Surcharge, WHT Mismatch, Duplicate Entry" },
-        severity:            { type: "STRING", description: "ok, warn, or bad" },
-        ticker:              { type: "STRING" },
-        ref_id:              { type: "STRING" },
-        expected:            { type: "NUMBER" },
-        actual:              { type: "NUMBER" },
-        description:         { type: "STRING" },
+        flag_type: {
+          type: "STRING",
+          description: "e.g. Fee Surcharge, WHT Mismatch, Duplicate Entry",
+        },
+        severity: { type: "STRING", description: "ok, warn, or bad" },
+        ticker: { type: "STRING" },
+        ref_id: { type: "STRING" },
+        expected: { type: "NUMBER" },
+        actual: { type: "NUMBER" },
+        description: { type: "STRING" },
         suggested_resolution: { type: "STRING" },
       },
     },
@@ -120,7 +124,8 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "get_ledger_summary",
-    description: "Get a summary of the user's portfolio — total transactions, unreconciled items, tickers held.",
+    description:
+      "Get a summary of the user's portfolio — total transactions, unreconciled items, tickers held.",
     parameters: {
       type: "OBJECT",
       properties: {},
@@ -132,7 +137,7 @@ export const TOOL_DECLARATIONS = [
 
 export async function executeTool(
   name: string,
-  args: any,
+  args: Record<string, unknown>,
   ctx: ToolContext,
 ): Promise<ToolResult> {
   try {
@@ -140,13 +145,15 @@ export async function executeTool(
       case "get_transactions": {
         let q = supabase
           .from("transactions")
-          .select("id, ticker, action, quantity, price, fees, wht, trade_date, ref_id, broker, exchange, status, confidence_score")
+          .select(
+            "id, ticker, action, quantity, price, fees, wht, trade_date, ref_id, broker, exchange, status, confidence_score",
+          )
           .eq("org_id", ctx.orgId)
           .order("trade_date", { ascending: false })
           .limit(typeof args.limit === "number" ? args.limit : 20);
 
         if (args.ticker) q = q.eq("ticker", String(args.ticker).toUpperCase());
-        if (args.action)  q = q.eq("action",  String(args.action).toUpperCase() as any);
+        if (args.action) q = q.eq("action", String(args.action).toUpperCase());
 
         const { data, error } = await q;
         if (error) {
@@ -158,39 +165,43 @@ export async function executeTool(
 
       case "insert_transaction": {
         // Validate required fields
-        const requiredFields = ['ticker', 'action', 'quantity', 'price', 'trade_date'];
-        const missingFields = requiredFields.filter(field => !args[field]);
+        const requiredFields = ["ticker", "action", "quantity", "price", "trade_date"];
+        const missingFields = requiredFields.filter((field) => !args[field]);
         if (missingFields.length > 0) {
-          return { ok: false, error: `Missing required fields: ${missingFields.join(', ')}` };
+          return { ok: false, error: `Missing required fields: ${missingFields.join(", ")}` };
         }
 
         // Validate field values
-        if (typeof args.ticker !== 'string' || args.ticker.length === 0) {
-          return { ok: false, error: 'Invalid ticker: must be a non-empty string' };
+        if (typeof args.ticker !== "string" || args.ticker.length === 0) {
+          return { ok: false, error: "Invalid ticker: must be a non-empty string" };
         }
-        if (typeof args.quantity !== 'number' || args.quantity <= 0) {
-          return { ok: false, error: 'Invalid quantity: must be a positive number' };
+        if (typeof args.quantity !== "number" || args.quantity <= 0) {
+          return { ok: false, error: "Invalid quantity: must be a positive number" };
         }
-        if (typeof args.price !== 'number' || args.price <= 0) {
-          return { ok: false, error: 'Invalid price: must be a positive number' };
+        if (typeof args.price !== "number" || args.price <= 0) {
+          return { ok: false, error: "Invalid price: must be a positive number" };
         }
 
-        const { data, error } = await supabase.from("transactions").insert({
-          org_id:           ctx.orgId,
-          ticker:           String(args.ticker ?? "").toUpperCase(),
-          action:           String(args.action ?? "BUY").toUpperCase() as any,
-          quantity:         Number(args.quantity ?? 0),
-          price:            Number(args.price ?? 0),
-          fees:             Number(args.fees ?? 0),
-          wht:              Number(args.wht ?? 0),
-          trade_date:       String(args.trade_date ?? ""),
-          ref_id:           String(args.ref_id ?? `AUTO-${Date.now()}`),
-          broker:           String(args.broker ?? ""),
-          exchange:         String(args.exchange ?? ctx.jurisdiction),
-          confidence_score: 0.95,
-          status:           "posted",
-          source:           { via: "ai_agent", actor: ctx.userEmail },
-        }).select().single();
+        const { data, error } = await supabase
+          .from("transactions")
+          .insert({
+            org_id: ctx.orgId,
+            ticker: String(args.ticker ?? "").toUpperCase(),
+            action: String(args.action ?? "BUY").toUpperCase(),
+            quantity: Number(args.quantity ?? 0),
+            price: Number(args.price ?? 0),
+            fees: Number(args.fees ?? 0),
+            wht: Number(args.wht ?? 0),
+            trade_date: String(args.trade_date ?? ""),
+            ref_id: String(args.ref_id ?? `AUTO-${Date.now()}`),
+            broker: String(args.broker ?? ""),
+            exchange: String(args.exchange ?? ctx.jurisdiction),
+            confidence_score: 0.95,
+            status: "posted",
+            source: { via: "ai_agent", actor: ctx.userEmail },
+          })
+          .select()
+          .single();
 
         if (error) {
           console.error("[Wab Tool] insert_transaction error:", error);
@@ -210,15 +221,29 @@ export async function executeTool(
       case "update_transaction": {
         const id = String(args.id);
         if (!id || id.length === 0) {
-          return { ok: false, error: 'Invalid transaction ID: must be a non-empty string' };
+          return { ok: false, error: "Invalid transaction ID: must be a non-empty string" };
         }
 
         const updates: Record<string, unknown> = {};
-        for (const key of ["ticker","action","quantity","price","fees","wht","trade_date","ref_id","broker","exchange","status"]) {
+        for (const key of [
+          "ticker",
+          "action",
+          "quantity",
+          "price",
+          "fees",
+          "wht",
+          "trade_date",
+          "ref_id",
+          "broker",
+          "exchange",
+          "status",
+        ]) {
           if (args[key] !== undefined) updates[key] = args[key];
         }
-        if (typeof updates.ticker === "string") updates['ticker'] = String(updates['ticker']).toUpperCase();
-        if (typeof updates.action === "string")  updates['action'] = String(updates['action']).toUpperCase() as any;
+        if (typeof updates.ticker === "string")
+          updates["ticker"] = String(updates["ticker"]).toUpperCase();
+        if (typeof updates.action === "string")
+          updates["action"] = String(updates["action"]).toUpperCase();
 
         const { data, error } = await supabase
           .from("transactions")
@@ -240,18 +265,22 @@ export async function executeTool(
       }
 
       case "flag_anomaly": {
-        const { data, error } = await supabase.from("reconciliation_flags").insert({
-          org_id:               ctx.orgId,
-          flag_type:            String(args.flag_type ?? "Unknown"),
-          severity:             String(args.severity ?? "warn"),
-          ticker:               String(args.ticker ?? ""),
-          ref_id:               String(args.ref_id ?? ""),
-          expected:             args.expected ?? 0,
-          actual:               args.actual ?? 0,
-          description:          String(args.description ?? ""),
-          suggested_resolution: String(args.suggested_resolution ?? ""),
-          status:               "open",
-        }).select().single();
+        const { data, error } = await supabase
+          .from("reconciliation_flags")
+          .insert({
+            org_id: ctx.orgId,
+            flag_type: String(args.flag_type ?? "Unknown"),
+            severity: String(args.severity ?? "warn"),
+            ticker: String(args.ticker ?? ""),
+            ref_id: String(args.ref_id ?? ""),
+            expected: args.expected ?? 0,
+            actual: args.actual ?? 0,
+            description: String(args.description ?? ""),
+            suggested_resolution: String(args.suggested_resolution ?? ""),
+            status: "open",
+          })
+          .select()
+          .single();
 
         if (error) return { ok: false, error: error.message };
 
@@ -329,18 +358,28 @@ async function writeAuditLog(
   const data = encoder.encode(hashInput);
   const hashBuf = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuf));
-  const hash = "0x" + hashArray.slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const hash =
+    "0x" +
+    hashArray
+      .slice(0, 8)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
-  await supabase.from("audit_log").insert({
-    org_id:      ctx.orgId,
-    actor:       ctx.userEmail,
-    action,
-    entity_type: entityType,
-    entity_id:   entityId,
-    payload:     payload as Record<string, unknown>,
-    prev_hash:   "",
-    hash,
-  }).throwOnError().then(() => {})?.catch(() => {
-    // Audit log failure is non-fatal — don't break the user's action
-  });
+  await supabase
+    .from("audit_log")
+    .insert({
+      org_id: ctx.orgId,
+      actor: ctx.userEmail,
+      action,
+      entity_type: entityType,
+      entity_id: entityId,
+      payload: payload as Record<string, unknown>,
+      prev_hash: "",
+      hash,
+    })
+    .throwOnError()
+    .then(() => {})
+    ?.catch(() => {
+      // Audit log failure is non-fatal — don't break the user's action
+    });
 }

@@ -82,7 +82,8 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
     });
   }
 
-  const geminiKey = serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
+  const geminiKey =
+    serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
   if (geminiKey) {
     const modelId = geminiModelId(env);
     const provider = createGoogleGenerativeAI({ apiKey: geminiKey });
@@ -194,13 +195,18 @@ function describeProbeError(error: unknown): { status?: number; message: string 
 
   let message = String(raw);
   try {
-    const parsed = JSON.parse(message) as { error?: { message?: string } | string; message?: string };
+    const parsed = JSON.parse(message) as {
+      error?: { message?: string } | string;
+      message?: string;
+    };
     const nested = typeof parsed.error === "string" ? parsed.error : parsed.error?.message;
     message = nested ?? parsed.message ?? message;
   } catch {
     // plain text body — keep it
   }
-  return status === undefined ? { message: message.slice(0, 300) } : { status, message: message.slice(0, 300) };
+  return status === undefined
+    ? { message: message.slice(0, 300) }
+    : { status, message: message.slice(0, 300) };
 }
 
 async function probe(entry: ResolvedModel["cascade"][number]): Promise<ProbeResult> {
@@ -259,7 +265,10 @@ export async function selectWorkingModel(resolved: ResolvedModel | null): Promis
       ...(result.message === undefined ? {} : { message: result.message }),
     });
     if (!result.ok) {
-      console.warn(`[Wab AI] provider ${entry.provider}/${entry.modelId} rejected the request:`, result.message);
+      console.warn(
+        `[Wab AI] provider ${entry.provider}/${entry.modelId} rejected the request:`,
+        result.message,
+      );
       continue;
     }
     return {
@@ -283,21 +292,32 @@ export function describeAttempts(attempts: ProviderAttempt[]): string {
     return "No AI provider key is configured. Add GEMINI_API_KEY (or OPENAI_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY) to your environment and redeploy.";
   }
   return attempts
-    .map((a) => `${a.provider}/${a.modelId}: ${a.status ? `HTTP ${a.status} — ` : ""}${a.message ?? "failed"}`)
+    .map(
+      (a) =>
+        `${a.provider}/${a.modelId}: ${a.status ? `HTTP ${a.status} — ` : ""}${a.message ?? "failed"}`,
+    )
     .join(" • ");
 }
 
 /** Friendly message for gateway failures (credits, rate limit, etc). */
 export function describeAiError(e: unknown): { status: number; message: string } {
-  const status = (e as { statusCode?: number })?.statusCode ?? (e as { status?: number })?.status ?? 500;
-  if (status === 402) return { status, message: "AI credits are used up. Add credits in your workspace settings to continue." };
-  if (status === 429) return { status, message: "Wab AI is busy right now. Please try again in a moment." };
+  const status =
+    (e as { statusCode?: number })?.statusCode ?? (e as { status?: number })?.status ?? 500;
+  if (status === 402)
+    return {
+      status,
+      message: "AI credits are used up. Add credits in your workspace settings to continue.",
+    };
+  if (status === 429)
+    return { status, message: "Wab AI is busy right now. Please try again in a moment." };
   if (status === 403) return { status, message: "AI access is blocked for this workspace." };
   return { status, message: "Wab AI is temporarily unavailable. Your data was not changed." };
 }
 
 export function isProviderError(e: unknown): boolean {
-  const s = (e as { statusCode?: number; status?: number })?.statusCode ?? (e as { status?: number })?.status;
+  const s =
+    (e as { statusCode?: number; status?: number })?.statusCode ??
+    (e as { status?: number })?.status;
   return s === 429 || (typeof s === "number" && s >= 500);
 }
 export const isQuotaError = isProviderError;

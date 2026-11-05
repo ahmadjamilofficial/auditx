@@ -34,9 +34,17 @@ export const Route = createFileRoute("/")({
         content:
           "Upload financial records, statements, CSVs, PDFs, or trade data. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable audit-ready ledger.",
       },
-      { name: "keywords", content: "financial operations, trade reconciliation, broker slip parser, capital gains tax, FIFO tax engine, audit trail, Wab" },
+      {
+        name: "keywords",
+        content:
+          "financial operations, trade reconciliation, broker slip parser, capital gains tax, FIFO tax engine, audit trail, Wab",
+      },
       { property: "og:title", content: "Wab — AI-Native Financial Operations & Audit Platform" },
-      { property: "og:description", content: "Upload financial records, statements, CSVs, PDFs, or trade data. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable audit-ready ledger." },
+      {
+        property: "og:description",
+        content:
+          "Upload financial records, statements, CSVs, PDFs, or trade data. Wab extracts the data, reconciles it against your records, detects discrepancies, and produces a traceable audit-ready ledger.",
+      },
       { property: "og:url", content: "https://psxl.live/" },
     ],
   }),
@@ -46,11 +54,11 @@ export const Route = createFileRoute("/")({
 // ── Reveal animation ──────────────────────────────────────────────────────────
 
 const reveal = {
-  hidden:  { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 20 },
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] as any },
+    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
@@ -92,11 +100,31 @@ const features = [
 // ── Trust steps ───────────────────────────────────────────────────────────────
 
 const steps = [
-  { n: "01", title: "Connect",    desc: "Link a Google Sheet, OneDrive file, or drop broker statements directly." },
-  { n: "02", title: "Watch",      desc: "Wab monitors sources continuously — no button to press, no prompt to write." },
-  { n: "03", title: "Act",        desc: "High-confidence changes apply automatically. Uncertain ones go to your Review Inbox." },
-  { n: "04", title: "Trace",      desc: "Every action is logged with before/after state and a one-click revert." },
-  { n: "05", title: "Report",     desc: "Generate a traceable, tax-ready report with a full evidence chain." },
+  {
+    n: "01",
+    title: "Connect",
+    desc: "Link a Google Sheet, OneDrive file, or drop broker statements directly.",
+  },
+  {
+    n: "02",
+    title: "Watch",
+    desc: "Wab monitors sources continuously — no button to press, no prompt to write.",
+  },
+  {
+    n: "03",
+    title: "Act",
+    desc: "High-confidence changes apply automatically. Uncertain ones go to your Review Inbox.",
+  },
+  {
+    n: "04",
+    title: "Trace",
+    desc: "Every action is logged with before/after state and a one-click revert.",
+  },
+  {
+    n: "05",
+    title: "Report",
+    desc: "Generate a traceable, tax-ready report with a full evidence chain.",
+  },
 ];
 
 // ── Pricing ───────────────────────────────────────────────────────────────────
@@ -108,7 +136,16 @@ const tiers = [
     note: "For individual traders",
     popular: false,
     trialDays: 7,
-    items: ["Unlimited transactions", "Real-time market data", "Unrealized P&L tracking", "1 tax profile", "CSV export", "Core audit tools", "Natural AI conversations", "Light and dark themes"],
+    items: [
+      "Unlimited transactions",
+      "Real-time market data",
+      "Unrealized P&L tracking",
+      "1 tax profile",
+      "CSV export",
+      "Core audit tools",
+      "Natural AI conversations",
+      "Light and dark themes",
+    ],
   },
   {
     name: "Pro",
@@ -116,21 +153,54 @@ const tiers = [
     note: "For active traders and professionals",
     popular: true,
     trialDays: 7,
-    items: ["Everything in Standard", "Advanced agent workflows", "Background task execution", "PDF tax reports", "Anomaly detection", "Tax-loss harvesting", "Advanced reconciliation", "Priority processing"],
+    items: [
+      "Everything in Standard",
+      "Advanced agent workflows",
+      "Background task execution",
+      "PDF tax reports",
+      "Anomaly detection",
+      "Tax-loss harvesting",
+      "Advanced reconciliation",
+      "Priority processing",
+    ],
   },
 ];
 
 // ── FAQ ───────────────────────────────────────────────────────────────────────
 
 const faqs = [
-  ["How is my financial data secured?", "Documents live in a private, per-organisation bucket served only through short-lived signed URLs. Every row is isolated by Postgres row-level security keyed to your organisation membership."],
-  ["Which brokers are supported?", "Wab is format-driven: any PSX or NSE contract note, dividend voucher, CSV or Excel export can be parsed — including photographed slips."],
-  ["Is the tax math AI-generated?", "No. FIFO lot matching, holding-period tiers and CGT bands are computed by deterministic code. The AI only reads documents and explains pre-computed results."],
-  ["Which jurisdictions are covered?", "Pakistan (PSX CGT slabs with Filer/Non-Filer WHT) and India (NSE STCG/LTCG). More jurisdictions in progress."],
-  ["What's the difference between Standard and Pro?", "Standard includes unlimited transactions, real-time market data, and core audit tools. Pro adds advanced agent workflows, background task execution, PDF reports, and tax-loss harvesting."],
-  ["How does the 7-day free trial work?", "Both plans include a 7-day free trial. You get full access to all features. Cancel anytime during the trial with no charge."],
-  ["How do I know a ledger row wasn't altered?", "Every mutation appends a SHA-256 hash-chained audit-log entry. The chain can be recomputed and verified from the Audit Trail screen."],
-  ["What happens when extraction confidence is low?", "Fields with confidence scores below 0.75 are automatically routed for manual review. Wab never silently guesses — it asks you to verify."],
+  [
+    "How is my financial data secured?",
+    "Documents live in a private, per-organisation bucket served only through short-lived signed URLs. Every row is isolated by Postgres row-level security keyed to your organisation membership.",
+  ],
+  [
+    "Which brokers are supported?",
+    "Wab is format-driven: any PSX or NSE contract note, dividend voucher, CSV or Excel export can be parsed — including photographed slips.",
+  ],
+  [
+    "Is the tax math AI-generated?",
+    "No. FIFO lot matching, holding-period tiers and CGT bands are computed by deterministic code. The AI only reads documents and explains pre-computed results.",
+  ],
+  [
+    "Which jurisdictions are covered?",
+    "Pakistan (PSX CGT slabs with Filer/Non-Filer WHT) and India (NSE STCG/LTCG). More jurisdictions in progress.",
+  ],
+  [
+    "What's the difference between Standard and Pro?",
+    "Standard includes unlimited transactions, real-time market data, and core audit tools. Pro adds advanced agent workflows, background task execution, PDF reports, and tax-loss harvesting.",
+  ],
+  [
+    "How does the 7-day free trial work?",
+    "Both plans include a 7-day free trial. You get full access to all features. Cancel anytime during the trial with no charge.",
+  ],
+  [
+    "How do I know a ledger row wasn't altered?",
+    "Every mutation appends a SHA-256 hash-chained audit-log entry. The chain can be recomputed and verified from the Audit Trail screen.",
+  ],
+  [
+    "What happens when extraction confidence is low?",
+    "Fields with confidence scores below 0.75 are automatically routed for manual review. Wab never silently guesses — it asks you to verify.",
+  ],
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -143,7 +213,9 @@ function Home() {
   const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
   const [isBusy, setIsBusy] = useState(false);
   const [pendingFileList, setPendingFileList] = useState<File[]>([]);
-  const KELVIQ_CHECKOUT_URL = import.meta.env['VITE_KELVIQ_CHECKOUT_URL'] || "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+  const KELVIQ_CHECKOUT_URL =
+    import.meta.env["VITE_KELVIQ_CHECKOUT_URL"] ||
+    "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
 
   // Redirect logged-in users to dashboard
   useEffect(() => {
@@ -233,18 +305,12 @@ function Home() {
             className="mx-auto mb-10 max-w-[560px] text-base leading-relaxed sm:text-lg"
             style={{ color: "var(--ink-2)" }}
           >
-            Wab acts on your data continuously — extracting, reconciling, and
-            flagging anomalies without waiting for a prompt.
-            Every change is traceable and reversible.
+            Wab acts on your data continuously — extracting, reconciling, and flagging anomalies
+            without waiting for a prompt. Every change is traceable and reversible.
           </motion.p>
 
           {/* Composer — the primary focal point */}
-          <motion.div
-            variants={reveal}
-            custom={3}
-            initial="hidden"
-            animate="visible"
-          >
+          <motion.div variants={reveal} custom={3} initial="hidden" animate="visible">
             <ChatComposer
               value={chatValue}
               onChange={setChatValue}
@@ -261,12 +327,24 @@ function Home() {
       </section>
 
       {/* ─── TRUST STRIP ─────────────────────────────────────────────────────── */}
-      <section style={{ background: "var(--surface)", borderTop: "1px solid var(--hairline)", borderBottom: "1px solid var(--hairline)" }}>
+      <section
+        style={{
+          background: "var(--surface)",
+          borderTop: "1px solid var(--hairline)",
+          borderBottom: "1px solid var(--hairline)",
+        }}
+      >
         <Container className="py-8">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
+          <p
+            className="text-center text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "var(--ink-3)" }}
+          >
             Designed for traders across
           </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm font-semibold" style={{ color: "var(--ink-3)" }}>
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm font-semibold"
+            style={{ color: "var(--ink-3)" }}
+          >
             {["PSX · Pakistan", "NSE · India", "Regional exchanges"].map((n) => (
               <span key={n}>{n}</span>
             ))}
@@ -278,7 +356,10 @@ function Home() {
       <section style={{ background: "var(--color-login-bg)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               Capabilities
             </p>
             <h2
@@ -320,7 +401,10 @@ function Home() {
       <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               Example workflow
             </p>
             <h2
@@ -351,47 +435,101 @@ function Home() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Uploaded</p>
-                    <p className="text-xs" style={{ color: "var(--ink-3)" }}>broker_statement.pdf</p>
+                    <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+                      broker_statement.pdf
+                    </p>
                   </div>
                 </div>
                 <StatusPill tone="ok">Processed</StatusPill>
               </div>
 
               <div className="mb-6 grid grid-cols-2 gap-4">
-                <div className="rounded-xl p-4" style={{ background: "var(--color-login-bg)", border: "1px solid var(--hairline)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>Extracted</p>
+                <div
+                  className="rounded-xl p-4"
+                  style={{
+                    background: "var(--color-login-bg)",
+                    border: "1px solid var(--hairline)",
+                  }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>
+                    Extracted
+                  </p>
                   <p className="tnum mt-1 text-2xl font-bold">1,248</p>
-                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>transactions</p>
+                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    transactions
+                  </p>
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "var(--color-login-bg)", border: "1px solid var(--hairline)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>Matched</p>
+                <div
+                  className="rounded-xl p-4"
+                  style={{
+                    background: "var(--color-login-bg)",
+                    border: "1px solid var(--hairline)",
+                  }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>
+                    Matched
+                  </p>
                   <p className="tnum mt-1 text-2xl font-bold">1,231</p>
-                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>against ledger</p>
+                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    against ledger
+                  </p>
                 </div>
               </div>
 
               <div className="mb-6 grid grid-cols-3 gap-4">
-                <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--warn) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--warn) 20%, transparent)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--warn)" }}>Needs review</p>
+                <div
+                  className="rounded-xl p-4"
+                  style={{
+                    background: "color-mix(in srgb, var(--warn) 8%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--warn) 20%, transparent)",
+                  }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: "var(--warn)" }}>
+                    Needs review
+                  </p>
                   <p className="tnum mt-1 text-2xl font-bold">11</p>
-                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>low confidence</p>
+                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    low confidence
+                  </p>
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "#D64545" }}>Discrepancies</p>
+                <div
+                  className="rounded-xl p-4"
+                  style={{
+                    background: "color-mix(in srgb, var(--bad) 8%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--bad) 20%, transparent)",
+                  }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: "#D64545" }}>
+                    Discrepancies
+                  </p>
                   <p className="tnum mt-1 text-2xl font-bold">6</p>
-                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>flagged</p>
+                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    flagged
+                  </p>
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "var(--accent-8)", border: "1px solid var(--accent-20)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>Tax calculation</p>
+                <div
+                  className="rounded-xl p-4"
+                  style={{ background: "var(--accent-8)", border: "1px solid var(--accent-20)" }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>
+                    Tax calculation
+                  </p>
                   <p className="tnum mt-1 text-2xl font-bold">FIFO</p>
-                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>deterministic</p>
+                  <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    deterministic
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-xl p-4" style={{ background: "var(--color-login-bg)", border: "1px solid var(--hairline)" }}>
+              <div
+                className="rounded-xl p-4"
+                style={{ background: "var(--color-login-bg)", border: "1px solid var(--hairline)" }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>Result</p>
+                    <p className="text-xs font-semibold" style={{ color: "var(--ink-3)" }}>
+                      Result
+                    </p>
                     <p className="mt-1 text-sm">Tax-ready ledger generated with full audit trail</p>
                   </div>
                   <button
@@ -412,7 +550,10 @@ function Home() {
       <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               How it works
             </p>
             <h2
@@ -443,7 +584,9 @@ function Home() {
                   {s.n}
                 </div>
                 <h3 className="mb-1.5 text-sm font-semibold">{s.title}</h3>
-                <p className="text-sm" style={{ color: "var(--ink-2)" }}>{s.desc}</p>
+                <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                  {s.desc}
+                </p>
               </Reveal>
             ))}
           </div>
@@ -454,7 +597,10 @@ function Home() {
       <section style={{ background: "var(--color-login-bg)" }}>
         <Container className="grid items-center gap-16 py-24 md:grid-cols-2">
           <Reveal>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-4 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               Why trust Wab?
             </p>
             <h2
@@ -466,10 +612,14 @@ function Home() {
               }}
             >
               Every important financial result
-              <br />can be traced back to its source data.
+              <br />
+              can be traced back to its source data.
             </h2>
             <p className="mb-6 text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-              AI performs extraction and classification. Deterministic code performs financial/tax calculations. Low-confidence extraction is flagged for review. Reconciliation exposes exact differences. Audit logs preserve the history of important changes. Organization-level security controls isolate customer data.
+              AI performs extraction and classification. Deterministic code performs financial/tax
+              calculations. Low-confidence extraction is flagged for review. Reconciliation exposes
+              exact differences. Audit logs preserve the history of important changes.
+              Organization-level security controls isolate customer data.
             </p>
             <ul className="space-y-3">
               {[
@@ -480,8 +630,16 @@ function Home() {
                 "Audit logs preserve the history of important changes",
                 "Organization-level security controls isolate customer data",
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
-                  <BadgeCheck size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }} />
+                <li
+                  key={t}
+                  className="flex items-start gap-2.5 text-sm"
+                  style={{ color: "var(--ink-2)" }}
+                >
+                  <BadgeCheck
+                    size={16}
+                    strokeWidth={1.75}
+                    style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }}
+                  />
                   <span>{t}</span>
                 </li>
               ))}
@@ -493,7 +651,10 @@ function Home() {
               className="rounded-2xl bg-surface p-6"
               style={{ border: "1px solid var(--hairline)" }}
             >
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-3)" }}>
+              <p
+                className="mb-4 text-xs font-semibold uppercase tracking-widest"
+                style={{ color: "var(--ink-3)" }}
+              >
                 Provenance Trail
               </p>
               <div className="space-y-2">
@@ -507,12 +668,13 @@ function Home() {
                 ].map((item, i) => (
                   <div key={item.label}>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium" style={{ color: "var(--color-accent)" }}>
+                      <span
+                        className="text-xs font-medium"
+                        style={{ color: "var(--color-accent)" }}
+                      >
                         {item.label}
                       </span>
-                      {item.arrow && (
-                        <span style={{ color: "var(--ink-3)" }}>→</span>
-                      )}
+                      {item.arrow && <span style={{ color: "var(--ink-3)" }}>→</span>}
                     </div>
                     {i < 5 && (
                       <div className="ml-0 h-4 w-px" style={{ background: "var(--hairline)" }} />
@@ -534,7 +696,10 @@ function Home() {
       <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               Built for the messy reality of broker records
             </p>
             <h2
@@ -549,12 +714,30 @@ function Home() {
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {[
-              { title: "Duplicate fills", desc: "Detect and flag duplicate transactions that inflate your ledger." },
-              { title: "Missing trades", desc: "Identify gaps between broker records and your ledger." },
-              { title: "Fee mismatches", desc: "Catch brokerage fee discrepancies that affect cost basis." },
-              { title: "WHT discrepancies", desc: "Flag withholding tax inconsistencies before filing." },
-              { title: "Inconsistent quantities", desc: "Spot quantity differences that break reconciliation." },
-              { title: "Incomplete records", desc: "Route low-confidence extractions for manual review." },
+              {
+                title: "Duplicate fills",
+                desc: "Detect and flag duplicate transactions that inflate your ledger.",
+              },
+              {
+                title: "Missing trades",
+                desc: "Identify gaps between broker records and your ledger.",
+              },
+              {
+                title: "Fee mismatches",
+                desc: "Catch brokerage fee discrepancies that affect cost basis.",
+              },
+              {
+                title: "WHT discrepancies",
+                desc: "Flag withholding tax inconsistencies before filing.",
+              },
+              {
+                title: "Inconsistent quantities",
+                desc: "Spot quantity differences that break reconciliation.",
+              },
+              {
+                title: "Incomplete records",
+                desc: "Route low-confidence extractions for manual review.",
+              },
             ].map((item, i) => (
               <Reveal key={item.title} i={i}>
                 <div
@@ -565,7 +748,11 @@ function Home() {
                     className="mb-4 flex size-10 items-center justify-center rounded-xl"
                     style={{ background: "var(--accent-8)" }}
                   >
-                    <ScanSearch size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
+                    <ScanSearch
+                      size={18}
+                      strokeWidth={1.75}
+                      style={{ color: "var(--color-accent)" }}
+                    />
                   </div>
                   <h3 className="mb-2 text-sm font-semibold">{item.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
@@ -582,7 +769,10 @@ function Home() {
       <section style={{ background: "var(--color-login-bg)" }} id="pricing">
         <Container className="py-24">
           <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               Pricing
             </p>
             <h2
@@ -604,7 +794,9 @@ function Home() {
                 <div
                   className="relative h-full rounded-2xl bg-surface p-6 transition-shadow hover:shadow-lg"
                   style={{
-                    border: t.popular ? "2px solid var(--color-accent)" : "1px solid var(--hairline)",
+                    border: t.popular
+                      ? "2px solid var(--color-accent)"
+                      : "1px solid var(--hairline)",
                     boxShadow: t.popular ? "var(--shadow-accent)" : undefined,
                   }}
                 >
@@ -619,16 +811,24 @@ function Home() {
                   <div className="mb-1 text-sm font-semibold">{t.name}</div>
                   <div className="tnum mb-1 text-3xl font-bold">
                     {t.price}
-                    <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>/mo</span>
+                    <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
+                      /mo
+                    </span>
                   </div>
-                  <div className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>{t.note}</div>
+                  <div className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
+                    {t.note}
+                  </div>
                   <div className="mb-2 flex items-center gap-2">
                     <StatusPill tone="ok">{t.trialDays}-day free trial</StatusPill>
                   </div>
                   <ul className="mb-6 space-y-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
                     {t.items.map((it) => (
                       <li key={it} className="flex items-start gap-2">
-                        <BadgeCheck size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }} />
+                        <BadgeCheck
+                          size={15}
+                          strokeWidth={1.75}
+                          style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }}
+                        />
                         {it}
                       </li>
                     ))}
@@ -640,7 +840,10 @@ function Home() {
                         navigate({ to: "/signup", search: { plan: t.name.toLowerCase() } });
                         return;
                       }
-                      const checkoutUrl = KELVIQ_CHECKOUT_URL.replace("plan_identifier=pro-plan", `plan_identifier=${t.name.toLowerCase()}-plan`);
+                      const checkoutUrl = KELVIQ_CHECKOUT_URL.replace(
+                        "plan_identifier=pro-plan",
+                        `plan_identifier=${t.name.toLowerCase()}-plan`,
+                      );
                       const finalUrl = `${checkoutUrl}&metadata[org_id]=${profile?.org_id}`;
                       window.location.href = finalUrl;
                     }}
@@ -665,7 +868,10 @@ function Home() {
       <section style={{ background: "var(--surface)" }}>
         <Container className="py-24">
           <div className="mb-10 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--color-accent)" }}
+            >
               FAQ
             </p>
             <h2
@@ -682,8 +888,13 @@ function Home() {
             <Accordion type="single" collapsible>
               {faqs.map(([q, a], i) => (
                 <AccordionItem key={q} value={`i${i}`} style={{ borderColor: "var(--hairline)" }}>
-                  <AccordionTrigger className="text-left text-sm font-semibold">{q}</AccordionTrigger>
-                  <AccordionContent className="text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
+                  <AccordionTrigger className="text-left text-sm font-semibold">
+                    {q}
+                  </AccordionTrigger>
+                  <AccordionContent
+                    className="text-sm leading-relaxed"
+                    style={{ color: "var(--ink-2)" }}
+                  >
                     {a}
                   </AccordionContent>
                 </AccordionItem>
@@ -708,8 +919,12 @@ function Home() {
             Turn messy broker records into
             <br />a clean, tax-ready ledger
           </h2>
-          <p className="mx-auto mb-8 max-w-lg text-sm" style={{ color: "color-mix(in srgb, var(--accent-fg) 80%, transparent)" }}>
-            Upload your first broker statement. Extract, reconcile, verify, and report with full traceability.
+          <p
+            className="mx-auto mb-8 max-w-lg text-sm"
+            style={{ color: "color-mix(in srgb, var(--accent-fg) 80%, transparent)" }}
+          >
+            Upload your first broker statement. Extract, reconcile, verify, and report with full
+            traceability.
           </p>
           <Link to={ctaTo}>
             <button
@@ -721,7 +936,10 @@ function Home() {
               <ArrowRight size={16} strokeWidth={2} />
             </button>
           </Link>
-          <p className="mt-4 text-xs" style={{ color: "color-mix(in srgb, var(--accent-fg) 65%, transparent)" }}>
+          <p
+            className="mt-4 text-xs"
+            style={{ color: "color-mix(in srgb, var(--accent-fg) 65%, transparent)" }}
+          >
             Wab does not provide tax or legal advice.
           </p>
         </Container>

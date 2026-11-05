@@ -8,13 +8,13 @@ import type { OrgPolicyConfig } from "./policy-engine";
 interface ApprovalRecord {
   action_type: string;
   policy_tier: string;
-  status:      string;
+  status: string;
 }
 
 export async function learnFromDecision(
-  orgId:      string,
+  orgId: string,
   actionType: string,
-  decision:   "approved" | "rejected",
+  decision: "approved" | "rejected",
 ): Promise<void> {
   // Count recent decisions of the same type
   const { data: recent } = await supabase
@@ -44,7 +44,10 @@ export async function learnFromDecision(
     if (!current.includes(actionType)) {
       await supabase
         .from("org_policy_config")
-        .update({ allowed_auto_actions: [...current, actionType], updated_at: new Date().toISOString() } as never)
+        .update({
+          allowed_auto_actions: [...current, actionType],
+          updated_at: new Date().toISOString(),
+        } as never)
         .eq("org_id", orgId);
     }
   } else if (decision === "rejected") {

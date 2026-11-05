@@ -8,11 +8,11 @@ import type { PolicyTier } from "./policy-engine";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface SourceProvenance {
-  document_id?:   string;
+  document_id?: string;
   document_page?: number;
-  source_type?:   string;
-  trigger_type?:  string;
-  agent_run_id?:  string;
+  source_type?: string;
+  trigger_type?: string;
+  agent_run_id?: string;
 }
 
 // ── Snapshot + write ──────────────────────────────────────────────────────────
@@ -22,12 +22,12 @@ export interface SourceProvenance {
 // Returns the updated transaction row.
 
 export async function snapshotAndWrite(
-  orgId:       string,
-  runId:       string,
-  policyTier:  PolicyTier,
-  txId:        string,
-  updates:     Record<string, unknown>,
-  provenance:  SourceProvenance = {},
+  orgId: string,
+  runId: string,
+  policyTier: PolicyTier,
+  txId: string,
+  updates: Record<string, unknown>,
+  provenance: SourceProvenance = {},
 ): Promise<Record<string, unknown>> {
   // 1. Fetch current row for snapshot
   const { data: current, error: fetchErr } = await supabase
@@ -42,16 +42,14 @@ export async function snapshotAndWrite(
   }
 
   // 2. Insert version row
-  const { error: verErr } = await supabase
-    .from("transaction_versions")
-    .insert({
-      transaction_id:    txId,
-      org_id:            orgId,
-      run_id:            runId,
-      snapshot:          current as never,
-      policy_tier:       policyTier,
-      source_provenance: { ...provenance, agent_run_id: runId } as never,
-    });
+  const { error: verErr } = await supabase.from("transaction_versions").insert({
+    transaction_id: txId,
+    org_id: orgId,
+    run_id: runId,
+    snapshot: current as never,
+    policy_tier: policyTier,
+    source_provenance: { ...provenance, agent_run_id: runId } as never,
+  });
 
   if (verErr) {
     throw new Error(`snapshotAndWrite: version insert failed — ${verErr.message}`);
@@ -63,7 +61,7 @@ export async function snapshotAndWrite(
       ? (current["source"] as Record<string, unknown>)
       : {}),
     agent_run_id: runId,
-    policy_tier:  policyTier,
+    policy_tier: policyTier,
   };
 
   const { data: updated, error: updateErr } = await supabase
@@ -92,36 +90,39 @@ export async function revertRun(runId: string): Promise<number> {
 // ── Write audit log entry ─────────────────────────────────────────────────────
 
 export async function writeAuditEntry(
-  orgId:      string,
-  actor:      string,
-  action:     string,
+  orgId: string,
+  actor: string,
+  action: string,
   entityType: string,
-  entityId:   string,
-  payload:    Record<string, unknown>,
-  runId?:     string,
+  entityId: string,
+  payload: Record<string, unknown>,
+  runId?: string,
   policyTier?: PolicyTier,
 ): Promise<void> {
-  const encoded  = new TextEncoder().encode(`${Date.now()}-${action}-${entityId}-${actor}`);
-  const digest   = await crypto.subtle.digest("SHA-256", encoded);
-  const hash     = Array.from(new Uint8Array(digest))
+  const encoded = new TextEncoder().encode(`${Date.now()}-${action}-${entityId}-${actor}`);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  const hash = Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
   await supabase
     .from("audit_log")
     .insert({
-      org_id:      orgId,
+      org_id: orgId,
       actor,
       action,
       entity_type: entityType,
-      entity_id:   entityId,
-      payload:     payload as never,
-      prev_hash:   "",
+      entity_id: entityId,
+      payload: payload as never,
+      prev_hash: "",
       hash,
-      run_id:      runId ?? null,
+      run_id: runId ?? null,
       policy_tier: policyTier ?? null,
     } as never)
-    .then(() => undefined, (e: unknown) => {
-      console.warn("[Wab] audit_log insert failed (non-fatal):", e);
-    });
+    .then(
+      () => undefined,
+      (e: unknown) => {
+        console.warn("[Wab] audit_log insert failed (non-fatal):", e);
+      },
+    );
 }

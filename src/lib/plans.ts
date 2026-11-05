@@ -41,7 +41,12 @@ export const PLANS: Record<PlanId, PlanLimits> = {
       teamRoles: false,
       apiAccess: false,
     },
-    highlights: ["50 parsed transactions / month", "1 tax profile", "1 broker account", "CSV export"],
+    highlights: [
+      "50 parsed transactions / month",
+      "1 tax profile",
+      "1 broker account",
+      "CSV export",
+    ],
   },
   pro: {
     id: "pro",

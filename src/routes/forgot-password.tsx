@@ -34,7 +34,11 @@ function ForgotPassword() {
   return (
     <div
       className="flex min-h-screen items-center justify-center px-6 py-12"
-      style={{ background: "var(--color-login-bg)", fontFamily: "var(--font-body)", color: "var(--color-text)" }}
+      style={{
+        background: "var(--color-login-bg)",
+        fontFamily: "var(--font-body)",
+        color: "var(--color-text)",
+      }}
     >
       <motion.div
         initial={{ opacity: 0, y: 28 }}

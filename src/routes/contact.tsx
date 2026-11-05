@@ -46,7 +46,7 @@ function Contact() {
                 </div>
               </div>
               <Btn
-                onClick={() => window.location.href = "mailto:ahmadjamildhami@gmail.com"}
+                onClick={() => (window.location.href = "mailto:ahmadjamildhami@gmail.com")}
                 variant="outline"
               >
                 Send email
@@ -69,10 +69,7 @@ function Contact() {
                   </p>
                 </div>
               </div>
-              <Btn
-                onClick={() => window.location.href = "tel:+923338188722"}
-                variant="outline"
-              >
+              <Btn onClick={() => (window.location.href = "tel:+923338188722")} variant="outline">
                 Call
               </Btn>
             </div>

@@ -4,13 +4,13 @@ import { describe, it, expect } from "vitest";
 // ── Inline streak calculation (pure) ─────────────────────────────────────────
 interface ApprovalRecord {
   action_type: string;
-  status:      "approved" | "rejected" | "skipped" | "pending";
+  status: "approved" | "rejected" | "skipped" | "pending";
 }
 
 function countStreak(
-  recent:     ApprovalRecord[],
+  recent: ApprovalRecord[],
   actionType: string,
-  decision:   "approved" | "rejected",
+  decision: "approved" | "rejected",
 ): number {
   return recent.filter((r) => r.action_type === actionType && r.status === decision).length;
 }
@@ -21,8 +21,8 @@ function shouldLearn(streak: number, threshold = 3): boolean {
 
 function applyApproval(
   currentAllowed: string[],
-  actionType:     string,
-  decision:       "approved" | "rejected",
+  actionType: string,
+  decision: "approved" | "rejected",
 ): string[] {
   if (decision === "approved" && !currentAllowed.includes(actionType)) {
     return [...currentAllowed, actionType];
@@ -47,17 +47,15 @@ describe("streak counting", () => {
 
   it("only counts matching action type", () => {
     const records: ApprovalRecord[] = [
-      { action_type: "flag_anomaly",      status: "approved" },
+      { action_type: "flag_anomaly", status: "approved" },
       { action_type: "insert_transaction", status: "approved" },
-      { action_type: "flag_anomaly",      status: "approved" },
+      { action_type: "flag_anomaly", status: "approved" },
     ];
     expect(countStreak(records, "flag_anomaly", "approved")).toBe(2);
   });
 
   it("returns 0 when no matching records", () => {
-    const records: ApprovalRecord[] = [
-      { action_type: "other_action", status: "approved" },
-    ];
+    const records: ApprovalRecord[] = [{ action_type: "other_action", status: "approved" }];
     expect(countStreak(records, "flag_anomaly", "approved")).toBe(0);
   });
 
@@ -100,19 +98,27 @@ describe("applyApproval — allowed list mutation", () => {
   });
 
   it("does not duplicate action on approval if already in list", () => {
-    const result = applyApproval(["flag_anomaly", "insert_transaction"], "insert_transaction", "approved");
+    const result = applyApproval(
+      ["flag_anomaly", "insert_transaction"],
+      "insert_transaction",
+      "approved",
+    );
     expect(result.filter((a) => a === "insert_transaction")).toHaveLength(1);
   });
 
   it("removes action from allowed list on rejection", () => {
-    const result = applyApproval(["flag_anomaly", "insert_transaction"], "insert_transaction", "rejected");
+    const result = applyApproval(
+      ["flag_anomaly", "insert_transaction"],
+      "insert_transaction",
+      "rejected",
+    );
     expect(result).not.toContain("insert_transaction");
     expect(result).toContain("flag_anomaly");
   });
 
   it("is a no-op rejection when action not in list", () => {
     const allowed = ["flag_anomaly"];
-    const result  = applyApproval(allowed, "unknown_action", "rejected");
+    const result = applyApproval(allowed, "unknown_action", "rejected");
     expect(result).toEqual(allowed);
   });
 

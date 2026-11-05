@@ -52,7 +52,9 @@ describe("getModelRoutingTable", () => {
     const table = getModelRoutingTable();
     // Cheap models contain 'mini' or 'free' or are llama
     const isChcap = (m: string) => m.includes("mini") || m.includes(":free") || m.includes("llama");
-    expect(isChcap(table.extraction.primary) || table.extraction.primary.includes("gpt-4o")).toBe(true);
+    expect(isChcap(table.extraction.primary) || table.extraction.primary.includes("gpt-4o")).toBe(
+      true,
+    );
   });
 
   it("fallbacks do not contain the same model as primary", () => {
@@ -60,8 +62,9 @@ describe("getModelRoutingTable", () => {
     for (const [task, route] of Object.entries(table)) {
       // Primary should not appear as first fallback (wasteful retry)
       if (route.fallbacks.length > 0) {
-        expect(route.fallbacks[0], `${task} first fallback should differ from primary`)
-          .not.toBe(route.primary);
+        expect(route.fallbacks[0], `${task} first fallback should differ from primary`).not.toBe(
+          route.primary,
+        );
       }
     }
   });

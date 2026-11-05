@@ -121,10 +121,22 @@ function TxFormModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.ticker.trim()) { toast.error("Ticker is required"); return; }
-    if (!form.trade_date) { toast.error("Trade date is required"); return; }
-    if (form.quantity <= 0) { toast.error("Quantity must be > 0"); return; }
-    if (form.price <= 0) { toast.error("Price must be > 0"); return; }
+    if (!form.ticker.trim()) {
+      toast.error("Ticker is required");
+      return;
+    }
+    if (!form.trade_date) {
+      toast.error("Trade date is required");
+      return;
+    }
+    if (form.quantity <= 0) {
+      toast.error("Quantity must be > 0");
+      return;
+    }
+    if (form.price <= 0) {
+      toast.error("Price must be > 0");
+      return;
+    }
     onSave(form);
   }
 
@@ -211,12 +223,9 @@ function TxFormModal({
                     onClick={() => set("action", a)}
                     className="flex-1 rounded-xl border py-2 text-xs font-semibold transition-all"
                     style={{
-                      borderColor:
-                        form.action === a ? "var(--color-accent)" : "var(--hairline)",
-                      background:
-                        form.action === a ? "var(--accent-8)" : "white",
-                      color:
-                        form.action === a ? "var(--color-accent)" : "var(--ink-2)",
+                      borderColor: form.action === a ? "var(--color-accent)" : "var(--hairline)",
+                      background: form.action === a ? "var(--accent-8)" : "white",
+                      color: form.action === a ? "var(--color-accent)" : "var(--ink-2)",
                     }}
                   >
                     {a}
@@ -456,8 +465,8 @@ function DeleteConfirmModal({
         </div>
         <h3 className="mb-1 text-sm font-bold">Delete transaction?</h3>
         <p className="text-sm" style={{ color: "var(--ink-2)" }}>
-          This will permanently remove <strong>{ticker}</strong> from your ledger and cannot
-          be undone.
+          This will permanently remove <strong>{ticker}</strong> from your ledger and cannot be
+          undone.
         </p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
@@ -486,13 +495,7 @@ function DeleteConfirmModal({
 
 // ─── Broker Panel ─────────────────────────────────────────────────────────────
 
-function BrokerPanel({
-  orgId,
-  onClose,
-}: {
-  orgId: string;
-  onClose: () => void;
-}) {
+function BrokerPanel({ orgId, onClose }: { orgId: string; onClose: () => void }) {
   const { data: brokers = [], isLoading } = useBrokerConnections(orgId);
   const connect = useConnectBroker();
   const deleteBroker = useDeleteBroker();
@@ -505,8 +508,7 @@ function BrokerPanel({
   });
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const set = (k: keyof BrokerInput, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof BrokerInput, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -563,11 +565,7 @@ function BrokerPanel({
             <Building2 size={16} style={{ color: "var(--color-accent)" }} />
             <span className="text-sm font-bold">Broker Accounts</span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1 hover:bg-black/5"
-          >
+          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-black/5">
             <X size={15} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
           </button>
         </div>
@@ -575,11 +573,17 @@ function BrokerPanel({
         <div className="flex-1 overflow-y-auto">
           {/* Existing brokers */}
           <div className="px-4 py-3">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
+            <p
+              className="mb-2 text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: "var(--ink-3)" }}
+            >
               Connected accounts
             </p>
             {isLoading ? (
-              <div className="flex items-center gap-2 py-4 text-xs" style={{ color: "var(--ink-3)" }}>
+              <div
+                className="flex items-center gap-2 py-4 text-xs"
+                style={{ color: "var(--ink-3)" }}
+              >
                 <Loader2 size={13} className="animate-spin" /> Loading…
               </div>
             ) : brokers.length === 0 ? (
@@ -592,7 +596,10 @@ function BrokerPanel({
                   <div
                     key={b.id}
                     className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                    style={{ border: "1px solid var(--hairline)", background: "var(--color-login-bg)" }}
+                    style={{
+                      border: "1px solid var(--hairline)",
+                      background: "var(--color-login-bg)",
+                    }}
                   >
                     <div>
                       <p className="text-sm font-medium">{b.name}</p>
@@ -637,8 +644,15 @@ function BrokerPanel({
           </div>
 
           {/* Add broker form */}
-          <form onSubmit={handleAdd} className="border-t px-4 py-4" style={{ borderColor: "var(--hairline)" }}>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
+          <form
+            onSubmit={handleAdd}
+            className="border-t px-4 py-4"
+            style={{ borderColor: "var(--hairline)" }}
+          >
+            <p
+              className="mb-3 text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: "var(--ink-3)" }}
+            >
               Add new account
             </p>
             <div className="space-y-2.5">
@@ -775,20 +789,33 @@ function ImportPanel({
         if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
           const XLSX = await import("xlsx");
           const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
-          content = wb.SheetNames.map((n) => `# Sheet: ${n}\n` + XLSX.utils.sheet_to_csv(wb.Sheets[n]!)).join("\n\n");
-        } else if (file.type.includes("text") || file.type.includes("csv") || lower.endsWith(".csv") || lower.endsWith(".txt")) {
+          content = wb.SheetNames.map(
+            (n) => `# Sheet: ${n}\n` + XLSX.utils.sheet_to_csv(wb.Sheets[n]!),
+          ).join("\n\n");
+        } else if (
+          file.type.includes("text") ||
+          file.type.includes("csv") ||
+          lower.endsWith(".csv") ||
+          lower.endsWith(".txt")
+        ) {
           content = await file.text();
         } else {
-          throw new Error(`${file.name}: PDFs and images are read in the Wab chat — drop them there instead.`);
+          throw new Error(
+            `${file.name}: PDFs and images are read in the Wab chat — drop them there instead.`,
+          );
         }
 
         const raw = await complete({
-          systemPrompt: "You extract brokerage transactions. Reply with ONLY a JSON array, no prose.",
+          systemPrompt:
+            "You extract brokerage transactions. Reply with ONLY a JSON array, no prose.",
           userPrompt: `Extract ALL transactions from this financial document as a JSON array. Each object must have: ticker, action (BUY/SELL/DIV), quantity, price, fees, wht, trade_date (YYYY-MM-DD), ref_id, broker, exchange.\n\n${content.slice(0, 50000)}`,
         });
 
         // Strip markdown fences
-        const clean = raw.replace(/```[a-z]*\n?/g, "").replace(/```/g, "").trim();
+        const clean = raw
+          .replace(/```[a-z]*\n?/g, "")
+          .replace(/```/g, "")
+          .trim();
         let rows: unknown[];
         try {
           rows = JSON.parse(clean) as unknown[];
@@ -878,11 +905,7 @@ function ImportPanel({
             </span>
             <h2 className="text-sm font-bold">Import Records</h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 hover:bg-black/5"
-          >
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-black/5">
             <X size={16} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
           </button>
         </div>
@@ -892,7 +915,10 @@ function ImportPanel({
           {(status === "idle" || status === "parsing") && (
             <>
               <div
-                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
@@ -908,8 +934,7 @@ function ImportPanel({
                   style={{ color: dragging ? "var(--color-accent)" : "var(--ink-3)" }}
                 />
                 <p className="mt-3 text-sm font-medium">
-                  Drop files here or{" "}
-                  <span style={{ color: "var(--color-accent)" }}>browse</span>
+                  Drop files here or <span style={{ color: "var(--color-accent)" }}>browse</span>
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
                   CSV, Excel (.xlsx) or text files. PDFs and images go in the Wab chat.
@@ -950,13 +975,14 @@ function ImportPanel({
                     <div
                       key={f.name}
                       className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs"
-                      style={{ background: "var(--color-login-bg)", border: "1px solid var(--hairline)" }}
+                      style={{
+                        background: "var(--color-login-bg)",
+                        border: "1px solid var(--hairline)",
+                      }}
                     >
                       <FileText size={13} style={{ color: "var(--ink-3)" }} />
                       <span className="flex-1 truncate font-medium">{f.name}</span>
-                      <span style={{ color: "var(--ink-3)" }}>
-                        {(f.size / 1024).toFixed(0)} KB
-                      </span>
+                      <span style={{ color: "var(--ink-3)" }}>{(f.size / 1024).toFixed(0)} KB</span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -975,7 +1001,10 @@ function ImportPanel({
               {error && (
                 <div
                   className="mt-3 flex items-start gap-2 rounded-xl px-3 py-3 text-xs"
-                  style={{ background: "color-mix(in srgb, var(--bad) 6%, transparent)", color: "var(--bad)" }}
+                  style={{
+                    background: "color-mix(in srgb, var(--bad) 6%, transparent)",
+                    color: "var(--bad)",
+                  }}
                 >
                   <AlertTriangle size={13} className="mt-0.5 shrink-0" />
                   {error}
@@ -1018,15 +1047,28 @@ function ImportPanel({
               <div className="mb-4 flex items-center gap-2">
                 <Check size={15} style={{ color: "var(--ok)" }} />
                 <p className="text-sm font-semibold">
-                  {parsed.length} transaction{parsed.length !== 1 ? "s" : ""} extracted — review before saving
+                  {parsed.length} transaction{parsed.length !== 1 ? "s" : ""} extracted — review
+                  before saving
                 </p>
               </div>
-              <div className="max-h-64 overflow-y-auto rounded-xl" style={{ border: "1px solid var(--hairline)" }}>
+              <div
+                className="max-h-64 overflow-y-auto rounded-xl"
+                style={{ border: "1px solid var(--hairline)" }}
+              >
                 <table className="w-full border-collapse text-xs">
                   <thead>
-                    <tr style={{ background: "var(--color-login-bg)", borderBottom: "1px solid var(--hairline)" }}>
+                    <tr
+                      style={{
+                        background: "var(--color-login-bg)",
+                        borderBottom: "1px solid var(--hairline)",
+                      }}
+                    >
                       {["Ticker", "Action", "Qty", "Price", "Date", "Broker"].map((h) => (
-                        <th key={h} className="px-3 py-2 text-left font-semibold" style={{ color: "var(--ink-2)" }}>
+                        <th
+                          key={h}
+                          className="px-3 py-2 text-left font-semibold"
+                          style={{ color: "var(--ink-2)" }}
+                        >
                           {h}
                         </th>
                       ))}
@@ -1035,12 +1077,19 @@ function ImportPanel({
                   <tbody>
                     {parsed.map((row, i) => (
                       <tr key={i} style={{ borderBottom: "1px solid var(--hairline)" }}>
-                        <td className="px-3 py-2 font-semibold">{row.ticker || <span style={{ color: "var(--bad)" }}>MISSING</span>}</td>
+                        <td className="px-3 py-2 font-semibold">
+                          {row.ticker || <span style={{ color: "var(--bad)" }}>MISSING</span>}
+                        </td>
                         <td className="px-3 py-2">{row.action}</td>
                         <td className="px-3 py-2 tabular-nums">{row.quantity}</td>
                         <td className="px-3 py-2 tabular-nums">{row.price}</td>
                         <td className="px-3 py-2">{row.trade_date}</td>
-                        <td className="px-3 py-2 truncate max-w-[80px]" style={{ color: "var(--ink-3)" }}>{row.broker || "—"}</td>
+                        <td
+                          className="px-3 py-2 truncate max-w-[80px]"
+                          style={{ color: "var(--ink-3)" }}
+                        >
+                          {row.broker || "—"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1049,8 +1098,12 @@ function ImportPanel({
               <div className="mt-4 flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={() => { setStatus("idle"); setParsed([]); }}
-                  className="text-xs" style={{ color: "var(--ink-3)" }}
+                  onClick={() => {
+                    setStatus("idle");
+                    setParsed([]);
+                  }}
+                  className="text-xs"
+                  style={{ color: "var(--ink-3)" }}
                 >
                   ← Back
                 </button>
@@ -1080,7 +1133,11 @@ function ImportPanel({
           {/* ── Saving ── */}
           {status === "saving" && (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <Loader2 size={28} className="animate-spin" style={{ color: "var(--color-accent)" }} />
+              <Loader2
+                size={28}
+                className="animate-spin"
+                style={{ color: "var(--color-accent)" }}
+              />
               <p className="text-sm font-medium">Saving records to your ledger…</p>
             </div>
           )}
@@ -1088,7 +1145,10 @@ function ImportPanel({
           {/* ── Done ── */}
           {status === "done" && (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <div className="flex size-12 items-center justify-center rounded-2xl" style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
+              <div
+                className="flex size-12 items-center justify-center rounded-2xl"
+                style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}
+              >
                 <Check size={22} style={{ color: "var(--ok)" }} />
               </div>
               <p className="text-sm font-semibold">Import complete!</p>
@@ -1140,7 +1200,10 @@ function Ledger() {
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortAsc((v) => !v);
-    else { setSortKey(key); setSortAsc(true); }
+    else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
   }
 
   const filtered = (transactions as TxRow[]).filter((t) => {
@@ -1172,9 +1235,35 @@ function Ledger() {
 
   // CSV export
   function exportCSV() {
-    const headers = ["ticker", "action", "quantity", "price", "fees", "wht", "trade_date", "ref_id", "broker", "exchange", "status", "confidence_score"];
+    const headers = [
+      "ticker",
+      "action",
+      "quantity",
+      "price",
+      "fees",
+      "wht",
+      "trade_date",
+      "ref_id",
+      "broker",
+      "exchange",
+      "status",
+      "confidence_score",
+    ];
     const rows = sorted.map((t) =>
-      [t.ticker, t.action, t.quantity, t.price, t.fees, t.wht, t.trade_date, t.ref_id, t.broker, t.exchange, t.status, t.confidence_score].join(",")
+      [
+        t.ticker,
+        t.action,
+        t.quantity,
+        t.price,
+        t.fees,
+        t.wht,
+        t.trade_date,
+        t.ref_id,
+        t.broker,
+        t.exchange,
+        t.status,
+        t.confidence_score,
+      ].join(","),
     );
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -1193,8 +1282,17 @@ function Ledger() {
     const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(
       sorted.map((t) => ({
-        Ticker: t.ticker, Action: t.action, Quantity: t.quantity, Price: t.price, Fees: t.fees, WHT: t.wht,
-        "Trade date": t.trade_date, Reference: t.ref_id, Broker: t.broker, Exchange: t.exchange, Status: t.status,
+        Ticker: t.ticker,
+        Action: t.action,
+        Quantity: t.quantity,
+        Price: t.price,
+        Fees: t.fees,
+        WHT: t.wht,
+        "Trade date": t.trade_date,
+        Reference: t.ref_id,
+        Broker: t.broker,
+        Exchange: t.exchange,
+        Status: t.status,
       })),
     );
     const wb = XLSX.utils.book_new();
@@ -1252,7 +1350,8 @@ function Ledger() {
             {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
             {needsReview > 0 && (
               <span style={{ color: "var(--warn)" }}>
-                {" "}· {needsReview} need{needsReview === 1 ? "s" : ""} review
+                {" "}
+                · {needsReview} need{needsReview === 1 ? "s" : ""} review
               </span>
             )}
           </p>
@@ -1431,7 +1530,11 @@ function Ledger() {
           {(search || actionFilter !== "ALL" || statusFilter !== "all") && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setActionFilter("ALL"); setStatusFilter("all"); }}
+              onClick={() => {
+                setSearch("");
+                setActionFilter("ALL");
+                setStatusFilter("all");
+              }}
               className="text-xs"
               style={{ color: "var(--ink-3)" }}
             >
@@ -1464,25 +1567,37 @@ function Ledger() {
                   }}
                 >
                   <th className={th} onClick={() => toggleSort("ticker")}>
-                    <span className="flex items-center gap-1">Ticker <SortIcon col="ticker" /></span>
+                    <span className="flex items-center gap-1">
+                      Ticker <SortIcon col="ticker" />
+                    </span>
                   </th>
                   <th className={th} onClick={() => toggleSort("action")}>
-                    <span className="flex items-center gap-1">Action <SortIcon col="action" /></span>
+                    <span className="flex items-center gap-1">
+                      Action <SortIcon col="action" />
+                    </span>
                   </th>
                   <th className={`${th} text-right`} onClick={() => toggleSort("quantity")}>
-                    <span className="flex items-center justify-end gap-1">Qty <SortIcon col="quantity" /></span>
+                    <span className="flex items-center justify-end gap-1">
+                      Qty <SortIcon col="quantity" />
+                    </span>
                   </th>
                   <th className={`${th} text-right`} onClick={() => toggleSort("price")}>
-                    <span className="flex items-center justify-end gap-1">Price <SortIcon col="price" /></span>
+                    <span className="flex items-center justify-end gap-1">
+                      Price <SortIcon col="price" />
+                    </span>
                   </th>
                   <th className={`${th} text-right hidden sm:table-cell`}>Fees</th>
                   <th className={`${th} text-right hidden sm:table-cell`}>WHT</th>
                   <th className={th} onClick={() => toggleSort("trade_date")}>
-                    <span className="flex items-center gap-1">Date <SortIcon col="trade_date" /></span>
+                    <span className="flex items-center gap-1">
+                      Date <SortIcon col="trade_date" />
+                    </span>
                   </th>
                   <th className={`${th} hidden md:table-cell`}>Ref / Broker</th>
                   <th className={th} onClick={() => toggleSort("confidence_score")}>
-                    <span className="flex items-center gap-1">Conf. <SortIcon col="confidence_score" /></span>
+                    <span className="flex items-center gap-1">
+                      Conf. <SortIcon col="confidence_score" />
+                    </span>
                   </th>
                   <th className={th}>Status</th>
                   <th className={`${th} w-10`} />
@@ -1520,10 +1635,7 @@ function Ledger() {
                     >
                       {tx.wht > 0 ? tx.wht.toLocaleString() : "—"}
                     </td>
-                    <td
-                      className="px-4 py-3 text-sm"
-                      style={{ color: "var(--ink-2)" }}
-                    >
+                    <td className="px-4 py-3 text-sm" style={{ color: "var(--ink-2)" }}>
                       {relativeDate(tx.trade_date)}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
@@ -1657,9 +1769,7 @@ function Ledger() {
           />
         )}
 
-        {brokerOpen && (
-          <BrokerPanel orgId={orgId} onClose={() => setBrokerOpen(false)} />
-        )}
+        {brokerOpen && <BrokerPanel orgId={orgId} onClose={() => setBrokerOpen(false)} />}
 
         {importOpen && (
           <ImportPanel
@@ -1674,12 +1784,7 @@ function Ledger() {
       </AnimatePresence>
 
       {/* Close row menu on outside click */}
-      {rowMenu && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setRowMenu(null)}
-        />
-      )}
+      {rowMenu && <div className="fixed inset-0 z-10" onClick={() => setRowMenu(null)} />}
     </div>
   );
 }

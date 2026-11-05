@@ -53,10 +53,7 @@ import { ChatSidebar } from "@/components/agent/ChatSidebar";
 import { takePendingFiles, takePendingPrompt } from "@/lib/chat-session";
 import { supabase } from "@/lib/supabase";
 import { withTimeout } from "@/lib/utils";
-import {
-  useDeleteChatThread,
-  AI_PLAN_DAILY_LIMITS,
-} from "@/lib/data-hooks";
+import { useDeleteChatThread, AI_PLAN_DAILY_LIMITS } from "@/lib/data-hooks";
 import { loadComposerDraft, saveComposerDraft, clearComposerDraft } from "@/lib/chat-session";
 
 // ── Suggestion chips ──────────────────────────────────────────────────────────
@@ -72,13 +69,19 @@ const SUGGESTIONS = [
 
 // ── Progress stage labels ─────────────────────────────────────────────────────
 
-const STAGE_META: Record<string, { icon: React.FC<{ size?: number; strokeWidth?: number; style?: React.CSSProperties }>; color: string }> = {
-  "Understanding your task":   { icon: Sparkles,  color: "var(--color-accent)" },
-  "Extracting financial data": { icon: Bot,       color: "var(--info)" },
-  "Running reconciliation":    { icon: Shield,    color: "var(--warn)" },
-  "Verifying evidence":        { icon: Check,     color: "var(--ok)" },
-  "Checking calculations":     { icon: Terminal,  color: "var(--color-accent)" },
-  "Preparing findings":        { icon: Sparkles,  color: "var(--ok)" },
+const STAGE_META: Record<
+  string,
+  {
+    icon: React.FC<{ size?: number; strokeWidth?: number; style?: React.CSSProperties }>;
+    color: string;
+  }
+> = {
+  "Understanding your task": { icon: Sparkles, color: "var(--color-accent)" },
+  "Extracting financial data": { icon: Bot, color: "var(--info)" },
+  "Running reconciliation": { icon: Shield, color: "var(--warn)" },
+  "Verifying evidence": { icon: Check, color: "var(--ok)" },
+  "Checking calculations": { icon: Terminal, color: "var(--color-accent)" },
+  "Preparing findings": { icon: Sparkles, color: "var(--ok)" },
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -112,13 +115,41 @@ interface ProviderError {
 
 // ── Classify API error message ────────────────────────────────────────────────
 
-function classifyError(msg: string): "quota" | "credits" | "rate_limit" | "timeout" | "provider" | "generic" {
+function classifyError(
+  msg: string,
+): "quota" | "credits" | "rate_limit" | "timeout" | "provider" | "generic" {
   const m = msg.toLowerCase();
-  if (m.includes("quota_exceeded") || m.includes("quota exceeded") || m.includes("daily limit") || m.includes("429")) return "quota";
-  if (m.includes("402") || m.includes("requires more credits") || m.includes("credits") || m.includes("upgrade to a paid")) return "credits";
-  if (m.includes("rate limit") || m.includes("rate-limit") || m.includes("temporarily busy")) return "rate_limit";
-  if (m.includes("504") || m.includes("timeout") || m.includes("timed out") || m.includes("taking longer")) return "timeout";
-  if (m.includes("502") || m.includes("503") || m.includes("upstream") || m.includes("provider") || m.includes("overloaded")) return "provider";
+  if (
+    m.includes("quota_exceeded") ||
+    m.includes("quota exceeded") ||
+    m.includes("daily limit") ||
+    m.includes("429")
+  )
+    return "quota";
+  if (
+    m.includes("402") ||
+    m.includes("requires more credits") ||
+    m.includes("credits") ||
+    m.includes("upgrade to a paid")
+  )
+    return "credits";
+  if (m.includes("rate limit") || m.includes("rate-limit") || m.includes("temporarily busy"))
+    return "rate_limit";
+  if (
+    m.includes("504") ||
+    m.includes("timeout") ||
+    m.includes("timed out") ||
+    m.includes("taking longer")
+  )
+    return "timeout";
+  if (
+    m.includes("502") ||
+    m.includes("503") ||
+    m.includes("upstream") ||
+    m.includes("provider") ||
+    m.includes("overloaded")
+  )
+    return "provider";
   return "generic";
 }
 
@@ -212,7 +243,11 @@ function ErrorBanner({
       style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
     >
       <div className="flex items-start gap-3">
-        <Icon size={16} strokeWidth={1.75} style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }} />
+        <Icon
+          size={16}
+          strokeWidth={1.75}
+          style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }}
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold" style={{ color: cfg.color }}>
             {cfg.title}
@@ -272,14 +307,23 @@ function AgentProgressBar({ stage, visible }: { stage: string | null; visible: b
             className="flex size-7 shrink-0 items-center justify-center rounded-full"
             style={{ background: "var(--accent-12)" }}
           >
-            <Loader2 size={14} strokeWidth={2} className="animate-spin" style={{ color: "var(--color-accent)" }} />
+            <Loader2
+              size={14}
+              strokeWidth={2}
+              className="animate-spin"
+              style={{ color: "var(--color-accent)" }}
+            />
           </span>
           <span className="flex-1 text-sm font-medium" style={{ color: "var(--color-text)" }}>
             {stage ?? "Working…"}
           </span>
           {meta && (
             <span className="text-xs" style={{ color: "var(--ink-3)" }}>
-              <Icon size={12} strokeWidth={2} style={{ display: "inline", marginRight: 4, color: meta.color }} />
+              <Icon
+                size={12}
+                strokeWidth={2}
+                style={{ display: "inline", marginRight: 4, color: meta.color }}
+              />
               {stage}
             </span>
           )}
@@ -305,14 +349,20 @@ function triggerCsvDownload(filename: string, csv: string) {
 
 // ── Tool card ─────────────────────────────────────────────────────────────────
 
-function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: boolean) => void) | undefined }) {
+function ToolCard({
+  part,
+  onApprove,
+}: {
+  part: ToolPart;
+  onApprove: ((approved: boolean) => void) | undefined;
+}) {
   const [open, setOpen] = useState(false);
-  const rawName       = part.toolName ?? part.type.replace(/^tool-/, "");
-  const friendlyName  = rawName.replace(/_/g, " ");
-  const running       = part.state === "input-streaming" || part.state === "input-available";
+  const rawName = part.toolName ?? part.type.replace(/^tool-/, "");
+  const friendlyName = rawName.replace(/_/g, " ");
+  const running = part.state === "input-streaming" || part.state === "input-available";
   const needsApproval = part.state === "approval-requested";
-  const isDone        = part.state === "output-available";
-  const isError       = !!part.errorText;
+  const isDone = part.state === "output-available";
+  const isError = !!part.errorText;
 
   useEffect(() => {
     if (rawName === "prepare_spreadsheet" && isDone && part.output) {
@@ -337,15 +387,24 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
       >
         <div className="flex items-center gap-2 px-4 py-3">
           <Sparkles size={14} style={{ color: "var(--color-accent)" }} />
-          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-accent)" }}>
+          <span
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "var(--color-accent)" }}
+          >
             Task Plan
           </span>
         </div>
-        {out["objective"] != null && <p className="px-4 pb-2 text-sm font-medium">{String(out["objective"])}</p>}
+        {out["objective"] != null && (
+          <p className="px-4 pb-2 text-sm font-medium">{String(out["objective"])}</p>
+        )}
         {steps.length > 0 && (
           <ul className="space-y-1.5 px-4 pb-4">
             {steps.map((step, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "var(--ink-2)" }}>
+              <li
+                key={i}
+                className="flex items-start gap-2 text-xs"
+                style={{ color: "var(--ink-2)" }}
+              >
                 <span
                   className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
                   style={{ background: "var(--accent-14)", color: "var(--color-accent)" }}
@@ -370,12 +429,17 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="my-3 overflow-hidden rounded-2xl"
-        style={{ border: "1px solid color-mix(in srgb, var(--ok) 25%, transparent)", background: "color-mix(in srgb, var(--ok) 5%, transparent)" }}
+        style={{
+          border: "1px solid color-mix(in srgb, var(--ok) 25%, transparent)",
+          background: "color-mix(in srgb, var(--ok) 5%, transparent)",
+        }}
       >
         <div className="flex items-center gap-3 px-4 py-3.5">
           <Download size={16} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" style={{ color: "var(--ok)" }}>Spreadsheet Ready</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--ok)" }}>
+              Spreadsheet Ready
+            </p>
             <p className="text-xs truncate" style={{ color: "var(--ink-3)" }}>
               {String(out["filename"] ?? "export.csv")}
               {out["row_count"] !== undefined && ` — ${out["row_count"]} rows`}
@@ -384,7 +448,9 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
           {typeof out["csv"] === "string" && (
             <button
               type="button"
-              onClick={() => triggerCsvDownload(String(out["filename"] ?? "export.csv"), String(out["csv"]))}
+              onClick={() =>
+                triggerCsvDownload(String(out["filename"] ?? "export.csv"), String(out["csv"]))
+              }
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white"
               style={{ background: "var(--ok)", color: "#fff" }}
             >
@@ -397,7 +463,10 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
   }
 
   return (
-    <div className="my-2 overflow-hidden rounded-xl" style={{ border: "1px solid var(--hairline)" }}>
+    <div
+      className="my-2 overflow-hidden rounded-xl"
+      style={{ border: "1px solid var(--hairline)" }}
+    >
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -445,7 +514,10 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
       {needsApproval && onApprove && (
         <div
           className="flex items-center gap-3 border-t px-4 py-3"
-          style={{ borderColor: "var(--hairline)", background: "color-mix(in srgb, var(--warn) 5%, transparent)" }}
+          style={{
+            borderColor: "var(--hairline)",
+            background: "color-mix(in srgb, var(--warn) 5%, transparent)",
+          }}
         >
           <AlertTriangle size={14} style={{ color: "var(--warn)", flexShrink: 0 }} />
           <p className="mr-auto text-xs" style={{ color: "var(--ink-2)" }}>
@@ -475,7 +547,15 @@ function ToolCard({ part, onApprove }: { part: ToolPart; onApprove: ((approved: 
 
 // ── Delete confirm modal ──────────────────────────────────────────────────────
 
-function DeleteChatModal({ onClose, onConfirm, deleting }: { onClose: () => void; onConfirm: () => void; deleting: boolean }) {
+function DeleteChatModal({
+  onClose,
+  onConfirm,
+  deleting,
+}: {
+  onClose: () => void;
+  onConfirm: () => void;
+  deleting: boolean;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <motion.div
@@ -493,12 +573,16 @@ function DeleteChatModal({ onClose, onConfirm, deleting }: { onClose: () => void
         className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-surface p-6 shadow-2xl"
         style={{ border: "1px solid var(--hairline)" }}
       >
-        <div className="mb-4 flex size-10 items-center justify-center rounded-xl" style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}>
+        <div
+          className="mb-4 flex size-10 items-center justify-center rounded-xl"
+          style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}
+        >
           <Trash2 size={18} style={{ color: "var(--bad)" }} />
         </div>
         <h3 className="mb-1 text-sm font-bold">Delete this conversation?</h3>
         <p className="text-sm" style={{ color: "var(--ink-2)" }}>
-          All messages in this chat will be permanently deleted. Your ledger records and transactions are not affected.
+          All messages in this chat will be permanently deleted. Your ledger records and
+          transactions are not affected.
         </p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
@@ -539,7 +623,7 @@ function Chat({
   plan: string;
 }) {
   const { user } = useAuth();
-  const textareaRef  = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pendingFired = useRef(false);
   const navigate = useNavigate();
   const deleteChatMutation = useDeleteChatThread();
@@ -548,17 +632,20 @@ function Chat({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, stop, error, addToolApprovalResponse, setMessages } = useChat({
-    id: threadId,
-    messages: initial,
-    transport,
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
-    onFinish: () => { void queryClient.invalidateQueries({ queryKey: ["chat_threads", user?.id] }); },
-    onError: (cause) => {
-      // Don't show a generic toast — the ErrorBanner in the UI handles it
-      console.error("[Wab] Chat error", cause);
-    },
-  });
+  const { messages, sendMessage, status, stop, error, addToolApprovalResponse, setMessages } =
+    useChat({
+      id: threadId,
+      messages: initial,
+      transport,
+      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+      onFinish: () => {
+        void queryClient.invalidateQueries({ queryKey: ["chat_threads", user?.id] });
+      },
+      onError: (cause) => {
+        // Don't show a generic toast — the ErrorBanner in the UI handles it
+        console.error("[Wab] Chat error", cause);
+      },
+    });
 
   const [currentStage, setCurrentStage] = useState<string | null>(null);
 
@@ -566,24 +653,33 @@ function Chat({
   useEffect(() => {
     if (pendingFired.current) return;
     pendingFired.current = true;
-    const pendingText  = takePendingPrompt();
+    const pendingText = takePendingPrompt();
     const pendingFiles = takePendingFiles();
     if (pendingText || pendingFiles.length > 0) {
       void (async () => {
-        const aiFiles = pendingFiles.length > 0
-          ? await Promise.all(pendingFiles.map(async (f) => {
-              const ab = await f.arrayBuffer();
-              return new File([ab], f.name, { type: f.type || "application/octet-stream" });
-            }))
-          : undefined;
-        await sendMessage({ text: pendingText || "Analyse the attached document(s).", ...(aiFiles ? { files: dataTransferFiles(aiFiles) } : {}) });
+        const aiFiles =
+          pendingFiles.length > 0
+            ? await Promise.all(
+                pendingFiles.map(async (f) => {
+                  const ab = await f.arrayBuffer();
+                  return new File([ab], f.name, { type: f.type || "application/octet-stream" });
+                }),
+              )
+            : undefined;
+        await sendMessage({
+          text: pendingText || "Analyse the attached document(s).",
+          ...(aiFiles ? { files: dataTransferFiles(aiFiles) } : {}),
+        });
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (status === "ready") { setCurrentStage(null); textareaRef.current?.focus(); }
+    if (status === "ready") {
+      setCurrentStage(null);
+      textareaRef.current?.focus();
+    }
   }, [status]);
 
   // Restore the unsent draft after reload so typed text survives navigation.
@@ -595,7 +691,10 @@ function Chat({
   }, [threadId]);
 
   useEffect(() => {
-    if (status !== "streaming") { setCurrentStage(null); return; }
+    if (status !== "streaming") {
+      setCurrentStage(null);
+      return;
+    }
     const lastMsg = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastMsg) return;
     for (const part of [...(lastMsg.parts ?? [])].reverse()) {
@@ -603,11 +702,17 @@ function Chat({
       const name = tp.toolName ?? tp.type?.replace(/^tool-/, "");
       if (name === "report_progress" && tp.output) {
         const out = tp.output as Record<string, unknown>;
-        if (typeof out["stage"] === "string") { setCurrentStage(out["stage"]); return; }
+        if (typeof out["stage"] === "string") {
+          setCurrentStage(out["stage"]);
+          return;
+        }
       }
       if (name === "plan_task" && tp.state === "input-available" && tp.input) {
         const inp = tp.input as Record<string, unknown>;
-        if (typeof inp["public_stage"] === "string") { setCurrentStage(inp["public_stage"]); return; }
+        if (typeof inp["public_stage"] === "string") {
+          setCurrentStage(inp["public_stage"]);
+          return;
+        }
       }
     }
   }, [messages, status]);
@@ -644,7 +749,11 @@ function Chat({
       {/* ── Thread header bar ─────────────────────────────────────────────── */}
       <div
         className="flex shrink-0 items-center justify-between border-b px-4 py-2.5"
-        style={{ borderColor: "var(--hairline)", background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}
+        style={{
+          borderColor: "var(--hairline)",
+          background: "rgba(255,255,255,0.8)",
+          backdropFilter: "blur(8px)",
+        }}
       >
         {/* Right controls */}
         <div className="flex items-center gap-2 ml-auto" ref={menuRef}>
@@ -672,7 +781,10 @@ function Chat({
                 >
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); setDeleteOpen(true); }}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setDeleteOpen(true);
+                    }}
                     className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-black/5"
                     style={{ color: "var(--bad)" }}
                   >
@@ -696,15 +808,21 @@ function Chat({
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="flex min-h-[46vh] flex-col items-center justify-center text-center"
             >
-              <div className="mb-5 flex size-14 items-center justify-center rounded-2xl" style={{ background: "var(--accent-10)" }}>
+              <div
+                className="mb-5 flex size-14 items-center justify-center rounded-2xl"
+                style={{ background: "var(--accent-10)" }}
+              >
                 <Sparkles size={26} strokeWidth={1.5} style={{ color: "var(--color-accent)" }} />
               </div>
               <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem,3vw,2rem)" }}>
                 Ask Wab a question about your data
               </h1>
-              <p className="mt-3 max-w-lg text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-                Wab works autonomously in the background. Use this chat to ask
-                questions, investigate anomalies, or request a specific analysis.
+              <p
+                className="mt-3 max-w-lg text-sm leading-relaxed"
+                style={{ color: "var(--ink-2)" }}
+              >
+                Wab works autonomously in the background. Use this chat to ask questions,
+                investigate anomalies, or request a specific analysis.
               </p>
             </motion.div>
           )}
@@ -734,7 +852,11 @@ function Chat({
                       <ToolCard
                         key={index}
                         part={tp}
-                        onApprove={approvalId ? (approved) => addToolApprovalResponse({ id: approvalId, approved }) : undefined}
+                        onApprove={
+                          approvalId
+                            ? (approved) => addToolApprovalResponse({ id: approvalId, approved })
+                            : undefined
+                        }
                       />
                     );
                   }
@@ -744,7 +866,9 @@ function Chat({
             </Message>
           ))}
 
-          {status === "submitted" && <Shimmer>Reading your ledger and planning next steps…</Shimmer>}
+          {status === "submitted" && (
+            <Shimmer>Reading your ledger and planning next steps…</Shimmer>
+          )}
 
           {/* Quota / provider / timeout error banners */}
           {error && (
@@ -853,10 +977,10 @@ function Chat({
 
 export function ParserWorkspace({ threadId }: { threadId: string }) {
   const { session, profile } = useAuth();
-  const [wsStatus, setWsStatus]   = useState<WorkspaceStatus>("loading");
-  const [initial, setInitial]     = useState<UIMessage[]>([]);
+  const [wsStatus, setWsStatus] = useState<WorkspaceStatus>("loading");
+  const [initial, setInitial] = useState<UIMessage[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [attempt, setAttempt]     = useState(0);
+  const [attempt, setAttempt] = useState(0);
 
   const plan = profile?.plan ?? "free";
 
@@ -874,7 +998,10 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
         );
         if (cancelled) return;
         if (threadError) throw new Error(threadError.message);
-        if (!thread) { setWsStatus("not_found"); return; }
+        if (!thread) {
+          setWsStatus("not_found");
+          return;
+        }
 
         const { data, error } = await withTimeout(
           supabase
@@ -890,8 +1017,8 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
 
         setInitial(
           (data ?? []).map((row) => ({
-            id:    row.ai_message_id,
-            role:  row.role,
+            id: row.ai_message_id,
+            role: row.role,
             parts: row.parts,
           })) as UIMessage[],
         );
@@ -903,7 +1030,9 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [threadId, attempt]);
 
   const transport = useMemo(
@@ -918,7 +1047,10 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
           if (!res.ok) {
             // Clone so we can read the body without consuming the original
             let message = `HTTP ${res.status}`;
-            const text = await res.clone().text().catch(() => "");
+            const text = await res
+              .clone()
+              .text()
+              .catch(() => "");
             if (text) {
               try {
                 const body = JSON.parse(text) as { message?: string };

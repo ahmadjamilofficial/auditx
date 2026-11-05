@@ -32,7 +32,9 @@ export function usePortfolioSummary() {
   const jurisdiction: "PSX" | "NSE" =
     transactions.length === 0
       ? ((profile?.jurisdiction as "PSX" | "NSE" | undefined) ?? "PSX")
-      : nseCount > transactions.length / 2 ? "NSE" : "PSX";
+      : nseCount > transactions.length / 2
+        ? "NSE"
+        : "PSX";
 
   const taxYear = String(new Date().getFullYear());
 
@@ -108,11 +110,10 @@ export function usePriorities(): { priorities: Priority[]; isLoading: boolean } 
 
 // ── AI Context ────────────────────────────────────────────────────────────────
 
-export function useAIContext(pageMeta?: {
-  page: string;
-  entityId?: string;
-  taxYear?: string;
-}): { context: FinancialContext | null; isLoading: boolean } {
+export function useAIContext(pageMeta?: { page: string; entityId?: string; taxYear?: string }): {
+  context: FinancialContext | null;
+  isLoading: boolean;
+} {
   const { profile } = useAuth();
   const { summary, isLoading: summaryLoading } = usePortfolioSummary();
   const { score } = useHealthScore();
@@ -123,14 +124,7 @@ export function useAIContext(pageMeta?: {
     return { context: null, isLoading: true };
   }
 
-  const context = buildAIContext(
-    profile.org_id,
-    summary,
-    score.total,
-    events,
-    insights,
-    pageMeta,
-  );
+  const context = buildAIContext(profile.org_id, summary, score.total, events, insights, pageMeta);
 
   return { context, isLoading: false };
 }

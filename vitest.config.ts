@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     environment: "node",
-    globals:     true,
+    globals: true,
     // Only run pure-logic tests — anything that imports Supabase is excluded
     // here because those require a running database. Use `vitest --run` for CI.
     include: [
@@ -21,7 +21,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],
-      include:  ["src/lib/policy-engine.ts", "src/lib/tax.ts", "src/lib/schema-validator.ts"],
+      include: ["src/lib/policy-engine.ts", "src/lib/tax.ts", "src/lib/schema-validator.ts"],
     },
   },
 });

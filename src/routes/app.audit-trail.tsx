@@ -29,10 +29,18 @@ function AuditTrail() {
     const q = search.toLowerCase();
     return (
       !q ||
-      String(row.actor ?? "").toLowerCase().includes(q) ||
-      String(row.action ?? "").toLowerCase().includes(q) ||
-      String(row.entity_type ?? "").toLowerCase().includes(q) ||
-      String(row.hash ?? "").toLowerCase().includes(q)
+      String(row.actor ?? "")
+        .toLowerCase()
+        .includes(q) ||
+      String(row.action ?? "")
+        .toLowerCase()
+        .includes(q) ||
+      String(row.entity_type ?? "")
+        .toLowerCase()
+        .includes(q) ||
+      String(row.hash ?? "")
+        .toLowerCase()
+        .includes(q)
     );
   });
 
@@ -88,7 +96,10 @@ function AuditTrail() {
           >
             <div
               className="flex items-center gap-3 rounded-2xl px-5 py-4"
-              style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)" }}
+              style={{
+                background: "color-mix(in srgb, var(--ok) 8%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)",
+              }}
             >
               <CheckCircle2 size={18} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
               <div>
@@ -126,68 +137,92 @@ function AuditTrail() {
       >
         {isLoading ? (
           <div className="py-16 text-center">
-            <p className="text-sm" style={{ color: "var(--ink-3)" }}>Loading audit log…</p>
+            <p className="text-sm" style={{ color: "var(--ink-3)" }}>
+              Loading audit log…
+            </p>
           </div>
         ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--hairline)", background: "var(--color-login-bg)" }}>
-                {["Timestamp", "Actor", "Action", "Entity", "Prev hash", "Hash"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold" style={{ color: "var(--ink-2)" }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row, i) => (
-                <motion.tr
-                  key={row.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.06 }}
-                  style={{ borderBottom: "1px solid var(--hairline)" }}
-                  className="transition-colors hover:bg-violet-50/40"
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr
+                  style={{
+                    borderBottom: "1px solid var(--hairline)",
+                    background: "var(--color-login-bg)",
+                  }}
                 >
-                  <td className="tnum px-4 py-3 text-xs" style={{ color: "var(--ink-2)" }}>
-                    {new Date(row.created_at).toLocaleString("en-PK", { dateStyle: "short", timeStyle: "short" })}
-                  </td>
-                  <td className="px-4 py-3 text-sm">{row.actor}</td>
-                  <td className="px-4 py-3">
-                    <StatusPill tone={actionTone(row.action)}>{actionLabel(row.action)}</StatusPill>
-                  </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: "var(--ink-2)" }}>
-                    <span className="font-medium">{row.entity_type}</span> · {row.entity_id}
-                  </td>
-                  <td className="tnum px-4 py-3 font-mono text-xs" style={{ color: "var(--ink-3)" }}>
-                    {row.prev_hash}
-                  </td>
-                  <td className="tnum px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs" style={{ color: "var(--color-accent)" }}>
-                        {row.hash}
-                      </span>
-                      <button
-                        type="button"
-                        className="opacity-50 hover:opacity-100"
-                        aria-label="Copy hash"
-                        onClick={() => navigator.clipboard?.writeText(row.hash)}
-                      >
-                        <LinkIcon size={12} strokeWidth={1.75} />
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  {["Timestamp", "Actor", "Action", "Entity", "Prev hash", "Hash"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold"
+                      style={{ color: "var(--ink-2)" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row, i) => (
+                  <motion.tr
+                    key={row.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.06 }}
+                    style={{ borderBottom: "1px solid var(--hairline)" }}
+                    className="transition-colors hover:bg-violet-50/40"
+                  >
+                    <td className="tnum px-4 py-3 text-xs" style={{ color: "var(--ink-2)" }}>
+                      {new Date(row.created_at).toLocaleString("en-PK", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{row.actor}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={actionTone(row.action)}>
+                        {actionLabel(row.action)}
+                      </StatusPill>
+                    </td>
+                    <td className="px-4 py-3 text-xs" style={{ color: "var(--ink-2)" }}>
+                      <span className="font-medium">{row.entity_type}</span> · {row.entity_id}
+                    </td>
+                    <td
+                      className="tnum px-4 py-3 font-mono text-xs"
+                      style={{ color: "var(--ink-3)" }}
+                    >
+                      {row.prev_hash}
+                    </td>
+                    <td className="tnum px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="font-mono text-xs"
+                          style={{ color: "var(--color-accent)" }}
+                        >
+                          {row.hash}
+                        </span>
+                        <button
+                          type="button"
+                          className="opacity-50 hover:opacity-100"
+                          aria-label="Copy hash"
+                          onClick={() => navigator.clipboard?.writeText(row.hash)}
+                        >
+                          <LinkIcon size={12} strokeWidth={1.75} />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         {!isLoading && filtered.length === 0 && (
           <div className="py-16 text-center">
             <p className="text-sm" style={{ color: "var(--ink-3)" }}>
-              {auditLog.length === 0 ? "No audit log entries yet." : "No entries match your search."}
+              {auditLog.length === 0
+                ? "No audit log entries yet."
+                : "No entries match your search."}
             </p>
           </div>
         )}
@@ -209,7 +244,10 @@ function AuditTrail() {
           </p>
           <p>
             Clicking "Verify chain" recomputes each hash and checks that every{" "}
-            <code className="rounded px-1.5 py-0.5 text-xs" style={{ background: "var(--accent-8)", color: "var(--color-accent)" }}>
+            <code
+              className="rounded px-1.5 py-0.5 text-xs"
+              style={{ background: "var(--accent-8)", color: "var(--color-accent)" }}
+            >
               prev_hash
             </code>{" "}
             matches the previous row's hash. Any tampering with historical records breaks the chain

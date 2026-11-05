@@ -7,52 +7,41 @@ import { supabase } from "./supabase";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type JobTriggerType =
-  | "upload"
-  | "sheet_change"
-  | "email"
-  | "cron_nightly"
-  | "cron_monthly"
-  | "manual"
-  | "ingestion";
+  "upload" | "sheet_change" | "email" | "cron_nightly" | "cron_monthly" | "manual" | "ingestion";
 
 export type JobStatus =
-  | "pending"
-  | "running"
-  | "done"
-  | "failed"
-  | "failed_invariant"
-  | "dead_letter";
+  "pending" | "running" | "done" | "failed" | "failed_invariant" | "dead_letter";
 
 export interface AgentJob {
-  id:              string;
-  org_id:          string;
-  trigger_type:    JobTriggerType;
+  id: string;
+  org_id: string;
+  trigger_type: JobTriggerType;
   trigger_payload: Record<string, unknown>;
-  status:          JobStatus;
-  run_id:          string | null;
+  status: JobStatus;
+  run_id: string | null;
   idempotency_key: string;
-  attempt_count:   number;
-  max_attempts:    number;
-  next_run_at:     string;
-  error_message:   string | null;
-  result_summary:  Record<string, unknown> | null;
-  created_at:      string;
-  updated_at:      string;
+  attempt_count: number;
+  max_attempts: number;
+  next_run_at: string;
+  error_message: string | null;
+  result_summary: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ── Enqueue a job (idempotent) ────────────────────────────────────────────────
 
 export async function enqueueJob(
-  orgId:          string,
-  triggerType:    JobTriggerType,
+  orgId: string,
+  triggerType: JobTriggerType,
   triggerPayload: Record<string, unknown> = {},
   idempotencyKey: string,
 ): Promise<AgentJob | null> {
   const { data, error } = await supabase
     .from("agent_jobs")
     .insert({
-      org_id:          orgId,
-      trigger_type:    triggerType,
+      org_id: orgId,
+      trigger_type: triggerType,
       trigger_payload: triggerPayload as never,
       idempotency_key: idempotencyKey,
     } as never)
@@ -66,7 +55,8 @@ export async function enqueueJob(
   }
 
   // Trigger the runner Edge Function immediately (fire-and-forget)
-  supabase.functions.invoke("agent-runner", { body: { job_id: data.id } })
+  supabase.functions
+    .invoke("agent-runner", { body: { job_id: data.id } })
     .catch((e: unknown) => console.warn("[Wab] agent-runner invoke failed:", e));
 
   return data as AgentJob;
@@ -74,10 +64,7 @@ export async function enqueueJob(
 
 // ── Fetch recent jobs for an org ──────────────────────────────────────────────
 
-export async function fetchRecentJobs(
-  orgId: string,
-  limit = 50,
-): Promise<AgentJob[]> {
+export async function fetchRecentJobs(orgId: string, limit = 50): Promise<AgentJob[]> {
   const { data, error } = await supabase
     .from("agent_jobs")
     .select("*")
@@ -92,17 +79,17 @@ export async function fetchRecentJobs(
 // ── Fetch pending approvals ───────────────────────────────────────────────────
 
 export interface AgentApproval {
-  id:             string;
-  org_id:         string;
-  job_id:         string | null;
-  run_id:         string | null;
-  action_type:    string;
+  id: string;
+  org_id: string;
+  job_id: string | null;
+  run_id: string | null;
+  action_type: string;
   action_payload: Record<string, unknown>;
-  policy_tier:    "REVIEW" | "STOP";
-  status:         "pending" | "approved" | "rejected" | "skipped";
-  decided_by:     string | null;
-  decided_at:     string | null;
-  created_at:     string;
+  policy_tier: "REVIEW" | "STOP";
+  status: "pending" | "approved" | "rejected" | "skipped";
+  decided_by: string | null;
+  decided_at: string | null;
+  created_at: string;
 }
 
 export async function fetchPendingApprovals(orgId: string): Promise<AgentApproval[]> {
@@ -121,13 +108,13 @@ export async function fetchPendingApprovals(orgId: string): Promise<AgentApprova
 
 export async function decideApproval(
   approvalId: string,
-  decision:   "approved" | "rejected" | "skipped",
-  userId:     string,
+  decision: "approved" | "rejected" | "skipped",
+  userId: string,
 ): Promise<void> {
   const { error } = await supabase
     .from("agent_approvals")
     .update({
-      status:     decision,
+      status: decision,
       decided_by: userId,
       decided_at: new Date().toISOString(),
     } as never)
@@ -147,7 +134,7 @@ export async function revertRun(runId: string): Promise<number> {
 // ── Trigger an immediate manual run ──────────────────────────────────────────
 
 export async function triggerManualRun(
-  orgId:   string,
+  orgId: string,
   payload: Record<string, unknown> = {},
 ): Promise<AgentJob | null> {
   const key = `manual:${orgId}:${Date.now()}`;

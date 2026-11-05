@@ -5,7 +5,7 @@ import { catalogDrift } from "./registry.server";
 
 const CSV = [
   "date,symbol,side,quantity,price,fees,currency,id",
-  '2026-01-05,OGDC,buy,100,142.50,25,PKR,T-1001',
+  "2026-01-05,OGDC,buy,100,142.50,25,PKR,T-1001",
   '2026-01-06,"TCS",sell,50,915.00,30,PKR,T-1002',
 ].join("\n");
 
@@ -42,7 +42,10 @@ describe("csv adapter", () => {
   });
 
   it("normalizes rows into typed transactions", async () => {
-    const txs = await csvImportAdapter.fetchTransactions({ credentials: {}, config: { csv: CSV } }, undefined);
+    const txs = await csvImportAdapter.fetchTransactions(
+      { credentials: {}, config: { csv: CSV } },
+      undefined,
+    );
     expect(txs).toHaveLength(2);
     const [first] = txs;
     expect(first?.kind).toBe("trade");
@@ -56,8 +59,12 @@ describe("csv adapter", () => {
   });
 
   it("skips rows without a usable date rather than inventing one", async () => {
-    const csv = "date,symbol,side,quantity,price\nnot-a-date,OGDC,buy,10,1\n2026-02-01,OGDC,buy,10,1";
-    const txs = await csvImportAdapter.fetchTransactions({ credentials: {}, config: { csv } }, undefined);
+    const csv =
+      "date,symbol,side,quantity,price\nnot-a-date,OGDC,buy,10,1\n2026-02-01,OGDC,buy,10,1";
+    const txs = await csvImportAdapter.fetchTransactions(
+      { credentials: {}, config: { csv } },
+      undefined,
+    );
     expect(txs).toHaveLength(1);
   });
 

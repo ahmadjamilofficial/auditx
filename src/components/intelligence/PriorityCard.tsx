@@ -118,11 +118,23 @@ export function PriorityCardSkeleton() {
       style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
     >
       <div className="flex items-start gap-3">
-        <div className="size-8 animate-pulse rounded-lg" style={{ background: "var(--hairline)" }} />
+        <div
+          className="size-8 animate-pulse rounded-lg"
+          style={{ background: "var(--hairline)" }}
+        />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-16 animate-pulse rounded" style={{ background: "var(--hairline)" }} />
-          <div className="h-4 w-48 animate-pulse rounded" style={{ background: "var(--hairline)" }} />
-          <div className="h-3 w-full animate-pulse rounded" style={{ background: "var(--hairline)" }} />
+          <div
+            className="h-3 w-16 animate-pulse rounded"
+            style={{ background: "var(--hairline)" }}
+          />
+          <div
+            className="h-4 w-48 animate-pulse rounded"
+            style={{ background: "var(--hairline)" }}
+          />
+          <div
+            className="h-3 w-full animate-pulse rounded"
+            style={{ background: "var(--hairline)" }}
+          />
         </div>
       </div>
     </div>

@@ -5,9 +5,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { computeTax } from "../../src/lib/tax.ts";
 import { suggestHarvesting } from "../../src/lib/tax.ts";
 
-const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENROUTER_KEY   = Deno.env.get("OPENROUTER_API_KEY") ?? "";
+const OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY") ?? "";
 const OPENROUTER_MODEL = Deno.env.get("OPENROUTER_MODEL") ?? "openai/gpt-4o-mini";
 
 const db = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
@@ -19,15 +19,15 @@ const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
     transaction_date: { type: ["string", "null"] },
-    ticker:           { type: ["string", "null"] },
-    action:           { type: ["string", "null"], enum: ["BUY", "SELL", "DIV", null] },
-    quantity:         { type: ["number", "null"] },
-    price:            { type: ["number", "null"] },
-    fees:             { type: ["number", "null"] },
-    wht:              { type: ["number", "null"] },
-    ref_id:           { type: ["string", "null"] },
-    broker:           { type: ["string", "null"] },
-    exchange:         { type: ["string", "null"] },
+    ticker: { type: ["string", "null"] },
+    action: { type: ["string", "null"], enum: ["BUY", "SELL", "DIV", null] },
+    quantity: { type: ["number", "null"] },
+    price: { type: ["number", "null"] },
+    fees: { type: ["number", "null"] },
+    wht: { type: ["number", "null"] },
+    ref_id: { type: ["string", "null"] },
+    broker: { type: ["string", "null"] },
+    exchange: { type: ["string", "null"] },
     field_confidences: { type: "object" },
   },
   required: ["field_confidences"],
@@ -36,35 +36,35 @@ const EXTRACTION_SCHEMA = {
 // ── Call OpenRouter with JSON schema enforcement ──────────────────────────────
 async function callLLM(
   systemPrompt: string,
-  userContent:  string,
-  schema?:      Record<string, unknown>,
+  userContent: string,
+  schema?: Record<string, unknown>,
 ): Promise<unknown> {
   if (!OPENROUTER_KEY) throw new Error("OPENROUTER_API_KEY not set");
 
   const body: Record<string, unknown> = {
-    model:       OPENROUTER_MODEL,
-    messages:    [
+    model: OPENROUTER_MODEL,
+    messages: [
       { role: "system", content: systemPrompt },
-      { role: "user",   content: userContent  },
+      { role: "user", content: userContent },
     ],
     temperature: 0.1,
-    max_tokens:  1024,
+    max_tokens: 1024,
   };
 
   if (schema) {
     body["response_format"] = {
-      type:        "json_schema",
+      type: "json_schema",
       json_schema: { name: "extraction", strict: true, schema },
     };
   }
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method:  "POST",
+    method: "POST",
     headers: {
-      Authorization:  `Bearer ${OPENROUTER_KEY}`,
+      Authorization: `Bearer ${OPENROUTER_KEY}`,
       "Content-Type": "application/json",
       "HTTP-Referer": "https://psxl.live",
-      "X-Title":      "Wab",
+      "X-Title": "Wab",
     },
     body: JSON.stringify(body),
   });
@@ -74,18 +74,26 @@ async function callLLM(
     throw new Error(`OpenRouter ${res.status}: ${txt}`);
   }
 
-  const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
-  const raw  = data.choices?.[0]?.message?.content ?? "{}";
+  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const raw = data.choices?.[0]?.message?.content ?? "{}";
 
-  try { return JSON.parse(raw); }
-  catch { return raw; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
 }
 
 // ── Deterministic CSV row extractor (no LLM) ──────────────────────────────────
 function extractCSVRows(csv: string): Array<Record<string, string>> {
-  const lines   = csv.trim().split("\n").filter(Boolean);
+  const lines = csv.trim().split("\n").filter(Boolean);
   if (lines.length < 2) return [];
-  const headers = lines[0]!.split(",").map((h) => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_"));
+  const headers = lines[0]!.split(",").map((h) =>
+    h
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, "_"),
+  );
   return lines.slice(1).map((line) => {
     const vals = line.split(",").map((v) => v.trim());
     return Object.fromEntries(headers.map((h, i) => [h, vals[i] ?? ""]));
@@ -115,7 +123,8 @@ async function checkInvariants(orgId: string, runId: string): Promise<string[]> 
 
   const inv: Record<string, number> = {};
   for (const tx of all ?? []) {
-    inv[tx.ticker as string] = (inv[tx.ticker as string] ?? 0) +
+    inv[tx.ticker as string] =
+      (inv[tx.ticker as string] ?? 0) +
       (tx.action === "BUY" ? Number(tx.quantity) : tx.action === "SELL" ? -Number(tx.quantity) : 0);
   }
   for (const [ticker, net] of Object.entries(inv)) {
@@ -146,12 +155,12 @@ async function wasAgentWrite(orgId: string, sourceHash: string): Promise<boolean
 
 // ── Post a notification ───────────────────────────────────────────────────────
 async function notify(
-  orgId:    string,
-  type:     string,
-  title:    string,
-  message:  string,
+  orgId: string,
+  type: string,
+  title: string,
+  message: string,
   severity: "info" | "success" | "warning" | "error" = "info",
-  link?:    string,
+  link?: string,
 ): Promise<void> {
   // Get first owner user_id for this org
   const { data: profile } = await db
@@ -164,21 +173,26 @@ async function notify(
   if (!profile) return;
 
   await db.from("notifications").insert({
-    org_id:   orgId,
-    user_id:  profile.user_id,
+    org_id: orgId,
+    user_id: profile.user_id,
     type,
     title,
     message,
     severity,
-    link:     link ?? null,
+    link: link ?? null,
   } as never);
 }
 
 // ── Handle: nightly reconciliation ────────────────────────────────────────────
-async function handleNightlyReconcile(orgId: string, runId: string): Promise<Record<string, unknown>> {
+async function handleNightlyReconcile(
+  orgId: string,
+  runId: string,
+): Promise<Record<string, unknown>> {
   const { data: txs } = await db
     .from("transactions")
-    .select("id, ticker, action, quantity, price, fees, wht, trade_date, ref_id, broker, exchange, status")
+    .select(
+      "id, ticker, action, quantity, price, fees, wht, trade_date, ref_id, broker, exchange, status",
+    )
     .eq("org_id", orgId)
     .order("trade_date");
 
@@ -193,16 +207,16 @@ async function handleNightlyReconcile(orgId: string, runId: string): Promise<Rec
     if (seen.has(key)) {
       // Flag the duplicate
       const { error } = await db.from("reconciliation_flags").insert({
-        org_id:               orgId,
-        flag_type:            "Duplicate Entry",
-        severity:             "warn",
-        ticker:               tx.ticker,
-        ref_id:               tx.ref_id ?? "",
-        expected:             { ref_id: seen.get(key) } as never,
-        actual:               { ref_id: tx.id } as never,
-        description:          `Duplicate transaction detected: ${tx.ticker} ${tx.action} ${tx.quantity} @ ${tx.price} on ${tx.trade_date}`,
+        org_id: orgId,
+        flag_type: "Duplicate Entry",
+        severity: "warn",
+        ticker: tx.ticker,
+        ref_id: tx.ref_id ?? "",
+        expected: { ref_id: seen.get(key) } as never,
+        actual: { ref_id: tx.id } as never,
+        description: `Duplicate transaction detected: ${tx.ticker} ${tx.action} ${tx.quantity} @ ${tx.price} on ${tx.trade_date}`,
         suggested_resolution: "Review and remove one of the duplicate entries.",
-        status:               "open",
+        status: "open",
       } as never);
 
       if (!error) flagCount++;
@@ -236,7 +250,9 @@ async function handleNightlyReconcile(orgId: string, runId: string): Promise<Rec
 async function handleMonthlyTaxRun(orgId: string): Promise<Record<string, unknown>> {
   const { data: txRows } = await db
     .from("transactions")
-    .select("id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange")
+    .select(
+      "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
+    )
     .eq("org_id", orgId);
 
   const { data: org } = await db
@@ -246,50 +262,56 @@ async function handleMonthlyTaxRun(orgId: string): Promise<Record<string, unknow
     .maybeSingle();
 
   const jurisdiction = (org?.jurisdiction_default ?? "PSX") as "PSX" | "NSE";
-  const taxYear      = String(new Date().getFullYear());
-  const txs          = (txRows ?? []).map((r) => ({
-    id:               r.id,
-    ticker:           r.ticker,
-    action:           r.action as "BUY" | "SELL" | "DIV",
-    quantity:         Number(r.quantity),
-    price:            Number(r.price),
-    fees:             Number(r.fees ?? 0),
-    wht:              Number(r.wht ?? 0),
-    trade_date:       r.trade_date,
-    ref_id:           r.ref_id,
+  const taxYear = String(new Date().getFullYear());
+  const txs = (txRows ?? []).map((r) => ({
+    id: r.id,
+    ticker: r.ticker,
+    action: r.action as "BUY" | "SELL" | "DIV",
+    quantity: Number(r.quantity),
+    price: Number(r.price),
+    fees: Number(r.fees ?? 0),
+    wht: Number(r.wht ?? 0),
+    trade_date: r.trade_date,
+    ref_id: r.ref_id,
     confidence_score: Number(r.confidence_score ?? 1),
-    status:           r.status as "posted" | "needs_review",
-    broker:           r.broker,
-    exchange:         (r.exchange === "NSE" ? "NSE" : "PSX") as "PSX" | "NSE",
+    status: r.status as "posted" | "needs_review",
+    broker: r.broker,
+    exchange: (r.exchange === "NSE" ? "NSE" : "PSX") as "PSX" | "NSE",
   }));
 
   const tax = computeTax(txs, { jurisdiction, filerStatus: "Filer", taxYear });
 
   await db.from("tax_computations").insert({
-    org_id:            orgId,
-    tax_year:          taxYear,
+    org_id: orgId,
+    tax_year: taxYear,
     jurisdiction,
-    filer_status:      "Filer",
-    short_term_gain:   tax.shortTermGain,
-    long_term_gain:    tax.longTermGain,
-    dividend_wht:      tax.dividendWHT,
+    filer_status: "Filer",
+    short_term_gain: tax.shortTermGain,
+    long_term_gain: tax.longTermGain,
+    dividend_wht: tax.dividendWHT,
     estimated_tax_due: tax.estimatedTaxDue,
-    breakdown:         { lots: tax.lots.slice(0, 50) } as never,
+    breakdown: { lots: tax.lots.slice(0, 50) } as never,
   } as never);
 
   // Harvesting suggestions
   const suggestions = suggestHarvesting(txs, tax.totalGain);
   for (const s of suggestions.slice(0, 10)) {
-    await db.from("tax_loss_harvest_suggestions").insert({
-      org_id:           orgId,
-      position_ticker:  s.ticker,
-      exchange:         s.exchange,
-      unrealized_loss:  s.unrealizedLoss,
-      potential_offset: s.potentialOffset,
-      holding_days:     s.holdingDays,
-      rationale:        s.rationale,
-      status:           "pending",
-    } as never).then(() => undefined, () => undefined);
+    await db
+      .from("tax_loss_harvest_suggestions")
+      .insert({
+        org_id: orgId,
+        position_ticker: s.ticker,
+        exchange: s.exchange,
+        unrealized_loss: s.unrealizedLoss,
+        potential_offset: s.potentialOffset,
+        holding_days: s.holdingDays,
+        rationale: s.rationale,
+        status: "pending",
+      } as never)
+      .then(
+        () => undefined,
+        () => undefined,
+      );
   }
 
   await notify(
@@ -306,8 +328,8 @@ async function handleMonthlyTaxRun(orgId: string): Promise<Record<string, unknow
 
 // ── Handle: document/CSV ingestion ───────────────────────────────────────────
 async function handleIngestion(
-  orgId:   string,
-  runId:   string,
+  orgId: string,
+  runId: string,
   payload: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const csvContent = payload["csv"] as string | undefined;
@@ -317,31 +339,32 @@ async function handleIngestion(
   let inserted = 0;
 
   for (const row of rows) {
-    const ticker     = (row["ticker"] ?? row["symbol"] ?? "").toUpperCase();
-    const action     = ((row["action"] ?? row["type"] ?? "BUY") as string).toUpperCase() as "BUY" | "SELL" | "DIV";
-    const quantity   = parseFloat(row["quantity"] ?? row["qty"] ?? "0");
-    const price      = parseFloat(row["price"] ?? "0");
+    const ticker = (row["ticker"] ?? row["symbol"] ?? "").toUpperCase();
+    const action = ((row["action"] ?? row["type"] ?? "BUY") as string).toUpperCase() as
+      "BUY" | "SELL" | "DIV";
+    const quantity = parseFloat(row["quantity"] ?? row["qty"] ?? "0");
+    const price = parseFloat(row["price"] ?? "0");
     const trade_date = row["date"] ?? row["trade_date"] ?? "";
-    const ref_id     = row["ref_id"] ?? row["reference"] ?? `INGESTED-${Date.now()}`;
+    const ref_id = row["ref_id"] ?? row["reference"] ?? `INGESTED-${Date.now()}`;
     const confidence = ticker && quantity > 0 && price > 0 && trade_date ? 0.92 : 0.6;
 
     if (!ticker || quantity <= 0 || price <= 0) continue;
 
     const { error } = await db.from("transactions").insert({
-      org_id:          orgId,
+      org_id: orgId,
       ticker,
       action,
       quantity,
       price,
-      fees:            parseFloat(row["fees"] ?? row["commission"] ?? "0"),
-      wht:             parseFloat(row["wht"] ?? row["tax"] ?? "0"),
+      fees: parseFloat(row["fees"] ?? row["commission"] ?? "0"),
+      wht: parseFloat(row["wht"] ?? row["tax"] ?? "0"),
       trade_date,
       ref_id,
-      broker:          row["broker"] ?? "",
-      exchange:        row["exchange"] ?? "PSX",
+      broker: row["broker"] ?? "",
+      exchange: row["exchange"] ?? "PSX",
       confidence_score: confidence,
-      status:          confidence >= 0.9 ? "posted" : "needs_review",
-      source:          { via: "agent_ingestion", agent_run_id: runId } as never,
+      status: confidence >= 0.9 ? "posted" : "needs_review",
+      source: { via: "agent_ingestion", agent_run_id: runId } as never,
     } as never);
 
     if (!error) inserted++;
@@ -355,20 +378,25 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization,content-type" },
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "authorization,content-type",
+      },
     });
   }
 
   try {
     // Dequeue one pending job
-    const { data: job, error: dqErr } = await db.rpc("dequeue_agent_job", { p_worker_id: "edge-fn" });
+    const { data: job, error: dqErr } = await db.rpc("dequeue_agent_job", {
+      p_worker_id: "edge-fn",
+    });
     if (dqErr || !job) {
       return new Response(JSON.stringify({ message: "no jobs" }), { status: 200 });
     }
 
-    const orgId   = job.org_id   as string;
-    const jobId   = job.id       as string;
-    const runId   = job.run_id   as string;
+    const orgId = job.org_id as string;
+    const jobId = job.id as string;
+    const runId = job.run_id as string;
     const trigger = job.trigger_type as string;
     const payload = (job.trigger_payload ?? {}) as Record<string, unknown>;
 
@@ -381,7 +409,11 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (!flags?.autonomous_agent) {
-        await db.rpc("complete_agent_job", { p_job_id: jobId, p_status: "done", p_result: { skipped: "autonomous_agent_disabled" } });
+        await db.rpc("complete_agent_job", {
+          p_job_id: jobId,
+          p_status: "done",
+          p_result: { skipped: "autonomous_agent_disabled" },
+        });
         return new Response(JSON.stringify({ skipped: true }), { status: 200 });
       }
     }
@@ -411,7 +443,7 @@ Deno.serve(async (req: Request) => {
       await db.rpc("complete_agent_job", {
         p_job_id: jobId,
         p_status: "failed_invariant",
-        p_error:  failures.join("; "),
+        p_error: failures.join("; "),
         p_result: { failures },
       });
       return new Response(JSON.stringify({ failed_invariant: true, failures }), { status: 200 });
@@ -419,7 +451,6 @@ Deno.serve(async (req: Request) => {
 
     await db.rpc("complete_agent_job", { p_job_id: jobId, p_status: "done", p_result: result });
     return new Response(JSON.stringify({ ok: true, result }), { status: 200 });
-
   } catch (e) {
     const msg = (e as Error)?.message ?? String(e);
     console.error("[agent-runner]", msg);

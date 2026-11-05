@@ -24,7 +24,12 @@ export const Route = createFileRoute("/app/agent")({
 
 type Message =
   | { role: "user"; text: string; attachments: AgentAttachment[] }
-  | { role: "assistant"; text: string; steps: AgentStep[]; fields?: { attachmentId: string; fileName: string; fields: ExtractedField[] }[] };
+  | {
+      role: "assistant";
+      text: string;
+      steps: AgentStep[];
+      fields?: { attachmentId: string; fileName: string; fields: ExtractedField[] }[];
+    };
 
 const STARTERS = [
   "Summarise all transactions in this broker slip",
@@ -37,14 +42,14 @@ const STARTERS = [
 
 function AgentPage() {
   const { profile } = useAuth();
-  const bottomRef  = useRef<HTMLDivElement>(null);
-  const abortRef   = useRef<AbortController | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const [messages,     setMessages]     = useState<Message[]>([]);
-  const [input,        setInput]        = useState("");
-  const [attachments,  setAttachments]  = useState<AgentAttachment[]>([]);
-  const [busy,         setBusy]         = useState(false);
-  const [activeSteps,  setActiveSteps]  = useState<AgentStep[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [activeSteps, setActiveSteps] = useState<AgentStep[]>([]);
 
   // Auto-scroll on new content
   useEffect(() => {
@@ -85,10 +90,7 @@ function AgentPage() {
 
     // Placeholder assistant turn for streaming
     const assistantIdx = messages.length + 1;
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", text: "", steps: [], fields: [] },
-    ]);
+    setMessages((prev) => [...prev, { role: "assistant", text: "", steps: [], fields: [] }]);
 
     abortRef.current = new AbortController();
 
@@ -103,19 +105,13 @@ function AgentPage() {
           setActiveSteps(steps);
           setMessages((prev) =>
             prev.map((m, i) =>
-              i === assistantIdx && m.role === "assistant"
-                ? { ...m, steps }
-                : m,
+              i === assistantIdx && m.role === "assistant" ? { ...m, steps } : m,
             ),
           );
         },
         onDelta: (text) => {
           setMessages((prev) =>
-            prev.map((m, i) =>
-              i === assistantIdx && m.role === "assistant"
-                ? { ...m, text }
-                : m,
-            ),
+            prev.map((m, i) => (i === assistantIdx && m.role === "assistant" ? { ...m, text } : m)),
           );
         },
         onFields: (attachmentId, fields) => {
@@ -126,7 +122,7 @@ function AgentPage() {
             prev.map((m, i) => {
               if (i !== assistantIdx || m.role !== "assistant") return m;
               const existing = m.fields ?? [];
-              const already  = existing.find((f) => f.attachmentId === attachmentId);
+              const already = existing.find((f) => f.attachmentId === attachmentId);
               if (already) return m;
               return {
                 ...m,
@@ -140,9 +136,7 @@ function AgentPage() {
       const errText = (e as Error).message ?? "Something went wrong.";
       setMessages((prev) =>
         prev.map((m, i) =>
-          i === assistantIdx && m.role === "assistant"
-            ? { ...m, text: `⚠️ ${errText}` }
-            : m,
+          i === assistantIdx && m.role === "assistant" ? { ...m, text: `⚠️ ${errText}` } : m,
         ),
       );
     } finally {
@@ -161,7 +155,6 @@ function AgentPage() {
 
   return (
     <div className="flex h-[calc(100dvh-56px)] flex-col">
-
       {/* ── Conversation ──────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         {isEmpty ? (
@@ -177,8 +170,8 @@ function AgentPage() {
                 Wab AI Agent
               </h2>
               <p className="mt-2 text-sm" style={{ color: "var(--ink-2)" }}>
-                Upload any broker slip, contract note, CSV or dividend voucher.
-                Ask me to extract fields, compute your tax exposure, flag discrepancies, or run a reconciliation.
+                Upload any broker slip, contract note, CSV or dividend voucher. Ask me to extract
+                fields, compute your tax exposure, flag discrepancies, or run a reconciliation.
               </p>
             </div>
             <div className="grid w-full gap-2 sm:grid-cols-2">
@@ -186,7 +179,9 @@ function AgentPage() {
                 <button
                   key={s}
                   type="button"
-                  onClick={() => { setInput(s); }}
+                  onClick={() => {
+                    setInput(s);
+                  }}
                   className="rounded-xl border bg-surface px-4 py-3 text-left text-sm transition-shadow hover:shadow-md"
                   style={{ borderColor: "var(--hairline)" }}
                 >
@@ -223,8 +218,15 @@ function AgentPage() {
                           </div>
                         )}
                         {msg.attachments.map((a) => (
-                          <div key={a.id} className="flex items-center gap-2 text-xs" style={{ color: "var(--ink-2)" }}>
-                            <span className="rounded-lg border bg-surface px-2.5 py-1.5" style={{ borderColor: "var(--hairline)" }}>
+                          <div
+                            key={a.id}
+                            className="flex items-center gap-2 text-xs"
+                            style={{ color: "var(--ink-2)" }}
+                          >
+                            <span
+                              className="rounded-lg border bg-surface px-2.5 py-1.5"
+                              style={{ borderColor: "var(--hairline)" }}
+                            >
                               📎 {a.name}
                             </span>
                           </div>
@@ -241,7 +243,10 @@ function AgentPage() {
                       </div>
                       <div className="flex-1 space-y-3">
                         {msg.steps.length > 0 && (
-                          <AgentActivity steps={msg.steps} running={busy && i === messages.length - 1} />
+                          <AgentActivity
+                            steps={msg.steps}
+                            running={busy && i === messages.length - 1}
+                          />
                         )}
                         {msg.text && <AIMessage text={msg.text} />}
                         {msg.fields?.map((fc) => (
@@ -264,7 +269,10 @@ function AgentPage() {
       </div>
 
       {/* ── Composer ──────────────────────────────────────────────────────── */}
-      <div className="border-t px-4 py-3 sm:px-6" style={{ borderColor: "var(--hairline)", background: "var(--color-sheet, #fff)" }}>
+      <div
+        className="border-t px-4 py-3 sm:px-6"
+        style={{ borderColor: "var(--hairline)", background: "var(--color-sheet, #fff)" }}
+      >
         <div className="mx-auto max-w-2xl space-y-2">
           {busy && (
             <div className="flex items-center justify-end">

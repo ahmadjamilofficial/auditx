@@ -126,9 +126,7 @@ export function computeTax(txs: Transaction[], profile: TaxProfile): TaxComputat
   }
 
   // Aggregate dividend WHT
-  const dividendWHT = yearTxs
-    .filter((t) => t.action === "DIV")
-    .reduce((sum, t) => sum + t.wht, 0);
+  const dividendWHT = yearTxs.filter((t) => t.action === "DIV").reduce((sum, t) => sum + t.wht, 0);
 
   // Aggregate gains
   const shortTermGain = lots.filter((l) => l.isShortTerm).reduce((s, l) => s + l.gain, 0);
@@ -177,7 +175,10 @@ const CURRENT_PRICES: Record<string, number> = {
 
 export function suggestHarvesting(txs: Transaction[], realizedGain: number): HarvestSuggestion[] {
   // Build open positions (net buy qty)
-  const positions: Record<string, { qty: number; avgCost: number; exchange: "PSX" | "NSE"; firstBuy: string }> = {};
+  const positions: Record<
+    string,
+    { qty: number; avgCost: number; exchange: "PSX" | "NSE"; firstBuy: string }
+  > = {};
 
   for (const tx of txs.sort((a, b) => a.trade_date.localeCompare(b.trade_date))) {
     if (!positions[tx.ticker]) {

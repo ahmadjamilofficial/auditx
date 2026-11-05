@@ -3,7 +3,15 @@
 // subscription. Never uses PostgREST embeds across unrelated tables.
 
 import type { Session, User } from "@supabase/supabase-js";
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { PlanId } from "./plans";
 import { supabase } from "./supabase";
 
@@ -49,11 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadingUserId = useRef<string | null>(null);
   const loadedUserId = useRef<string | null>(null);
 
-
   const loadProfile = useCallback(async (u: User) => {
     try {
       // 1. Profile row (no cross-table embeds — profiles has no FK to subscriptions)
-      let { data: row, error } = await supabase
+      const profileQuery = await supabase
         .from("profiles")
         .select("id, org_id, full_name, role")
         .eq("user_id", u.id)
@@ -145,13 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loadProfile],
   );
 
-
   async function provision(u: User) {
     const meta = u.user_metadata ?? {};
-    const orgName = (meta["org_name"] as string | undefined) || `${u.email?.split("@")[0] ?? "My"} Organisation`;
+    const orgName =
+      (meta["org_name"] as string | undefined) || `${u.email?.split("@")[0] ?? "My"} Organisation`;
     const { data, error } = await supabase.rpc("provision_current_user", {
       _org_name: orgName,
-      _full_name: (meta["full_name"] as string | undefined) ?? (meta["name"] as string | undefined) ?? u.email?.split("@")[0] ?? "",
+      _full_name:
+        (meta["full_name"] as string | undefined) ??
+        (meta["name"] as string | undefined) ??
+        u.email?.split("@")[0] ??
+        "",
       _jurisdiction: (meta["jurisdiction"] as string | undefined) ?? "PSX",
     });
     if (error || !data) {
@@ -214,7 +225,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [ensureUserData]);
 
-
   async function handleSignOut() {
     await supabase.auth.signOut();
     setSession(null);
@@ -226,7 +236,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user, profile, loading, planChosen, signOut: handleSignOut, refreshProfile }}
+      value={{
+        session,
+        user,
+        profile,
+        loading,
+        planChosen,
+        signOut: handleSignOut,
+        refreshProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>

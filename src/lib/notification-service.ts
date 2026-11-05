@@ -97,10 +97,7 @@ export function useBrowserNotifications() {
     return result;
   }, []);
 
-  const send = useCallback(
-    (payload: NotificationPayload) => notificationService.send(payload),
-    [],
-  );
+  const send = useCallback((payload: NotificationPayload) => notificationService.send(payload), []);
 
   return { permission, request, send };
 }

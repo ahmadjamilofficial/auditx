@@ -158,7 +158,9 @@ function FoundSomethingSection({
         type: "FEE_DISCREPANCY",
         severity: "CRITICAL",
         title: `${criticalFlags.length} Critical Reconciliation Flag${criticalFlags.length > 1 ? "s" : ""}`,
-        summary: criticalFlags[0]?.description ?? "Critical data integrity issues detected requiring immediate review.",
+        summary:
+          criticalFlags[0]?.description ??
+          "Critical data integrity issues detected requiring immediate review.",
         confidence: 0.95,
         financialImpact: totalImpact,
         currency,
@@ -236,8 +238,7 @@ function MissionControl() {
   const nseCount = transactions.filter((t) => t.exchange === "NSE").length;
   const psxCount = transactions.length - nseCount;
   const detectedJurisdiction: "PSX" | "NSE" =
-    transactions.length === 0 ? jurisdiction :
-    nseCount > psxCount ? "NSE" : "PSX";
+    transactions.length === 0 ? jurisdiction : nseCount > psxCount ? "NSE" : "PSX";
   const currency = detectedJurisdiction === "NSE" ? "INR" : "PKR";
 
   const currentYear = String(new Date().getFullYear());
@@ -247,7 +248,11 @@ function MissionControl() {
   const { data: events = [], isLoading: eventsLoading } = useFinancialEvents(30);
   const { data: insights = [] } = useFinancialInsights(5);
 
-  const tax = computeTax(transactions, { jurisdiction: detectedJurisdiction, filerStatus: "Filer", taxYear: currentYear });
+  const tax = computeTax(transactions, {
+    jurisdiction: detectedJurisdiction,
+    filerStatus: "Filer",
+    taxYear: currentYear,
+  });
   const unreconciledCount = transactions.filter((t) => t.status === "needs_review").length;
 
   // Portfolio allocation — use live market data from summary
@@ -303,10 +308,7 @@ function MissionControl() {
         >
           <Upload size={36} style={{ color: "var(--color-accent)" }} />
         </div>
-        <h1
-          className="mt-6 text-2xl font-bold"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
+        <h1 className="mt-6 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           No transactions yet
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
@@ -315,7 +317,11 @@ function MissionControl() {
         <Link
           to="/app/parser"
           className="mt-6 flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
-          style={{ background: "var(--color-accent)", color: "var(--accent-fg)", boxShadow: "var(--shadow-accent)" }}
+          style={{
+            background: "var(--color-accent)",
+            color: "var(--accent-fg)",
+            boxShadow: "var(--shadow-accent)",
+          }}
         >
           <Upload size={16} />
           Upload records
@@ -329,7 +335,9 @@ function MissionControl() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem" }}>Portfolio Overview</h1>
+          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem" }}>
+            Portfolio Overview
+          </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
             Real-time portfolio health and performance metrics
           </p>
@@ -397,7 +405,10 @@ function MissionControl() {
         <div className="lg:col-span-2 space-y-6">
           {/* P&L Chart */}
           {pnlData.length > 0 && (
-            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <div
+              className="rounded-2xl bg-surface p-6"
+              style={{ border: "1px solid var(--hairline)" }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm font-bold">Cumulative Realized P&L</p>
@@ -452,7 +463,10 @@ function MissionControl() {
           <FoundSomethingSection insights={insights} flags={flags} currency={currency} />
 
           {/* Financial Timeline */}
-          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+          <div
+            className="rounded-2xl bg-surface p-6"
+            style={{ border: "1px solid var(--hairline)" }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-bold">Financial Timeline</h2>
@@ -478,13 +492,19 @@ function MissionControl() {
         {/* Right column - Sidebar widgets */}
         <div className="space-y-6">
           {/* Health Score */}
-          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+          <div
+            className="rounded-2xl bg-surface p-6"
+            style={{ border: "1px solid var(--hairline)" }}
+          >
             <FinancialHealthScore score={score} isLoading={scoreLoading} />
           </div>
 
           {/* Holdings Allocation */}
           {allocationData.length > 0 && (
-            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <div
+              className="rounded-2xl bg-surface p-6"
+              style={{ border: "1px solid var(--hairline)" }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm font-bold">Holdings</p>
@@ -511,7 +531,11 @@ function MissionControl() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid var(--hairline)" }}
+                      contentStyle={{
+                        fontSize: 11,
+                        borderRadius: 8,
+                        border: "1px solid var(--hairline)",
+                      }}
                       formatter={(v: number) => [`${currency} ${fmt(v)}`, ""]}
                     />
                   </PieChart>
@@ -537,7 +561,10 @@ function MissionControl() {
           )}
 
           {/* Secondary Metrics */}
-          <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+          <div
+            className="rounded-2xl bg-surface p-6"
+            style={{ border: "1px solid var(--hairline)" }}
+          >
             <div className="mb-4">
               <p className="text-sm font-bold">Data Quality</p>
               <p className="text-xs" style={{ color: "var(--ink-3)" }}>
@@ -572,7 +599,10 @@ function MissionControl() {
 
           {/* Priorities */}
           {(priorities.length > 0 || prioritiesLoading) && (
-            <div className="rounded-2xl bg-surface p-6" style={{ border: "1px solid var(--hairline)" }}>
+            <div
+              className="rounded-2xl bg-surface p-6"
+              style={{ border: "1px solid var(--hairline)" }}
+            >
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold">Requires Attention</p>

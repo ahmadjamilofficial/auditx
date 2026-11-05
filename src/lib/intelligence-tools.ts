@@ -30,12 +30,12 @@ export interface IntelligenceToolContext {
 
 // ── Tool: Get Portfolio Summary ───────────────────────────────────────────────
 
-export async function getPortfolioSummary(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getPortfolioSummary(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const { data: txRows, error } = await supabase
     .from("transactions")
-    .select("id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange")
+    .select(
+      "id,ticker,action,quantity,price,fees,wht,trade_date,ref_id,confidence_score,status,broker,exchange",
+    )
     .eq("org_id", ctx.orgId)
     .order("trade_date", { ascending: false });
 
@@ -54,9 +54,7 @@ export async function getPortfolioSummary(
 
 // ── Tool: Get Tax Liability ───────────────────────────────────────────────────
 
-export async function getTaxLiability(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getTaxLiability(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const { data: txRows, error } = await supabase
     .from("transactions")
     .select("*")
@@ -116,9 +114,7 @@ export async function getUnreconciledTransactions(
 
 // ── Tool: Get Critical Anomalies ─────────────────────────────────────────────
 
-export async function getCriticalAnomalies(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getCriticalAnomalies(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const { data, error } = await supabase
     .from("reconciliation_flags")
     .select("*")
@@ -151,7 +147,12 @@ export async function getTransactionDetails(
     .maybeSingle();
 
   if (error || !data) {
-    return { ok: false, error: error?.message ?? "Transaction not found", source: "DATABASE", confidence: 0 };
+    return {
+      ok: false,
+      error: error?.message ?? "Transaction not found",
+      source: "DATABASE",
+      confidence: 0,
+    };
   }
 
   // Fetch related reconciliation flags
@@ -173,9 +174,7 @@ export async function getTransactionDetails(
 
 // ── Tool: Get Broker Discrepancies ───────────────────────────────────────────
 
-export async function getBrokerDiscrepancies(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getBrokerDiscrepancies(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const { data: flags, error } = await supabase
     .from("reconciliation_flags")
     .select("*")
@@ -208,9 +207,7 @@ export async function getBrokerDiscrepancies(
 
 // ── Tool: Get Missing Documents ──────────────────────────────────────────────
 
-export async function getMissingDocuments(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getMissingDocuments(ctx: IntelligenceToolContext): Promise<ToolResult> {
   // Transactions without a document_id
   const { data: txs, error } = await supabase
     .from("transactions")
@@ -267,15 +264,21 @@ export async function getTaxHarvestingOpportunities(
 
 // ── Tool: Get Financial Health ────────────────────────────────────────────────
 
-export async function getFinancialHealth(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getFinancialHealth(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const [txRes, flagRes] = await Promise.all([
-    supabase.from("transactions").select("id,status,confidence_score,ref_id,document_id").eq("org_id", ctx.orgId),
-    supabase.from("reconciliation_flags").select("id,severity").eq("org_id", ctx.orgId).eq("status", "open"),
+    supabase
+      .from("transactions")
+      .select("id,status,confidence_score,ref_id,document_id")
+      .eq("org_id", ctx.orgId),
+    supabase
+      .from("reconciliation_flags")
+      .select("id,severity")
+      .eq("org_id", ctx.orgId)
+      .eq("status", "open"),
   ]);
 
-  if (txRes.error) return { ok: false, error: txRes.error.message, source: "DATABASE", confidence: 0 };
+  if (txRes.error)
+    return { ok: false, error: txRes.error.message, source: "DATABASE", confidence: 0 };
 
   const rawTxs = txRes.data ?? [];
   const flags = flagRes.data ?? [];
@@ -295,9 +298,7 @@ export async function getFinancialHealth(
 
 // ── Tool: Get Daily Priorities ────────────────────────────────────────────────
 
-export async function getDailyPriorities(
-  ctx: IntelligenceToolContext,
-): Promise<ToolResult> {
+export async function getDailyPriorities(ctx: IntelligenceToolContext): Promise<ToolResult> {
   const [txRes, flagRes] = await Promise.all([
     supabase
       .from("transactions")
@@ -360,14 +361,32 @@ export async function compareFinancialPeriods(
   if (error) return { ok: false, error: error.message, source: "DATABASE", confidence: 0 };
 
   const txs = (txRows ?? []) as Transaction[];
-  const taxA = computeTax(txs, { jurisdiction: ctx.jurisdiction, filerStatus: "Filer", taxYear: yearA });
-  const taxB = computeTax(txs, { jurisdiction: ctx.jurisdiction, filerStatus: "Filer", taxYear: yearB });
+  const taxA = computeTax(txs, {
+    jurisdiction: ctx.jurisdiction,
+    filerStatus: "Filer",
+    taxYear: yearA,
+  });
+  const taxB = computeTax(txs, {
+    jurisdiction: ctx.jurisdiction,
+    filerStatus: "Filer",
+    taxYear: yearB,
+  });
 
   return {
     ok: true,
     data: {
-      periodA: { year: yearA, tax: taxA.estimatedTaxDue, gains: taxA.totalGain, lots: taxA.lots.length },
-      periodB: { year: yearB, tax: taxB.estimatedTaxDue, gains: taxB.totalGain, lots: taxB.lots.length },
+      periodA: {
+        year: yearA,
+        tax: taxA.estimatedTaxDue,
+        gains: taxA.totalGain,
+        lots: taxA.lots.length,
+      },
+      periodB: {
+        year: yearB,
+        tax: taxB.estimatedTaxDue,
+        gains: taxB.totalGain,
+        lots: taxB.lots.length,
+      },
       delta: {
         tax: taxB.estimatedTaxDue - taxA.estimatedTaxDue,
         gains: taxB.totalGain - taxA.totalGain,
@@ -397,17 +416,26 @@ export type AIIntent =
 export function detectIntent(prompt: string, page?: string): AIIntent {
   const lower = prompt.toLowerCase();
 
-  if (lower.includes("tax") && (lower.includes("change") || lower.includes("increase") || lower.includes("why"))) {
+  if (
+    lower.includes("tax") &&
+    (lower.includes("change") || lower.includes("increase") || lower.includes("why"))
+  ) {
     return "TAX_CHANGE_EXPLANATION";
   }
   if (lower.includes("tax") && lower.includes("opportun")) return "TAX_OPPORTUNITY";
-  if (lower.includes("portfolio") || lower.includes("holding") || lower.includes("position")) return "PORTFOLIO_ANALYSIS";
+  if (lower.includes("portfolio") || lower.includes("holding") || lower.includes("position"))
+    return "PORTFOLIO_ANALYSIS";
   if (lower.includes("reconcil") || lower.includes("unmatched")) return "RECONCILIATION_STATUS";
-  if (lower.includes("anomal") || lower.includes("discrepanc") || lower.includes("mismatch")) return "ANOMALY_EXPLANATION";
-  if (lower.includes("broker") || lower.includes("fee") || lower.includes("overcharge")) return "BROKER_DISCREPANCY";
-  if (lower.includes("health") || lower.includes("score") || lower.includes("status")) return "FINANCIAL_HEALTH";
-  if (lower.includes("priorit") || lower.includes("attention") || lower.includes("today")) return "DAILY_PRIORITIES";
-  if (lower.includes("compare") || lower.includes("vs") || lower.includes("period")) return "PERIOD_COMPARISON";
+  if (lower.includes("anomal") || lower.includes("discrepanc") || lower.includes("mismatch"))
+    return "ANOMALY_EXPLANATION";
+  if (lower.includes("broker") || lower.includes("fee") || lower.includes("overcharge"))
+    return "BROKER_DISCREPANCY";
+  if (lower.includes("health") || lower.includes("score") || lower.includes("status"))
+    return "FINANCIAL_HEALTH";
+  if (lower.includes("priorit") || lower.includes("attention") || lower.includes("today"))
+    return "DAILY_PRIORITIES";
+  if (lower.includes("compare") || lower.includes("vs") || lower.includes("period"))
+    return "PERIOD_COMPARISON";
   if (page === "transaction") return "TRANSACTION_EXPLANATION";
   return "GENERAL";
 }
@@ -429,7 +457,10 @@ export function buildIntelligencePrompt(
 
   const dataSection = toolResults
     .filter((r) => r.ok)
-    .map((r, i) => `## Tool Result ${i + 1} (Source: ${r.source}, Confidence: ${(r.confidence * 100).toFixed(0)}%)\n${JSON.stringify(r.data, null, 2)}`)
+    .map(
+      (r, i) =>
+        `## Tool Result ${i + 1} (Source: ${r.source}, Confidence: ${(r.confidence * 100).toFixed(0)}%)\n${JSON.stringify(r.data, null, 2)}`,
+    )
     .join("\n\n");
 
   return `You are Wab, a financial intelligence system for ${context.jurisdiction} investors.

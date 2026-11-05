@@ -109,7 +109,13 @@ export class BackgroundTaskService {
       });
 
       // Create notification
-      await this.createNotification(task.user_id, task.org_id, "task_complete", "Task Completed", task.objective);
+      await this.createNotification(
+        task.user_id,
+        task.org_id,
+        "task_complete",
+        "Task Completed",
+        task.objective,
+      );
     } catch (error) {
       // Mark task as failed
       await this.updateTask(taskId, {
@@ -118,7 +124,13 @@ export class BackgroundTaskService {
       });
 
       // Create error notification
-      await this.createNotification(task.user_id, task.org_id, "task_failed", "Task Failed", (error as Error).message);
+      await this.createNotification(
+        task.user_id,
+        task.org_id,
+        "task_failed",
+        "Task Failed",
+        (error as Error).message,
+      );
     }
   }
 
@@ -200,9 +212,7 @@ export class BackgroundTaskService {
       query = query.eq("status", status);
     }
 
-    const { data, error } = await query
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
 
     if (error) throw new Error(`Failed to get tasks: ${error.message}`);
     return (data ?? []) as BackgroundTask[];

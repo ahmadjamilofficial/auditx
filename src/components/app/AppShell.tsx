@@ -29,7 +29,10 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
 import { CommandBarProvider, useCommandBar } from "@/components/intelligence/AuditXCommandBar";
-import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
+import {
+  NotificationBell,
+  NotificationCenter,
+} from "@/components/notifications/NotificationCenter";
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
 import { useTheme } from "@/lib/theme-context";
@@ -38,11 +41,19 @@ import { useTheme } from "@/lib/theme-context";
 const SIDEBAR_KEY = "wab.sidebar.expanded";
 function readSidebarPref(): boolean {
   if (typeof window === "undefined") return false;
-  try { return localStorage.getItem(SIDEBAR_KEY) === "true"; } catch { return false; }
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 function writeSidebarPref(v: boolean) {
   if (typeof window === "undefined") return;
-  try { localStorage.setItem(SIDEBAR_KEY, String(v)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(SIDEBAR_KEY, String(v));
+  } catch {
+    /* ignore */
+  }
 }
 
 // ── Nav structure ─────────────────────────────────────────────────────────────
@@ -53,27 +64,27 @@ const navGroups = [
   {
     title: "Workspace",
     items: [
-      { label: "Portfolio",    icon: LayoutDashboard, to: "/app/overview"       },
-      { label: "Ledger",       icon: BookOpen,        to: "/app/ledger"          },
-      { label: "Exceptions",   icon: GitFork,         to: "/app/reconciliation"  },
-      { label: "Data Sources", icon: Plug,            to: "/app/sources"         },
-      { label: "Integrations", icon: Share2,          to: "/app/integrations"    },
-      { label: "Tax Center",   icon: BarChart3,       to: "/app/tax"             },
-      { label: "Audit Trail",  icon: Shield,          to: "/app/audit-trail"     },
+      { label: "Portfolio", icon: LayoutDashboard, to: "/app/overview" },
+      { label: "Ledger", icon: BookOpen, to: "/app/ledger" },
+      { label: "Exceptions", icon: GitFork, to: "/app/reconciliation" },
+      { label: "Data Sources", icon: Plug, to: "/app/sources" },
+      { label: "Integrations", icon: Share2, to: "/app/integrations" },
+      { label: "Tax Center", icon: BarChart3, to: "/app/tax" },
+      { label: "Audit Trail", icon: Shield, to: "/app/audit-trail" },
     ],
   },
   {
     title: "Autonomous",
     items: [
-      { label: "Activity Feed", icon: Radio,  to: "/app/activity" },
-      { label: "Review Inbox",  icon: Inbox,  to: "/app/review"   },
+      { label: "Activity Feed", icon: Radio, to: "/app/activity" },
+      { label: "Review Inbox", icon: Inbox, to: "/app/review" },
     ],
   },
   {
     title: "Account",
     items: [
-      { label: "Settings", icon: Settings,    to: "/app/settings" },
-      { label: "Billing",  icon: CreditCard,  to: "/app/billing"  },
+      { label: "Settings", icon: Settings, to: "/app/settings" },
+      { label: "Billing", icon: CreditCard, to: "/app/billing" },
     ],
   },
 ] as const;
@@ -138,17 +149,17 @@ function NavItem({
 
 function InnerShell({ children }: { children: ReactNode }) {
   const { user, profile, signOut } = useAuth();
-  const nav          = useNavigate();
-  const routerState  = useRouterState();
-  const currentPath  = routerState.location.pathname;
+  const nav = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
   const { setOpen: setCommandBarOpen } = useCommandBar();
   const { theme, setTheme, actualTheme } = useTheme();
 
   // Desktop sidebar: expanded state persisted in localStorage
-  const [expanded,     setExpanded]     = useState(() => readSidebarPref());
-  const [mobileOpen,   setMobileOpen]   = useState(false);
+  const [expanded, setExpanded] = useState(() => readSidebarPref());
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [notifOpen,    setNotifOpen]    = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Review inbox badge — pending approvals count
@@ -159,7 +170,9 @@ function InnerShell({ children }: { children: ReactNode }) {
   useAgentHeartbeat(!!profile?.org_id);
 
   // Persist preference
-  useEffect(() => { writeSidebarPref(expanded); }, [expanded]);
+  useEffect(() => {
+    writeSidebarPref(expanded);
+  }, [expanded]);
 
   // Close user menu on outside click
   useEffect(() => {
@@ -179,21 +192,16 @@ function InnerShell({ children }: { children: ReactNode }) {
   }
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
-  const orgName     = profile?.org_name  || "My Organisation";
-  const plan        = profile?.plan      || "free";
-  const initials    = displayName.charAt(0).toUpperCase();
-  const avatarUrl   = (profile?.avatar_url || user?.user_metadata?.["avatar_url"]) as string | undefined;
+  const orgName = profile?.org_name || "My Organisation";
+  const plan = profile?.plan || "free";
+  const initials = displayName.charAt(0).toUpperCase();
+  const avatarUrl = (profile?.avatar_url || user?.user_metadata?.["avatar_url"]) as
+    string | undefined;
 
   const isActive = (to: string) => currentPath === to || currentPath.startsWith(to + "/");
 
   // ── SidebarContent — shared by desktop and mobile ──────────────────────────
-  function SidebarContent({
-    collapsed,
-    onClose,
-  }: {
-    collapsed: boolean;
-    onClose?: () => void;
-  }) {
+  function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: () => void }) {
     return (
       <div className="flex h-full flex-col">
         {/* ── Logo + toggle ────────────────────────────────────────────────── */}
@@ -345,7 +353,10 @@ function InnerShell({ children }: { children: ReactNode }) {
                 <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
                   <div
                     className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
-                    style={{ background: avatarUrl ? "transparent" : "var(--color-accent)", color: "var(--accent-fg)" }}
+                    style={{
+                      background: avatarUrl ? "transparent" : "var(--color-accent)",
+                      color: "var(--accent-fg)",
+                    }}
                   >
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
@@ -469,11 +480,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             style={{ borderColor: "var(--hairline)", maxWidth: 380 }}
             onClick={() => setCommandBarOpen(true)}
           >
-            <Sparkles
-              size={15}
-              strokeWidth={1.75}
-              style={{ color: "var(--color-accent)" }}
-            />
+            <Sparkles size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
             <span style={{ color: "var(--ink-3)" }}>Ask Wab anything…</span>
             <kbd
               className="ml-auto rounded px-2 py-0.5 text-xs"

@@ -16,8 +16,7 @@ function ScoreRing({ value, size = 120 }: { value: number; size?: number }) {
   const circumference = 2 * Math.PI * radius;
   const strokeDash = (value / 100) * circumference;
 
-  const color =
-    value >= 80 ? "var(--ok)" : value >= 60 ? "var(--warn)" : "var(--bad)";
+  const color = value >= 80 ? "var(--ok)" : value >= 60 ? "var(--warn)" : "var(--bad)";
 
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
@@ -58,8 +57,7 @@ function BreakdownBar({
   delay: number;
 }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
-  const color =
-    pct >= 80 ? "var(--ok)" : pct >= 60 ? "var(--warn)" : "var(--bad)";
+  const color = pct >= 80 ? "var(--ok)" : pct >= 60 ? "var(--warn)" : "var(--bad)";
 
   return (
     <div className="space-y-1">
@@ -71,10 +69,7 @@ function BreakdownBar({
           {value}/{max}
         </span>
       </div>
-      <div
-        className="h-1.5 overflow-hidden rounded-full"
-        style={{ background: "var(--accent-8)" }}
-      >
+      <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "var(--accent-8)" }}>
         <motion.div
           className="h-full rounded-full"
           style={{ background: color }}
@@ -90,13 +85,11 @@ function BreakdownBar({
 export function FinancialHealthScore({ score, isLoading }: Props) {
   const [expanded, setExpanded] = useState(false);
 
-  const label =
-    score.total >= 80 ? "GOOD" : score.total >= 60 ? "FAIR" : "NEEDS ATTENTION";
+  const label = score.total >= 80 ? "GOOD" : score.total >= 60 ? "FAIR" : "NEEDS ATTENTION";
   const labelColor =
     score.total >= 80 ? "var(--ok)" : score.total >= 60 ? "var(--warn)" : "var(--bad)";
 
-  const TrendIcon =
-    score.trend > 0 ? TrendingUp : score.trend < 0 ? TrendingDown : Minus;
+  const TrendIcon = score.trend > 0 ? TrendingUp : score.trend < 0 ? TrendingDown : Minus;
 
   if (isLoading) {
     return (
@@ -104,7 +97,10 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
         className="rounded-2xl p-6"
         style={{ background: "var(--surface)", border: "1px solid var(--hairline)" }}
       >
-        <div className="h-24 w-full animate-pulse rounded-xl" style={{ background: "var(--hairline)" }} />
+        <div
+          className="h-24 w-full animate-pulse rounded-xl"
+          style={{ background: "var(--hairline)" }}
+        />
       </div>
     );
   }
@@ -138,7 +134,10 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
         <div className="relative flex shrink-0 items-center justify-center">
           <ScoreRing value={score.total} size={96} />
           <div className="absolute flex flex-col items-center">
-            <span className="tnum text-2xl font-bold leading-none" style={{ color: "var(--color-text)" }}>
+            <span
+              className="tnum text-2xl font-bold leading-none"
+              style={{ color: "var(--color-text)" }}
+            >
               {score.total}
             </span>
             <span className="text-[10px]" style={{ color: "var(--ink-3)" }}>
@@ -151,7 +150,10 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
           <div className="flex items-center gap-2">
             <span
               className="rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
-              style={{ background: `color-mix(in srgb, ${labelColor} 12%, transparent)`, color: labelColor }}
+              style={{
+                background: `color-mix(in srgb, ${labelColor} 12%, transparent)`,
+                color: labelColor,
+              }}
             >
               {label}
             </span>
@@ -161,7 +163,8 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
                 style={{ color: score.trend > 0 ? "var(--ok)" : "var(--bad)" }}
               >
                 <TrendIcon size={12} />
-                {score.trend > 0 ? "+" : ""}{score.trend} this month
+                {score.trend > 0 ? "+" : ""}
+                {score.trend} this month
               </span>
             )}
           </div>
@@ -169,8 +172,8 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
             {score.total >= 80
               ? "Your financial records are well-maintained."
               : score.total >= 60
-              ? "Some areas need attention to improve accuracy."
-              : "Multiple issues require immediate attention."}
+                ? "Some areas need attention to improve accuracy."
+                : "Multiple issues require immediate attention."}
           </p>
         </div>
       </div>
@@ -188,15 +191,43 @@ export function FinancialHealthScore({ score, isLoading }: Props) {
               className="mt-4 space-y-3 border-t pt-4"
               style={{ borderColor: "var(--hairline)" }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--ink-3)" }}
+              >
                 Score Breakdown
               </p>
-              <BreakdownBar label="Reconciliation" value={score.reconciliation} max={30} delay={0} />
-              <BreakdownBar label="Document Completeness" value={score.documentCompleteness} max={20} delay={0.05} />
-              <BreakdownBar label="Data Confidence" value={score.dataConfidence} max={15} delay={0.1} />
-              <BreakdownBar label="Tax Confidence" value={score.taxConfidence} max={15} delay={0.15} />
+              <BreakdownBar
+                label="Reconciliation"
+                value={score.reconciliation}
+                max={30}
+                delay={0}
+              />
+              <BreakdownBar
+                label="Document Completeness"
+                value={score.documentCompleteness}
+                max={20}
+                delay={0.05}
+              />
+              <BreakdownBar
+                label="Data Confidence"
+                value={score.dataConfidence}
+                max={15}
+                delay={0.1}
+              />
+              <BreakdownBar
+                label="Tax Confidence"
+                value={score.taxConfidence}
+                max={15}
+                delay={0.15}
+              />
               <BreakdownBar label="Compliance" value={score.compliance} max={10} delay={0.2} />
-              <BreakdownBar label="Risk Exposure" value={score.riskExposure} max={10} delay={0.25} />
+              <BreakdownBar
+                label="Risk Exposure"
+                value={score.riskExposure}
+                max={10}
+                delay={0.25}
+              />
             </div>
           </motion.div>
         )}

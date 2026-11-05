@@ -114,10 +114,7 @@ function InsightsPage() {
     const tax = computeTax(transactions, { jurisdiction, filerStatus: "Filer", taxYear });
     const harvestOpportunities = suggestHarvesting(transactions, tax.totalGain);
     if (harvestOpportunities.length > 0) {
-      const totalSaving = harvestOpportunities.reduce(
-        (s, h) => s + h.potentialOffset * 0.15,
-        0,
-      );
+      const totalSaving = harvestOpportunities.reduce((s, h) => s + h.potentialOffset * 0.15, 0);
       allInsights.push({
         id: "insight-tax-harvest",
         type: "TAX_OPPORTUNITY",
@@ -165,30 +162,61 @@ function InsightsPage() {
   }
 
   const filteredInsights =
-    activeFilter === "ALL"
-      ? allInsights
-      : allInsights.filter((i) => i.severity === activeFilter);
+    activeFilter === "ALL" ? allInsights : allInsights.filter((i) => i.severity === activeFilter);
 
   const counts = {
     CRITICAL: allInsights.filter((i) => i.severity === "CRITICAL").length,
-    HIGH:     allInsights.filter((i) => i.severity === "HIGH").length,
-    MEDIUM:   allInsights.filter((i) => i.severity === "MEDIUM").length,
-    LOW:      allInsights.filter((i) => i.severity === "LOW").length,
+    HIGH: allInsights.filter((i) => i.severity === "HIGH").length,
+    MEDIUM: allInsights.filter((i) => i.severity === "MEDIUM").length,
+    LOW: allInsights.filter((i) => i.severity === "LOW").length,
   };
 
-  const filterButtons: Array<{ label: string; value: FilterLevel; count: number; color: string }> = [
-    { label: "All",          value: "ALL",      count: allInsights.length, color: "var(--ink-2)" },
-    { label: "Critical",     value: "CRITICAL", count: counts.CRITICAL,    color: "var(--bad)" },
-    { label: "High",         value: "HIGH",     count: counts.HIGH,        color: "var(--warn)" },
-    { label: "Medium",       value: "MEDIUM",   count: counts.MEDIUM,      color: "var(--info)" },
-    { label: "Opportunity",  value: "LOW",      count: counts.LOW,         color: "var(--ok)" },
-  ];
+  const filterButtons: Array<{ label: string; value: FilterLevel; count: number; color: string }> =
+    [
+      { label: "All", value: "ALL", count: allInsights.length, color: "var(--ink-2)" },
+      { label: "Critical", value: "CRITICAL", count: counts.CRITICAL, color: "var(--bad)" },
+      { label: "High", value: "HIGH", count: counts.HIGH, color: "var(--warn)" },
+      { label: "Medium", value: "MEDIUM", count: counts.MEDIUM, color: "var(--info)" },
+      { label: "Opportunity", value: "LOW", count: counts.LOW, color: "var(--ok)" },
+    ];
 
   const summaryTiles = [
-    { icon: AlertCircle,  label: "Critical",      value: counts.CRITICAL, filterVal: "CRITICAL" as FilterLevel, color: "var(--bad)",  bg: "color-mix(in srgb, var(--bad) 6%, transparent)",   border: "color-mix(in srgb, var(--bad) 18%, transparent)" },
-    { icon: AlertTriangle, label: "High",         value: counts.HIGH,     filterVal: "HIGH"     as FilterLevel, color: "var(--warn)", bg: "color-mix(in srgb, var(--warn) 6%, transparent)",  border: "color-mix(in srgb, var(--warn) 18%, transparent)" },
-    { icon: Search,        label: "Medium",       value: counts.MEDIUM,   filterVal: "MEDIUM"   as FilterLevel, color: "var(--info)", bg: "color-mix(in srgb, var(--info) 6%, transparent)",  border: "color-mix(in srgb, var(--info) 18%, transparent)" },
-    { icon: Lightbulb,     label: "Opportunities",value: counts.LOW,      filterVal: "LOW"      as FilterLevel, color: "var(--ok)",   bg: "color-mix(in srgb, var(--ok) 6%, transparent)",   border: "color-mix(in srgb, var(--ok) 18%, transparent)" },
+    {
+      icon: AlertCircle,
+      label: "Critical",
+      value: counts.CRITICAL,
+      filterVal: "CRITICAL" as FilterLevel,
+      color: "var(--bad)",
+      bg: "color-mix(in srgb, var(--bad) 6%, transparent)",
+      border: "color-mix(in srgb, var(--bad) 18%, transparent)",
+    },
+    {
+      icon: AlertTriangle,
+      label: "High",
+      value: counts.HIGH,
+      filterVal: "HIGH" as FilterLevel,
+      color: "var(--warn)",
+      bg: "color-mix(in srgb, var(--warn) 6%, transparent)",
+      border: "color-mix(in srgb, var(--warn) 18%, transparent)",
+    },
+    {
+      icon: Search,
+      label: "Medium",
+      value: counts.MEDIUM,
+      filterVal: "MEDIUM" as FilterLevel,
+      color: "var(--info)",
+      bg: "color-mix(in srgb, var(--info) 6%, transparent)",
+      border: "color-mix(in srgb, var(--info) 18%, transparent)",
+    },
+    {
+      icon: Lightbulb,
+      label: "Opportunities",
+      value: counts.LOW,
+      filterVal: "LOW" as FilterLevel,
+      color: "var(--ok)",
+      bg: "color-mix(in srgb, var(--ok) 6%, transparent)",
+      border: "color-mix(in srgb, var(--ok) 18%, transparent)",
+    },
   ];
 
   return (
@@ -223,8 +251,12 @@ function InsightsPage() {
               style={{ background: bg, border: `1px solid ${border}` }}
             >
               <Ic size={16} style={{ color }} />
-              <p className="tnum mt-2 text-2xl font-bold" style={{ color }}>{value}</p>
-              <p className="text-xs font-medium" style={{ color: "var(--ink-2)" }}>{label}</p>
+              <p className="tnum mt-2 text-2xl font-bold" style={{ color }}>
+                {value}
+              </p>
+              <p className="text-xs font-medium" style={{ color: "var(--ink-2)" }}>
+                {label}
+              </p>
             </button>
           </motion.div>
         ))}
@@ -239,13 +271,16 @@ function InsightsPage() {
             onClick={() => setActiveFilter(value)}
             className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
-              background: activeFilter === value
-                ? `color-mix(in srgb, ${color} 12%, transparent)`
-                : "var(--accent-4)",
+              background:
+                activeFilter === value
+                  ? `color-mix(in srgb, ${color} 12%, transparent)`
+                  : "var(--accent-4)",
               color: activeFilter === value ? color : "var(--ink-3)",
-              border: `1px solid ${activeFilter === value
-                ? `color-mix(in srgb, ${color} 25%, transparent)`
-                : "var(--hairline)"}`,
+              border: `1px solid ${
+                activeFilter === value
+                  ? `color-mix(in srgb, ${color} 25%, transparent)`
+                  : "var(--hairline)"
+              }`,
             }}
           >
             {label}
@@ -265,7 +300,11 @@ function InsightsPage() {
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-36 animate-pulse rounded-2xl" style={{ background: "var(--hairline)" }} />
+            <div
+              key={i}
+              className="h-36 animate-pulse rounded-2xl"
+              style={{ background: "var(--hairline)" }}
+            />
           ))}
         </div>
       ) : filteredInsights.length === 0 ? (
@@ -281,13 +320,19 @@ function InsightsPage() {
       {/* Philosophy footer */}
       <div
         className="flex items-start gap-3 rounded-xl px-4 py-3 text-xs"
-        style={{ background: "var(--accent-3)", border: "1px solid var(--hairline)", color: "var(--ink-3)" }}
+        style={{
+          background: "var(--accent-3)",
+          border: "1px solid var(--hairline)",
+          color: "var(--ink-3)",
+        }}
       >
         <CheckCircle2 size={14} style={{ color: "var(--ok)", flexShrink: 0, marginTop: 1 }} />
         <p>
-          <strong className="font-semibold" style={{ color: "var(--ink-2)" }}>No number without evidence.</strong>{" "}
-          Every insight is backed by deterministic calculations from your real transaction data.
-          AI interprets and explains — it never invents financial figures.
+          <strong className="font-semibold" style={{ color: "var(--ink-2)" }}>
+            No number without evidence.
+          </strong>{" "}
+          Every insight is backed by deterministic calculations from your real transaction data. AI
+          interprets and explains — it never invents financial figures.
         </p>
       </div>
     </div>

@@ -31,10 +31,10 @@ type Step = "choose" | "excel-pick" | "sheet-url" | "permission" | "pushing" | "
 type SourceMode = "excel" | "sheets";
 
 interface PermissionRequest {
-  mode:       SourceMode;
-  filename:   string;
-  rowCount:   number;
-  actions:    string[];  // what the AI will do
+  mode: SourceMode;
+  filename: string;
+  rowCount: number;
+  actions: string[]; // what the AI will do
   reversible: boolean;
 }
 
@@ -44,9 +44,9 @@ function PermissionPrompt({
   onApprove,
   onCancel,
 }: {
-  req:       PermissionRequest;
+  req: PermissionRequest;
   onApprove: () => void;
-  onCancel:  () => void;
+  onCancel: () => void;
 }) {
   return (
     <motion.div
@@ -56,10 +56,14 @@ function PermissionPrompt({
       style={{ border: "1px solid var(--accent-25)", background: "var(--accent-3)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 border-b px-5 py-4"
-        style={{ borderColor: "var(--accent-15)" }}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "var(--accent-12)" }}>
+      <div
+        className="flex items-center gap-3 border-b px-5 py-4"
+        style={{ borderColor: "var(--accent-15)" }}
+      >
+        <span
+          className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: "var(--accent-12)" }}
+        >
           <ShieldCheck size={16} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
         </span>
         <div>
@@ -73,28 +77,46 @@ function PermissionPrompt({
       {/* Details */}
       <div className="px-5 py-4 space-y-3">
         <div className="flex items-start gap-2 text-sm">
-          <FileSpreadsheet size={15} style={{ color: "var(--color-accent)", marginTop: 1, flexShrink: 0 }} />
+          <FileSpreadsheet
+            size={15}
+            style={{ color: "var(--color-accent)", marginTop: 1, flexShrink: 0 }}
+          />
           <span>
             <strong>{req.filename}</strong>
-            {req.rowCount > 0 && <span style={{ color: "var(--ink-3)" }}> · ~{req.rowCount} rows detected</span>}
+            {req.rowCount > 0 && (
+              <span style={{ color: "var(--ink-3)" }}> · ~{req.rowCount} rows detected</span>
+            )}
           </span>
         </div>
 
-        <div className="rounded-xl p-4 space-y-2"
-          style={{ background: "var(--accent-4)", border: "1px solid var(--hairline)" }}>
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>
+        <div
+          className="rounded-xl p-4 space-y-2"
+          style={{ background: "var(--accent-4)", border: "1px solid var(--hairline)" }}
+        >
+          <p
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "var(--ink-3)" }}
+          >
             Wab will:
           </p>
           {req.actions.map((a, i) => (
             <div key={i} className="flex items-start gap-2 text-sm">
-              <ChevronRight size={12} style={{ color: "var(--color-accent)", marginTop: 3, flexShrink: 0 }} />
+              <ChevronRight
+                size={12}
+                style={{ color: "var(--color-accent)", marginTop: 3, flexShrink: 0 }}
+              />
               <span style={{ color: "var(--ink-2)" }}>{a}</span>
             </div>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs"
-          style={{ background: "color-mix(in srgb, var(--ok) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)" }}>
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs"
+          style={{
+            background: "color-mix(in srgb, var(--ok) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--ok) 20%, transparent)",
+          }}
+        >
           <Lock size={11} style={{ color: "var(--ok)", flexShrink: 0 }} />
           <span style={{ color: "var(--ok)" }}>
             {req.reversible
@@ -104,22 +126,30 @@ function PermissionPrompt({
         </div>
 
         <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-          Wab will <strong>never</strong> overwrite your source file.
-          Extracted data is written to a separate derived ledger only.
+          Wab will <strong>never</strong> overwrite your source file. Extracted data is written to a
+          separate derived ledger only.
         </p>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 border-t px-5 py-3"
-        style={{ borderColor: "var(--hairline)" }}>
-        <button type="button" onClick={onCancel}
+      <div
+        className="flex items-center justify-end gap-2 border-t px-5 py-3"
+        style={{ borderColor: "var(--hairline)" }}
+      >
+        <button
+          type="button"
+          onClick={onCancel}
           className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5"
-          style={{ borderColor: "var(--hairline)" }}>
+          style={{ borderColor: "var(--hairline)" }}
+        >
           Cancel
         </button>
-        <button type="button" onClick={onApprove}
+        <button
+          type="button"
+          onClick={onApprove}
           className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white"
-          style={{ background: "var(--color-accent)" }}>
+          style={{ background: "var(--color-accent)" }}
+        >
           <ShieldCheck size={14} />
           Allow access
         </button>
@@ -137,11 +167,11 @@ function ExcelPickStep({
   onBack: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging]   = useState(false);
-  const [fileName, setFileName]   = useState<string | null>(null);
-  const [rowCount, setRowCount]   = useState(0);
-  const [pending,  setPending]    = useState<File | null>(null);
-  const [counting, setCounting]   = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [rowCount, setRowCount] = useState(0);
+  const [pending, setPending] = useState<File | null>(null);
+  const [counting, setCounting] = useState(false);
 
   async function processFile(file: File) {
     setFileName(file.name);
@@ -155,23 +185,29 @@ function ExcelPickStep({
       } else {
         // XLSX — use xlsx library
         const XLSX = await import("xlsx");
-        const buf  = await file.arrayBuffer();
-        const wb   = XLSX.read(buf, { type: "array" });
-        let rows   = 0;
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        let rows = 0;
         for (const name of wb.SheetNames) {
           const sheet = wb.Sheets[name];
           if (sheet) rows += XLSX.utils.sheet_to_json(sheet).length;
         }
         setRowCount(rows);
       }
-    } catch { setRowCount(0); }
+    } catch {
+      setRowCount(0);
+    }
     setCounting(false);
   }
 
   return (
     <div className="space-y-4">
-      <button type="button" onClick={onBack}
-        className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--ink-3)" }}>
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-xs font-medium"
+        style={{ color: "var(--ink-3)" }}
+      >
         <RotateCcw size={11} /> Back
       </button>
 
@@ -179,14 +215,22 @@ function ExcelPickStep({
 
       {/* Drop zone */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) void processFile(f); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          const f = e.dataTransfer.files[0];
+          if (f) void processFile(f);
+        }}
         onClick={() => inputRef.current?.click()}
         className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed py-10 transition-colors"
         style={{
           borderColor: dragging ? "var(--color-accent)" : "var(--hairline)",
-          background:  dragging ? "var(--accent-4)" : "var(--accent-2)",
+          background: dragging ? "var(--accent-4)" : "var(--accent-2)",
         }}
       >
         <input
@@ -194,10 +238,20 @@ function ExcelPickStep({
           type="file"
           accept=".xlsx,.xls,.csv,.txt"
           className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) void processFile(f); }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void processFile(f);
+          }}
         />
-        <FileSpreadsheet size={28} strokeWidth={1.5} style={{ color: dragging ? "var(--color-accent)" : "var(--ink-3)" }} />
-        <p className="mt-3 text-sm font-medium" style={{ color: dragging ? "var(--color-accent)" : "var(--color-text)" }}>
+        <FileSpreadsheet
+          size={28}
+          strokeWidth={1.5}
+          style={{ color: dragging ? "var(--color-accent)" : "var(--ink-3)" }}
+        />
+        <p
+          className="mt-3 text-sm font-medium"
+          style={{ color: dragging ? "var(--color-accent)" : "var(--color-text)" }}
+        >
           {fileName ? fileName : "Drop your file here, or click to browse"}
         </p>
         <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
@@ -216,10 +270,12 @@ function ExcelPickStep({
       </div>
 
       {pending && !counting && (
-        <button type="button"
+        <button
+          type="button"
           onClick={() => onFile(pending, rowCount)}
           className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-white"
-          style={{ background: "var(--color-accent)" }}>
+          style={{ background: "var(--color-accent)" }}
+        >
           <ChevronRight size={15} />
           Continue
         </button>
@@ -233,13 +289,13 @@ function SheetUrlStep({
   onUrl,
   onBack,
 }: {
-  onUrl:  (url: string, rowCount: number) => void;
+  onUrl: (url: string, rowCount: number) => void;
   onBack: () => void;
 }) {
-  const [url,      setUrl]      = useState("");
-  const [loading,  setLoading]  = useState(false);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
   const [rowCount, setRowCount] = useState(0);
-  const [error,    setError]    = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
 
   async function verifySheet() {
@@ -254,9 +310,10 @@ function SheetUrlStep({
         `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`,
         { redirect: "follow" },
       );
-      if (!res.ok) throw new Error("Cannot access sheet. Make sure it's shared as 'Anyone with the link'.");
-      const csv   = await res.text();
-      const rows  = Math.max(0, csv.split("\n").filter(Boolean).length - 1);
+      if (!res.ok)
+        throw new Error("Cannot access sheet. Make sure it's shared as 'Anyone with the link'.");
+      const csv = await res.text();
+      const rows = Math.max(0, csv.split("\n").filter(Boolean).length - 1);
       setRowCount(rows);
       setVerified(true);
     } catch (e) {
@@ -268,8 +325,12 @@ function SheetUrlStep({
 
   return (
     <div className="space-y-4">
-      <button type="button" onClick={onBack}
-        className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--ink-3)" }}>
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-xs font-medium"
+        style={{ color: "var(--ink-3)" }}
+      >
         <RotateCcw size={11} /> Back
       </button>
 
@@ -282,14 +343,22 @@ function SheetUrlStep({
         <input
           type="url"
           value={url}
-          onChange={(e) => { setUrl(e.target.value); setVerified(false); setError(null); }}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setVerified(false);
+            setError(null);
+          }}
           placeholder="https://docs.google.com/spreadsheets/d/..."
           className="flex-1 rounded-xl border px-3 py-2.5 text-sm outline-none"
           style={{ borderColor: error ? "var(--bad)" : verified ? "var(--ok)" : "var(--hairline)" }}
         />
-        <button type="button" onClick={() => void verifySheet()} disabled={!url.trim() || loading}
+        <button
+          type="button"
+          onClick={() => void verifySheet()}
+          disabled={!url.trim() || loading}
           className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          style={{ background: "var(--color-accent)" }}>
+          style={{ background: "var(--color-accent)" }}
+        >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           Verify
         </button>
@@ -308,9 +377,12 @@ function SheetUrlStep({
       )}
 
       {verified && (
-        <button type="button" onClick={() => onUrl(url, rowCount)}
+        <button
+          type="button"
+          onClick={() => onUrl(url, rowCount)}
           className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-white"
-          style={{ background: "var(--color-accent)" }}>
+          style={{ background: "var(--color-accent)" }}
+        >
           <ChevronRight size={15} />
           Continue
         </button>
@@ -324,26 +396,26 @@ export function DirectSourceConnect({
   orgId,
   onComplete,
 }: {
-  orgId:      string;
+  orgId: string;
   onComplete: () => void;
 }) {
   const { session } = useAuth();
-  const qc          = useQueryClient();
+  const qc = useQueryClient();
 
-  const [step,       setStep]      = useState<Step>("choose");
-  const [mode,       setMode]      = useState<SourceMode>("excel");
-  const [permReq,    setPermReq]   = useState<PermissionRequest | null>(null);
+  const [step, setStep] = useState<Step>("choose");
+  const [mode, setMode] = useState<SourceMode>("excel");
+  const [permReq, setPermReq] = useState<PermissionRequest | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingUrl,  setPendingUrl]  = useState<string | null>(null);
-  const [errorMsg,   setErrorMsg]  = useState<string | null>(null);
-  const [jobId,      setJobId]     = useState<string | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
 
   // ── Step handlers ──────────────────────────────────────────────────────────
 
   function handleExcelFile(file: File, rowCount: number) {
     setPendingFile(file);
     setPermReq({
-      mode:     "excel",
+      mode: "excel",
       filename: file.name,
       rowCount,
       actions: [
@@ -361,7 +433,7 @@ export function DirectSourceConnect({
     setPendingUrl(url);
     const m = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
     setPermReq({
-      mode:     "sheets",
+      mode: "sheets",
       filename: m ? `Google Sheet (${m[1].slice(0, 8)}…)` : "Google Sheet",
       rowCount,
       actions: [
@@ -387,9 +459,9 @@ export function DirectSourceConnect({
         form.append("file", pendingFile);
 
         const res = await fetch("/api/documents/upload", {
-          method:  "POST",
+          method: "POST",
           headers: { Authorization: `Bearer ${session.access_token}` },
-          body:    form,
+          body: form,
         });
 
         if (!res.ok) {
@@ -397,26 +469,28 @@ export function DirectSourceConnect({
           throw new Error(body || `Upload failed (${res.status})`);
         }
 
-        const data = await res.json() as { uploaded?: Array<{ job_id: string | null }> };
+        const data = (await res.json()) as { uploaded?: Array<{ job_id: string | null }> };
         setJobId(data.uploaded?.[0]?.job_id ?? null);
         await qc.invalidateQueries({ queryKey: ["agent_jobs", orgId] });
         toast.success(`${pendingFile.name} uploaded — extraction running`);
-
       } else if (permReq.mode === "sheets" && pendingUrl) {
         // Save as a connected source
         const m = pendingUrl.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
         if (!m) throw new Error("Invalid Google Sheets URL");
         const sheetId = m[1];
 
-        const { error } = await supabase.from("connected_sources").upsert({
-          org_id:       orgId,
-          source_type:  "google_sheets",
-          external_id:  sheetId,
-          display_name: `Google Sheet (${sheetId.slice(0, 12)}…)`,
-          paused:       false,
-          rules:        { auto_import: true } as never,
-          updated_at:   new Date().toISOString(),
-        } as never, { onConflict: "org_id,source_type,external_id" });
+        const { error } = await supabase.from("connected_sources").upsert(
+          {
+            org_id: orgId,
+            source_type: "google_sheets",
+            external_id: sheetId,
+            display_name: `Google Sheet (${sheetId.slice(0, 12)}…)`,
+            paused: false,
+            rules: { auto_import: true } as never,
+            updated_at: new Date().toISOString(),
+          } as never,
+          { onConflict: "org_id,source_type,external_id" },
+        );
 
         if (error) throw new Error(error.message);
         await qc.invalidateQueries({ queryKey: ["connected_sources", orgId] });
@@ -424,7 +498,6 @@ export function DirectSourceConnect({
       }
 
       setStep("done");
-
     } catch (e) {
       setErrorMsg((e as Error).message ?? "Something went wrong");
       setStep("error");
@@ -436,17 +509,27 @@ export function DirectSourceConnect({
     <div className="space-y-4">
       <AnimatePresence mode="wait">
         {step === "choose" && (
-          <motion.div key="choose"
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-            className="grid gap-3 sm:grid-cols-2">
-
+          <motion.div
+            key="choose"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="grid gap-3 sm:grid-cols-2"
+          >
             {/* Excel card */}
-            <button type="button"
-              onClick={() => { setMode("excel"); setStep("excel-pick"); }}
+            <button
+              type="button"
+              onClick={() => {
+                setMode("excel");
+                setStep("excel-pick");
+              }}
               className="flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition-shadow hover:shadow-md"
-              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}>
-              <span className="flex size-10 items-center justify-center rounded-xl"
-                style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
+              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
+            >
+              <span
+                className="flex size-10 items-center justify-center rounded-xl"
+                style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}
+              >
                 <FileSpreadsheet size={18} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
               </span>
               <div>
@@ -455,18 +538,28 @@ export function DirectSourceConnect({
                   One-time import. Wab extracts transactions and writes to your ledger.
                 </p>
               </div>
-              <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ok)" }}>
+              <span
+                className="flex items-center gap-1 text-xs font-medium"
+                style={{ color: "var(--ok)" }}
+              >
                 Browse file <ChevronRight size={11} />
               </span>
             </button>
 
             {/* Google Sheets card */}
-            <button type="button"
-              onClick={() => { setMode("sheets"); setStep("sheet-url"); }}
+            <button
+              type="button"
+              onClick={() => {
+                setMode("sheets");
+                setStep("sheet-url");
+              }}
               className="flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition-shadow hover:shadow-md"
-              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}>
-              <span className="flex size-10 items-center justify-center rounded-xl"
-                style={{ background: "var(--accent-10)" }}>
+              style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
+            >
+              <span
+                className="flex size-10 items-center justify-center rounded-xl"
+                style={{ background: "var(--accent-10)" }}
+              >
                 <Sheet size={18} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
               </span>
               <div>
@@ -475,7 +568,10 @@ export function DirectSourceConnect({
                   Continuous monitoring. Wab detects changes and syncs automatically.
                 </p>
               </div>
-              <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--color-accent)" }}>
+              <span
+                className="flex items-center gap-1 text-xs font-medium"
+                style={{ color: "var(--color-accent)" }}
+              >
                 Paste link <ChevronRight size={11} />
               </span>
             </button>
@@ -483,22 +579,34 @@ export function DirectSourceConnect({
         )}
 
         {step === "excel-pick" && (
-          <motion.div key="excel-pick"
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+          <motion.div
+            key="excel-pick"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+          >
             <ExcelPickStep onFile={handleExcelFile} onBack={() => setStep("choose")} />
           </motion.div>
         )}
 
         {step === "sheet-url" && (
-          <motion.div key="sheet-url"
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+          <motion.div
+            key="sheet-url"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+          >
             <SheetUrlStep onUrl={handleSheetUrl} onBack={() => setStep("choose")} />
           </motion.div>
         )}
 
         {step === "permission" && permReq && (
-          <motion.div key="permission"
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+          <motion.div
+            key="permission"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+          >
             <PermissionPrompt
               req={permReq}
               onApprove={() => void handleApprove()}
@@ -508,9 +616,13 @@ export function DirectSourceConnect({
         )}
 
         {step === "pushing" && (
-          <motion.div key="pushing"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-12 text-center">
+          <motion.div
+            key="pushing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-12 text-center"
+          >
             <Loader2 size={32} className="animate-spin" style={{ color: "var(--color-accent)" }} />
             <p className="mt-4 text-sm font-medium">
               {mode === "excel" ? "Uploading and extracting…" : "Connecting sheet…"}
@@ -522,11 +634,17 @@ export function DirectSourceConnect({
         )}
 
         {step === "done" && (
-          <motion.div key="done"
-            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-10 text-center">
-            <span className="flex size-14 items-center justify-center rounded-2xl"
-              style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}>
+          <motion.div
+            key="done"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-10 text-center"
+          >
+            <span
+              className="flex size-14 items-center justify-center rounded-2xl"
+              style={{ background: "color-mix(in srgb, var(--ok) 10%, transparent)" }}
+            >
               <CheckCircle2 size={28} strokeWidth={1.75} style={{ color: "var(--ok)" }} />
             </span>
             <p className="mt-4 text-sm font-semibold">
@@ -538,35 +656,54 @@ export function DirectSourceConnect({
                 : "Wab will monitor this sheet every 60 seconds and sync changes automatically."}
             </p>
             {jobId && (
-              <a href="/app/activity"
+              <a
+                href="/app/activity"
                 className="mt-4 flex items-center gap-1.5 text-xs font-semibold"
-                style={{ color: "var(--color-accent)" }}>
+                style={{ color: "var(--color-accent)" }}
+              >
                 View in Activity Feed <ChevronRight size={11} />
               </a>
             )}
-            <button type="button" onClick={onComplete}
+            <button
+              type="button"
+              onClick={onComplete}
               className="mt-5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-black/5"
-              style={{ borderColor: "var(--hairline)" }}>
+              style={{ borderColor: "var(--hairline)" }}
+            >
               Done
             </button>
           </motion.div>
         )}
 
         {step === "error" && (
-          <motion.div key="error"
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-            className="flex flex-col items-center justify-center py-10 text-center">
-            <span className="flex size-14 items-center justify-center rounded-2xl"
-              style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}>
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="flex flex-col items-center justify-center py-10 text-center"
+          >
+            <span
+              className="flex size-14 items-center justify-center rounded-2xl"
+              style={{ background: "color-mix(in srgb, var(--bad) 10%, transparent)" }}
+            >
               <X size={28} strokeWidth={1.75} style={{ color: "var(--bad)" }} />
             </span>
-            <p className="mt-4 text-sm font-semibold" style={{ color: "var(--bad)" }}>Something went wrong</p>
+            <p className="mt-4 text-sm font-semibold" style={{ color: "var(--bad)" }}>
+              Something went wrong
+            </p>
             <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--ink-3)" }}>
               {errorMsg ?? "Unknown error. Your data was not changed."}
             </p>
-            <button type="button" onClick={() => { setStep("choose"); setErrorMsg(null); }}
+            <button
+              type="button"
+              onClick={() => {
+                setStep("choose");
+                setErrorMsg(null);
+              }}
               className="mt-5 flex items-center gap-1.5 rounded-full border px-5 py-2 text-sm font-medium hover:bg-black/5"
-              style={{ borderColor: "var(--hairline)" }}>
+              style={{ borderColor: "var(--hairline)" }}
+            >
               <RotateCcw size={13} /> Try again
             </button>
           </motion.div>

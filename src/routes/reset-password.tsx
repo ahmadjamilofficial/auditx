@@ -35,10 +35,17 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6" style={{ background: "var(--color-login-bg)" }}>
-      <div className="mb-8"><Logo /></div>
+    <div
+      className="flex min-h-screen flex-col items-center justify-center px-6"
+      style={{ background: "var(--color-login-bg)" }}
+    >
+      <div className="mb-8">
+        <Logo />
+      </div>
       <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-        <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.8rem" }}>Set a new password</h1>
+        <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.8rem" }}>
+          Set a new password
+        </h1>
         <input
           type="password"
           value={pw}
@@ -47,7 +54,11 @@ function ResetPassword() {
           className="w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
           style={{ borderColor: "var(--hairline)" }}
         />
-        {err && <p className="text-sm" style={{ color: "var(--bad)" }}>{err}</p>}
+        {err && (
+          <p className="text-sm" style={{ color: "var(--bad)" }}>
+            {err}
+          </p>
+        )}
         <button
           type="submit"
           disabled={busy}

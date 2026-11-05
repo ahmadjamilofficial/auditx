@@ -21,7 +21,9 @@ function keyMaterial(): string | undefined {
   const configured = serverEnv("WAB_CREDENTIAL_KEY");
   if (configured) return configured;
   if (import.meta.env.DEV) {
-    console.warn("[Wab] WAB_CREDENTIAL_KEY is unset — using the local development key for credential storage.");
+    console.warn(
+      "[Wab] WAB_CREDENTIAL_KEY is unset — using the local development key for credential storage.",
+    );
     return DEV_FALLBACK_KEY;
   }
   return undefined;

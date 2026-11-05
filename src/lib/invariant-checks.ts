@@ -5,22 +5,19 @@
 import { supabase } from "./supabase";
 
 export interface InvariantResult {
-  passed:   boolean;
+  passed: boolean;
   failures: InvariantFailure[];
 }
 
 export interface InvariantFailure {
-  check:      string;
-  detail:     string;
+  check: string;
+  detail: string;
   entity_id?: string;
 }
 
 // ── Run all invariants for an org after a run ─────────────────────────────────
 
-export async function checkInvariants(
-  orgId:  string,
-  runId:  string,
-): Promise<InvariantResult> {
+export async function checkInvariants(orgId: string, runId: string): Promise<InvariantResult> {
   const failures: InvariantFailure[] = [];
 
   // Fetch transactions touched in this run
@@ -40,8 +37,8 @@ export async function checkInvariants(
   for (const row of rows) {
     if (Number(row.quantity) <= 0) {
       failures.push({
-        check:     "quantity_positive",
-        detail:    `Transaction ${row.id} has quantity ${row.quantity} ≤ 0`,
+        check: "quantity_positive",
+        detail: `Transaction ${row.id} has quantity ${row.quantity} ≤ 0`,
         entity_id: row.id,
       });
     }
@@ -59,14 +56,14 @@ export async function checkInvariants(
   for (const tx of allTxs ?? []) {
     const ticker = tx.ticker as string;
     if (!inventory[ticker]) inventory[ticker] = 0;
-    if (tx.action === "BUY")  inventory[ticker] += Number(tx.quantity);
+    if (tx.action === "BUY") inventory[ticker] += Number(tx.quantity);
     if (tx.action === "SELL") inventory[ticker] -= Number(tx.quantity);
   }
 
   for (const [ticker, net] of Object.entries(inventory)) {
     if (net < 0) {
       failures.push({
-        check:  "no_oversell",
+        check: "no_oversell",
         detail: `Ticker ${ticker} has net quantity ${net.toFixed(4)} (oversold)`,
       });
     }
@@ -77,7 +74,10 @@ export async function checkInvariants(
     .from("ledger_entries")
     .select("transaction_id, entry_type, amount")
     .eq("org_id", orgId)
-    .in("transaction_id", rows.map((r) => r.id));
+    .in(
+      "transaction_id",
+      rows.map((r) => r.id),
+    );
 
   const balances: Record<string, number> = {};
   for (const entry of entries ?? []) {
@@ -94,8 +94,8 @@ export async function checkInvariants(
   for (const [txId, balance] of Object.entries(balances)) {
     if (Math.abs(balance) > 0.01) {
       failures.push({
-        check:     "ledger_balance",
-        detail:    `Transaction ${txId} ledger entries don't balance: net = ${balance.toFixed(4)}`,
+        check: "ledger_balance",
+        detail: `Transaction ${txId} ledger entries don't balance: net = ${balance.toFixed(4)}`,
         entity_id: txId,
       });
     }
@@ -121,8 +121,8 @@ export async function checkInvariants(
       const ref = flag.ref_id as string;
       if (ref && ref.length > 0 && !knownRefs.has(ref)) {
         failures.push({
-          check:     "no_orphan_flags",
-          detail:    `Flag ${flag.id} references unknown ref_id '${ref}' (${flag.ticker})`,
+          check: "no_orphan_flags",
+          detail: `Flag ${flag.id} references unknown ref_id '${ref}' (${flag.ticker})`,
           entity_id: flag.id,
         });
       }
