@@ -866,6 +866,9 @@ function Chat({
                 Wab works autonomously in the background. Use this chat to ask questions,
                 investigate anomalies, or request a specific analysis.
               </p>
+              <p className="mt-4 text-xs" style={{ color: "var(--ink-3)" }}>
+                You can also drag &amp; drop a broker statement, PDF, or spreadsheet directly into the chat.
+              </p>
             </motion.div>
           )}
 
