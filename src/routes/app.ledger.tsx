@@ -224,7 +224,7 @@ function TxFormModal({
                     className="flex-1 rounded-xl border py-2 text-xs font-semibold transition-all"
                     style={{
                       borderColor: form.action === a ? "var(--color-accent)" : "var(--hairline)",
-                      background: form.action === a ? "var(--accent-8)" : "white",
+                      background: form.action === a ? "var(--accent-8)" : "var(--surface)",
                       color: form.action === a ? "var(--color-accent)" : "var(--ink-2)",
                     }}
                   >
@@ -1675,8 +1675,8 @@ function Ledger() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -4 }}
                             transition={{ duration: 0.12 }}
-                            className="absolute right-3 top-full z-20 mt-1 w-36 overflow-hidden rounded-xl bg-surface shadow-lg"
-                            style={{ border: "1px solid var(--hairline)" }}
+                            className="absolute right-3 top-full z-20 mt-1 w-36 overflow-hidden rounded-xl shadow-lg"
+                            style={{ border: "1px solid var(--hairline)", background: "var(--surface)" }}
                           >
                             <button
                               type="button"
@@ -1684,7 +1684,7 @@ function Ledger() {
                                 setEditRow(tx);
                                 setRowMenu(null);
                               }}
-                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-black/5"
+                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-surface-hover"
                             >
                               <Edit2
                                 size={13}
@@ -1699,7 +1699,7 @@ function Ledger() {
                                 setDeleteRow(tx);
                                 setRowMenu(null);
                               }}
-                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-black/5"
+                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-surface-hover"
                               style={{ color: "var(--bad)" }}
                             >
                               <Trash2 size={13} strokeWidth={1.75} />

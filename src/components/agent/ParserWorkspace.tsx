@@ -827,7 +827,7 @@ function Chat({
               setMenuOpen(false);
                setDeleteOpen(true);
               }}
-             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-black/5"
+             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-surface-hover"
             style={{ color: "var(--bad)" }}
          >
     <Trash2 size={14} strokeWidth={1.75} />

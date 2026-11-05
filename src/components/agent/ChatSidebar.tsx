@@ -80,8 +80,8 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
   if (!open) {
     return (
       <div
-        className="hidden shrink-0 flex-col items-center gap-2 border-r bg-card p-2 md:flex"
-        style={{ borderColor: "var(--hairline)" }}
+        className="hidden shrink-0 flex-col items-center gap-2 border-r p-2 md:flex"
+        style={{ borderColor: "var(--sidebar-border)", background: "var(--sidebar)" }}
       >
         <button
           type="button"
@@ -105,8 +105,8 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
 
   return (
     <aside
-      className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex"
-      style={{ borderColor: "var(--hairline)" }}
+      className="hidden w-64 shrink-0 flex-col border-r md:flex"
+      style={{ borderColor: "var(--sidebar-border)", background: "var(--sidebar)" }}
     >
       <div className="flex items-center gap-2 p-3">
         <button

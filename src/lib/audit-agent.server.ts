@@ -46,15 +46,19 @@ export interface ResolvedModel {
 }
 
 /**
- * Gemini 2.0 is fully shut down and 2.5 is being auto-routed away, so a stale
- * GEMINI_MODEL value in a deployment's env must never be sent to the API.
+ * Hardcode a list of known-broken/retired model IDs only. Any model ID not
+ * in this list passes through — future models won't be accidentally blocked.
  */
-const RETIRED_GEMINI = /^gemini-2\.(0|5)-/i;
-const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
+const RETIRED_GEMINI_IDS = new Set([
+  "gemini-2.0-flash-001",
+  "gemini-2.0-flash-lite-001",
+  "gemini-1.0-pro",
+]);
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 
 function geminiModelId(env?: EnvBag): string {
   const configured = serverEnv("GEMINI_MODEL", env);
-  if (configured && !RETIRED_GEMINI.test(configured)) return configured;
+  if (configured && !RETIRED_GEMINI_IDS.has(configured)) return configured;
   return DEFAULT_GEMINI_MODEL;
 }
 

@@ -212,7 +212,7 @@ export function ExtractedFieldsCard({
                         value={edited[f.field] ?? f.value}
                         onChange={(e) => setEdited((p) => ({ ...p, [f.field]: e.target.value }))}
                         disabled={posted}
-                        className="w-full rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-white focus:ring-2"
+                        className="w-full rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-surface focus:ring-2"
                         style={{
                           borderColor: "transparent",
                           ["--tw-ring-color" as string]: "var(--color-accent)",

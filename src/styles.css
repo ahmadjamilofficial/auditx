@@ -353,3 +353,9 @@
 @utility tnum {
   font-variant-numeric: tabular-nums;
 }
+
+/* Theme-aware surface hover — works in both light and dark mode.
+   Use `hover:bg-surface-hover` instead of `hover:bg-black/5` in dark-aware components. */
+@utility bg-surface-hover {
+  background-color: var(--accent-6);
+}
