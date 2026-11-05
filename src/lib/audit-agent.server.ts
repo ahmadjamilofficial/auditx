@@ -182,8 +182,8 @@ interface ProbeResult {
 
 /** Per-isolate memory so a dead provider is not re-probed on every message. */
 const probeCache = new Map<string, ProbeResult>();
-const HEALTHY_TTL_MS = 5 * 60_000;
-const UNHEALTHY_TTL_MS = 30_000;
+const HEALTHY_TTL_MS = 15 * 60_000; // 15 min — don't re-probe a working provider too often
+const UNHEALTHY_TTL_MS = 60_000;    // 1 min — retry a failing provider more quickly
 
 function describeProbeError(error: unknown): { status?: number; message: string } {
   const status =
@@ -224,7 +224,7 @@ async function probe(entry: ResolvedModel["cascade"][number]): Promise<ProbeResu
       prompt: "Reply with OK.",
       maxOutputTokens: 4,
       maxRetries: 0,
-      abortSignal: AbortSignal.timeout(20_000),
+      abortSignal: AbortSignal.timeout(8_000),
       providerOptions: entry.providerOptions as never,
     });
     const result: ProbeResult = { ok: true, until: Date.now() + HEALTHY_TTL_MS };
@@ -248,9 +248,11 @@ export interface WorkingModel extends ResolvedModel {
 }
 
 /**
- * Returns the first provider in the cascade that really answers. When none do,
- * returns null together with every provider's rejection reason so the UI can
- * show something actionable instead of "something went wrong".
+/**
+ * Returns the first provider in the cascade that really answers. Probes all
+ * providers in parallel (capped at 8s each) and returns the first healthy one
+ * in cascade priority order — so Lovable beats Gemini beats OpenAI even if
+ * all probes finish at the same time.
  */
 export async function selectWorkingModel(resolved: ResolvedModel | null): Promise<{
   model: WorkingModel | null;
@@ -258,19 +260,27 @@ export async function selectWorkingModel(resolved: ResolvedModel | null): Promis
 }> {
   if (!resolved) return { model: null, attempts: [] };
 
-  const attempts: ProviderAttempt[] = [];
-  for (const entry of resolved.cascade) {
-    const result = await probe(entry);
-    attempts.push({
+  // Fire all probes in parallel
+  const probeResults = await Promise.all(resolved.cascade.map((entry) => probe(entry)));
+
+  const attempts: ProviderAttempt[] = probeResults.map((result, i) => {
+    const entry = resolved.cascade[i]!;
+    return {
       provider: entry.provider,
       modelId: entry.modelId,
       ok: result.ok,
       ...(result.status === undefined ? {} : { status: result.status }),
       ...(result.message === undefined ? {} : { message: result.message }),
-    });
+    };
+  });
+
+  // Pick the first healthy provider in cascade order
+  for (let i = 0; i < resolved.cascade.length; i++) {
+    const entry = resolved.cascade[i]!;
+    const result = probeResults[i]!;
     if (!result.ok) {
       console.warn(
-        `[Wab AI] provider ${entry.provider}/${entry.modelId} rejected the request:`,
+        `[Wab AI] provider ${entry.provider}/${entry.modelId} rejected the probe:`,
         result.message,
       );
       continue;
@@ -287,6 +297,7 @@ export async function selectWorkingModel(resolved: ResolvedModel | null): Promis
       attempts,
     };
   }
+
   return { model: null, attempts };
 }
 
