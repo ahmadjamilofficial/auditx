@@ -14,7 +14,6 @@ import { Btn, Panel, reveal, StatusPill } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
 import { useTransactions } from "@/lib/data-hooks";
 import { computeTax, suggestHarvesting, type Jurisdiction } from "@/lib/tax";
-import { explainTaxComputation } from "@/lib/ai-service";
 import { useLedgerContext } from "@/lib/use-ledger-context";
 
 export const Route = createFileRoute("/app/tax")({
@@ -47,16 +46,30 @@ function TaxCenter() {
   async function getAIExplanation() {
     setLoadingAI(true);
     try {
-      const result = await explainTaxComputation(
-        activeJurisdiction,
-        tax.shortTermGain,
-        tax.longTermGain,
-        tax.estimatedTaxDue,
-        filerStatus,
-      );
-      setAiExplanation(result.plain_english);
+      const resp = await fetch("/api/intelligence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemPrompt:
+            "You are a tax computation expert for PSX (Pakistan) and NSE (India) traders. Explain the provided tax calculation in plain English, covering FIFO lot matching, holding period tiers, and CGT bands. Be concise (3-4 sentences) and include key actionable advice.",
+          userPrompt: `Tax computation for ${activeJurisdiction} — Filer status: ${filerStatus}\nShort-term gain: ${tax.shortTermGain}\nLong-term gain: ${tax.longTermGain}\nEstimated tax due: ${tax.estimatedTaxDue}\nTax year: ${activeYear}`,
+        }),
+      });
+      let explanation = "";
+      if (resp.ok) {
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            explanation += decoder.decode(value, { stream: true });
+          }
+        }
+      }
+      setAiExplanation(explanation || "AI explanation unavailable.");
     } catch {
-      setAiExplanation("AI explanation requires VITE_OPENROUTER_API_KEY to be configured.");
+      setAiExplanation("AI explanation unavailable. Please try again.");
     } finally {
       setLoadingAI(false);
     }

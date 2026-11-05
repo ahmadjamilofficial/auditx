@@ -410,12 +410,6 @@ function Investigations() {
   async function runInvestigation(config: InvestigationConfig) {
     if (!profile?.org_id) return;
 
-    const apiKey = (import.meta.env["VITE_OPENROUTER_API_KEY"] as string | undefined) ?? "";
-    if (!apiKey || apiKey.length < 10) {
-      alert("AI API key not configured. Add VITE_OPENROUTER_API_KEY to your .env file.");
-      return;
-    }
-
     setRunning(true);
     setRunningType(config.type);
     setProgress([]);
@@ -473,28 +467,29 @@ function Investigations() {
 
       setProgress((p) => [...p.slice(-4), "Generating intelligence report…"]);
 
-      const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const resp = await fetch("/api/intelligence", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://psxl.live",
-          "X-Title": "Wab",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "nvidia/nemotron-3-ultra-550b-a55b:free",
-          messages: [{ role: "user", content: aiPrompt }],
-          temperature: 0.3,
-          max_tokens: 1500,
+          systemPrompt:
+            "You are Wab Investigation Agent. Analyse the financial data provided and generate a concise, evidence-backed investigation report. Use markdown formatting. Be precise about numbers. Clearly state confidence levels.",
+          userPrompt: aiPrompt,
         }),
       });
 
       let aiReport = "";
       if (resp.ok) {
-        const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
-        aiReport = data.choices?.[0]?.message?.content ?? "";
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            aiReport += decoder.decode(value, { stream: true });
+          }
+        }
       } else {
-        aiReport = `Investigation could not complete: OpenRouter returned ${resp.status}. Please check your API key.`;
+        aiReport = `Investigation could not complete: AI service returned ${resp.status}. Please check your configuration.`;
       }
 
       // Compute summary stats

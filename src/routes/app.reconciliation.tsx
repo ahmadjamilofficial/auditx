@@ -19,7 +19,6 @@ import {
   useTransactions,
   useBrokerConnections,
 } from "@/lib/data-hooks";
-import { explainAnomaly } from "@/lib/ai-service";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -278,14 +277,31 @@ function Reconciliation() {
   async function fetchAIExplanation(flag: (typeof allFlags)[0]) {
     setLoadingAI(flag.id);
     try {
-      const result = await explainAnomaly(
-        flag.flag_type,
-        flag.expected,
-        flag.actual,
-        flag.ticker,
-        profile?.jurisdiction ?? "PSX",
-      );
-      setAiExplanations((prev) => ({ ...prev, [flag.id]: result.summary }));
+      const resp = await fetch("/api/intelligence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemPrompt:
+            "You are a financial reconciliation expert. Explain this anomaly concisely in 2-3 sentences, identifying the most likely root cause and recommended action. Be direct and use plain language.",
+          userPrompt: `Anomaly: ${flag.flag_type} for ${flag.ticker}\nExpected: ${flag.expected}, Actual: ${flag.actual}\nDescription: ${flag.description}\nJurisdiction: ${profile?.jurisdiction ?? "PSX"}`,
+        }),
+      });
+      let explanation = "";
+      if (resp.ok) {
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            explanation += decoder.decode(value, { stream: true });
+          }
+        }
+      }
+      setAiExplanations((prev) => ({
+        ...prev,
+        [flag.id]: explanation || "AI explanation unavailable.",
+      }));
     } catch {
       setAiExplanations((prev) => ({ ...prev, [flag.id]: "AI explanation unavailable." }));
     } finally {
