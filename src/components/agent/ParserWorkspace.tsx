@@ -19,7 +19,6 @@ import {
   Download,
   FileText,
   Loader2,
-  MoreVertical,
   Paperclip,
   Shield,
   Sparkles,
@@ -668,7 +667,6 @@ function Chat({
   const deleteChatMutation = useDeleteChatThread();
   const queryClient = useQueryClient();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, stop, error, addToolApprovalResponse, setMessages } =
@@ -756,15 +754,6 @@ function Chat({
     }
   }, [messages, status]);
 
-  // Close menu on outside click
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    }
-    if (menuOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
   async function handleDeleteChat() {
     if (!user?.id) return;
     try {
@@ -793,51 +782,8 @@ function Chat({
           background: "var(--surface)",
         }}
       >
-        {/* Right controls */}
-        <div className="flex items-center gap-2 ml-auto" ref={menuRef}>
-          {/* Thread menu */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="flex size-8 items-center justify-center rounded-xl border transition-colors hover:bg-surface-hover"
-              style={{ borderColor: "var(--hairline)" }}
-              aria-label="Chat options"
-            >
-              <MoreVertical size={15} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
-            </button>
-
-            <AnimatePresence>
-              {menuOpen && (
-               <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                  transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl shadow-lg"
-                  style={{
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--hairline)",
-                    boxShadow: "var(--shadow-hover)",
-                  }}
->
-              <button
-              type="button"
-              onClick={() => {
-              setMenuOpen(false);
-               setDeleteOpen(true);
-              }}
-             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-surface-hover"
-            style={{ color: "var(--bad)" }}
-         >
-    <Trash2 size={14} strokeWidth={1.75} />
-    Delete conversation
-  </button>
-</motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+        {/* Right controls — empty, kept for layout */}
+        <div className="flex items-center gap-2 ml-auto" />
       </div>
 
       {/* ── Messages ─────────────────────────────────────────────────────── */}
@@ -984,7 +930,14 @@ function Chat({
               ref={textareaRef}
               autoFocus
               placeholder="Ask Wab a question about your data…"
-              onChange={(e) => saveComposerDraft(threadId, e.currentTarget.value)}
+              className="px-4 text-sm"
+              onChange={(e) => {
+                // Auto-grow
+                const el = e.currentTarget;
+                el.style.height = "auto";
+                el.style.height = `${Math.min(el.scrollHeight, 260)}px`;
+                saveComposerDraft(threadId, el.value);
+              }}
             />
             <PromptInputFooter>
               <PromptInputTools>
