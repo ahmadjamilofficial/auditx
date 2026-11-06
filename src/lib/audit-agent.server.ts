@@ -117,21 +117,22 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
     });
   }
 
-  const groqKey = serverEnv("GROQ_API_KEY", env);
-  if (groqKey) {
-    const modelId = serverEnv("GROQ_MODEL", env) ?? "llama-3.3-70b-versatile";
-    const provider = createOpenAICompatible({
-      name: "groq",
-      baseURL: "https://api.groq.com/openai/v1",
-      apiKey: groqKey,
-    });
-    cascade.push({
-      id: modelId,
-      model: provider.chatModel(modelId) as unknown as LanguageModel,
-      provider: "groq",
-      modelId,
-      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
-    });
+  const geminiKey =
+    serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
+  if (geminiKey) {
+    const provider = createGoogleGenerativeAI({ apiKey: geminiKey });
+    const seen = new Set<string>();
+    for (const modelId of [geminiModelId(env), GEMINI_CHAT_MODEL]) {
+      if (seen.has(modelId) || isUnusableGemini(modelId)) continue;
+      seen.add(modelId);
+      cascade.push({
+        id: modelId,
+        model: provider(modelId) as unknown as LanguageModel,
+        provider: "gemini",
+        modelId,
+        providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
+      });
+    }
   }
 
   const openRouterKey = serverEnv("OPENROUTER_API_KEY", env);
@@ -155,23 +156,28 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
     });
   }
 
-  const geminiKey =
-    serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
-  if (geminiKey) {
-    const modelId = geminiModelId(env);
-    const provider = createGoogleGenerativeAI({ apiKey: geminiKey });
-    cascade.push({
-      id: GEMINI_CHAT_MODEL,
-      model: provider(GEMINI_CHAT_MODEL) as unknown as LanguageModel,
-      provider: "gemini",
-      modelId: GEMINI_CHAT_MODEL,
-      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
+  // Groq last: llama-3.3-70b often returns "high demand" even after a healthy probe.
+  const groqKey = serverEnv("GROQ_API_KEY", env);
+  if (groqKey) {
+    const provider = createOpenAICompatible({
+      name: "groq",
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: groqKey,
     });
-    if (modelId !== GEMINI_CHAT_MODEL) {
+    const groqModels = [
+      serverEnv("GROQ_MODEL", env) ?? "llama-3.1-8b-instant",
+      "llama-3.1-8b-instant",
+      "openai/gpt-oss-20b",
+      "llama-3.3-70b-versatile",
+    ];
+    const seen = new Set<string>();
+    for (const modelId of groqModels) {
+      if (seen.has(modelId)) continue;
+      seen.add(modelId);
       cascade.push({
         id: modelId,
-        model: provider(modelId) as unknown as LanguageModel,
-        provider: "gemini",
+        model: provider.chatModel(modelId) as unknown as LanguageModel,
+        provider: "groq",
         modelId,
         providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
       });
@@ -211,6 +217,37 @@ interface ProbeResult {
 const probeCache = new Map<string, ProbeResult>();
 const HEALTHY_TTL_MS = 15 * 60_000; // 15 min — don't re-probe a working provider too often
 const UNHEALTHY_TTL_MS = 60_000;    // 1 min — retry a failing provider more quickly
+const CAPACITY_TTL_MS = 5 * 60_000; // 5 min — skip models that are overloaded
+
+export function isCapacityError(error: unknown): boolean {
+  const status =
+    (error as { statusCode?: number }).statusCode ?? (error as { status?: number }).status;
+  const message = [
+    (error as Error).message,
+    (error as { responseBody?: string }).responseBody,
+    (error as { cause?: { message?: string } }).cause?.message,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  if (status === 429 || status === 503) return true;
+  return /high demand|overloaded|capacity|rate.?limit|try again later|resource exhausted|temporarily unavailable|unavailable for|Failed after \d+ attempts/i.test(
+    message,
+  );
+}
+
+export function markProviderUnhealthy(
+  provider: string,
+  modelId: string,
+  message: string,
+  status?: number,
+): void {
+  probeCache.set(`${provider}:${modelId}`, {
+    ok: false,
+    until: Date.now() + CAPACITY_TTL_MS,
+    message,
+    ...(status === undefined ? {} : { status }),
+  });
+}
 
 function describeProbeError(error: unknown): { status?: number; message: string } {
   const status =
@@ -259,9 +296,10 @@ async function probe(entry: ResolvedModel["cascade"][number]): Promise<ProbeResu
     return result;
   } catch (error) {
     const described = describeProbeError(error);
+    const ttl = isCapacityError(error) ? CAPACITY_TTL_MS : UNHEALTHY_TTL_MS;
     const result: ProbeResult = {
       ok: false,
-      until: Date.now() + UNHEALTHY_TTL_MS,
+      until: Date.now() + ttl,
       ...(described.status === undefined ? {} : { status: described.status }),
       message: described.message,
     };
@@ -360,6 +398,6 @@ export function isProviderError(e: unknown): boolean {
   const s =
     (e as { statusCode?: number; status?: number })?.statusCode ??
     (e as { status?: number })?.status;
-  return s === 429 || (typeof s === "number" && s >= 500);
+  return isCapacityError(e) || s === 429 || (typeof s === "number" && s >= 500);
 }
 export const isQuotaError = isProviderError;

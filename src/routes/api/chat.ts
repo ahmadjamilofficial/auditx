@@ -1,9 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, tool, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  streamText,
+  tool,
+  type UIMessage,
+} from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { describeAttempts, resolveAgentModel, selectWorkingModel } from "@/lib/audit-agent.server";
+import {
+  describeAttempts,
+  isCapacityError,
+  isProviderError,
+  markProviderUnhealthy,
+  resolveAgentModel,
+  selectWorkingModel,
+} from "@/lib/audit-agent.server";
 import { serverEnv, supabaseServerConfig } from "@/lib/env.server";
 import { pickCascadeForPlan, planOf } from "@/lib/plans";
 import { computeTax } from "@/lib/tax";
@@ -13,6 +27,33 @@ import type { Transaction } from "@/lib/demo-data";
 type ChatBody = { id?: unknown; messages?: unknown };
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+
+function replayIteratorStream<T>(
+  first: IteratorResult<T>,
+  iterator: AsyncIterator<T>,
+): ReadableStream<T> {
+  let sentFirst = false;
+  return new ReadableStream<T>({
+    async pull(controller) {
+      try {
+        if (!sentFirst) {
+          sentFirst = true;
+          if (first.done) {
+            controller.close();
+            return;
+          }
+          controller.enqueue(first.value);
+          return;
+        }
+        const next = await iterator.next();
+        if (next.done) controller.close();
+        else controller.enqueue(next.value);
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+}
 
 const SHEET_RE = /\.(xlsx|xls|csv|txt|tsv)$/i;
 const SHEET_TYPES = ["spreadsheetml", "ms-excel", "text/csv", "text/plain", "tab-separated"];
@@ -432,9 +473,14 @@ export const Route = createFileRoute("/api/chat")({
           const monthlyTxLimit = limits.transactionsPerMonth; // null = unlimited
           const canDelegate = limits.features.specialistAgents;
 
-          const cascadeFallback = resolved.cascade[0];
+          const healthyCascade = resolved.cascade.filter((entry) =>
+            (resolved.attempts ?? []).some(
+              (a) => a.ok && a.provider === entry.provider && a.modelId === entry.modelId,
+            ),
+          );
+          const cascadeFallback = healthyCascade[0] ?? resolved.cascade[0];
           if (cascadeFallback) {
-            const picked = pickCascadeForPlan(resolved.cascade, plan, cascadeFallback);
+            const picked = pickCascadeForPlan(healthyCascade, plan, cascadeFallback);
             resolved = {
               ...resolved,
               modelId: picked.modelId,
@@ -1400,7 +1446,7 @@ NEW TOOLS ADDED:
             },
             experimental_toolApprovalSecret: approvalSecret,
             maxSteps,
-            maxRetries: 2,
+            maxRetries: 0,
             // After the plan's tool budget, tools switch off so the model must
             // write its final answer instead of stopping mid-way.
             prepareStep: ({ stepNumber }: { stepNumber: number }) =>
@@ -1408,82 +1454,117 @@ NEW TOOLS ADDED:
             providerOptions: resolved.providerOptions as never,
           };
 
-          // No abortSignal: the answer finishes and is saved even if the
-          // browser connection drops mid-response.
-          let result;
-          try {
-            result = streamText({ model, ...STREAM_OPTS });
-          } catch (e) {
-            return new Response(
-              JSON.stringify({
-                code: "ai_stream_error",
-                message: "Failed to start AI stream",
-                error: e instanceof Error ? e.message : String(e),
-              }),
-              { status: 500, headers: { "Content-Type": "application/json" } },
-            );
-          }
-          void result.consumeStream();
-          return result.toUIMessageStreamResponse({
-            sendReasoning: true,
+          const persistMessages = async (messages: UIMessage[]) => {
+            try {
+              const seen = new Map<string, UIMessage & { position: number }>();
+              messages.forEach((message, index) => {
+                seen.set(message.id, { ...message, position: index });
+              });
+              const deduped = Array.from(seen.values());
+              await supabase.from("chat_messages").upsert(
+                deduped.map((message) => ({
+                  thread_id: thread.id,
+                  org_id: thread.org_id,
+                  user_id: authData.user.id,
+                  ai_message_id: message.id,
+                  role: message.role,
+                  parts: message.parts as never,
+                  position: message.position,
+                })),
+                { onConflict: "thread_id,ai_message_id" },
+              );
+              await supabase
+                .from("chat_threads")
+                .update({ title, updated_at: new Date().toISOString() })
+                .eq("id", thread.id)
+                .eq("user_id", authData.user.id);
+            } catch {
+              // Persistence must never break the reply.
+            }
+          };
+
+          const startIdx = Math.max(
+            0,
+            resolved.cascade.findIndex(
+              (e) => e.provider === resolved.provider && e.modelId === resolved.modelId,
+            ),
+          );
+          const failoverQueue = [
+            ...resolved.cascade.slice(startIdx),
+            ...resolved.cascade.slice(0, startIdx),
+          ].filter(
+            (entry, index, arr) =>
+              arr.findIndex((e) => e.provider === entry.provider && e.modelId === entry.modelId) ===
+              index,
+          );
+
+          const stream = createUIMessageStream({
             originalMessages: body.messages as UIMessage[],
+            execute: async ({ writer }) => {
+              let lastError: unknown;
+              for (const entry of failoverQueue) {
+                try {
+                  const result = streamText({
+                    model: entry.model,
+                    ...STREAM_OPTS,
+                    providerOptions: entry.providerOptions as never,
+                  });
+                  const ui = result.toUIMessageStream({ sendReasoning: true });
+                  const iterator = ui[Symbol.asyncIterator]();
+                  const first = await iterator.next();
+                  const chunk = first.value as { type?: string; errorText?: string } | undefined;
+                  if (chunk?.type === "error") {
+                    const err = new Error(chunk.errorText ?? "Provider returned an error");
+                    if (isCapacityError(err) || isProviderError(err)) {
+                      markProviderUnhealthy(entry.provider, entry.modelId, err.message);
+                      lastError = err;
+                      console.warn(
+                        `[Wab Chat] ${entry.provider}/${entry.modelId} busy, trying next provider`,
+                      );
+                      continue;
+                    }
+                    throw err;
+                  }
+
+                  console.log("[Wab Chat] streaming with", entry.provider, entry.modelId);
+                  writer.merge(replayIteratorStream(first, iterator));
+                  await result.response;
+                  return;
+                } catch (error) {
+                  lastError = error;
+                  if (!isCapacityError(error) && !isProviderError(error)) throw error;
+                  markProviderUnhealthy(
+                    entry.provider,
+                    entry.modelId,
+                    error instanceof Error ? error.message : String(error),
+                  );
+                  console.warn(
+                    `[Wab Chat] ${entry.provider}/${entry.modelId} failed, trying next:`,
+                    error instanceof Error ? error.message : error,
+                  );
+                }
+              }
+              throw lastError instanceof Error
+                ? lastError
+                : new Error("Every AI provider is busy. Please try again in a moment.");
+            },
             onError: (e) => {
               const st = (e as { statusCode?: number })?.statusCode;
-              const errorMessage = (e as { message?: string })?.message;
-              console.error("[Wab Chat] AI Stream Error:", {
-                statusCode: st,
-                message: errorMessage,
-                error: e,
-              });
-
               if (st === 402)
                 return "AI credits are used up. Add credits in your workspace settings to continue.";
-              if (st === 429) return "Wab AI is busy right now. Please try again in a moment.";
-              if (st === 403)
-                return "AI access is blocked for this workspace. Please check your settings.";
-              if (st === 401)
-                return "AI authentication failed. Please check your API key configuration.";
-
-              // More detailed error message for debugging
-              if (errorMessage) {
-                return `Wab AI encountered an error: ${errorMessage}. Your data was not changed. Please try again.`;
+              if (st === 401) return "AI authentication failed. Please check your API key configuration.";
+              if (st === 403) return "AI access is blocked for this workspace. Please check your settings.";
+              if (isCapacityError(e) || st === 429) {
+                return "Wab AI is busy on one provider and could not reach a backup. Please try again in a moment — your data was not changed.";
               }
-
               return "Wab AI hit an error. Your data was not changed — please try again.";
             },
             onFinish: async ({ messages }) => {
-              try {
-                // Deduplicate by ai_message_id — keep the last occurrence of each
-                // (the full message array re-sends history on every turn, so the
-                // same id can appear twice and cause a Postgres 21000 conflict).
-                const seen = new Map<string, (typeof messages)[number] & { position: number }>();
-                messages.forEach((message, index) => {
-                  seen.set(message.id, { ...message, position: index });
-                });
-                const deduped = Array.from(seen.values());
-
-                const { error: messageError } = await supabase.from("chat_messages").upsert(
-                  deduped.map((message) => ({
-                    thread_id: thread.id,
-                    org_id: thread.org_id,
-                    user_id: authData.user.id,
-                    ai_message_id: message.id,
-                    role: message.role,
-                    parts: message.parts as never,
-                    position: message.position,
-                  })),
-                  { onConflict: "thread_id,ai_message_id" },
-                );
-                const { error: updateError } = await supabase
-                  .from("chat_threads")
-                  .update({ title, updated_at: new Date().toISOString() })
-                  .eq("id", thread.id)
-                  .eq("user_id", authData.user.id);
-              } catch (e) {
-                // Silent error handling for message persistence
-              }
+              await persistMessages(messages);
             },
           });
+
+          return createUIMessageStreamResponse({ stream });
         } catch (error) {
           // Return more detailed error for debugging
           const errorMessage = error instanceof Error ? error.message : String(error);
