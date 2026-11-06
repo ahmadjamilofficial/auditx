@@ -66,11 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("user_id", u.id)
         .maybeSingle();
 
+      const { data: existingRow, error } = profileQuery;
+      let row = existingRow;
+
       if (error) {
         return;
       }
 
-      // 2. Self-provision organisation + profile + free subscription on first login
+      // 2. Self-provision organisation + profile on first login (Basic $0 by default)
       if (!row && !provisioning.current) {
         provisioning.current = true;
         row = await provision(u);
@@ -89,25 +92,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle(),
         supabase
           .from("subscriptions")
-          .select("plan, status")
+          .select("plan, status, trial_end_at")
           .eq("org_id", row.org_id)
           .maybeSingle(),
       ]);
 
-      // Auto-create trial subscription if none exists
-      if (!subRes.data) {
-        await supabase.from("subscriptions").insert({
-          org_id: row.org_id,
-          plan: "standard",
-          status: "trialing",
-          charge_period: "MONTHLY",
-          trial_end_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-      }
-
-      // Default plan is standard trial when no subscription row exists
-      const plan = subRes.data?.plan ?? "standard";
-      const planStatus = subRes.data?.status ?? "trialing";
+      // No subscription row means Basic $0. Trial is started only from the trial card.
+      const rawPlan = (subRes.data?.plan as string | undefined) ?? "free";
+      const planStatus = (subRes.data?.status as string | undefined) ?? "active";
+      const trialEnded =
+        planStatus === "trialing" &&
+        subRes.data?.trial_end_at &&
+        new Date(subRes.data.trial_end_at).getTime() <= Date.now();
+      const plan = trialEnded ? "free" : rawPlan;
 
       setProfile({
         profile_id: row.id,

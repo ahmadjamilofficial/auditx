@@ -8,7 +8,7 @@ export interface User {
   email: string;
   name: string;
   org: string;
-  plan: "free" | "pro" | "enterprise";
+  plan: "free" | "standard" | "pro";
   jurisdiction: "PSX" | "NSE";
 }
 

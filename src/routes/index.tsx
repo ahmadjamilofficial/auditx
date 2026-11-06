@@ -14,10 +14,12 @@ import { ChatComposer } from "@/components/agent/ChatComposer";
 import { Footer } from "@/components/site/Footer";
 import { LandingNavbar } from "@/components/site/LandingNavbar";
 import { StatusPill, Container, Reveal, Panel } from "@/components/kit";
+import { PeriodToggle } from "@/components/site/PlanCards";
 import { useAuth } from "@/lib/auth-context";
 import { useState, useEffect } from "react";
 import type { AgentAttachment } from "@/lib/agent-service";
 import { setPendingFiles, setPendingPrompt } from "@/lib/chat-session";
+import { type ChargePeriod, kelviqCheckoutUrl } from "@/lib/plans";
 import {
   Accordion,
   AccordionContent,
@@ -131,37 +133,54 @@ const steps = [
 
 const tiers = [
   {
+    id: "free" as const,
+    name: "Basic",
+    price: "$0",
+    yearly: "$0",
+    note: "Completely free. Limited AI quality and core tools only.",
+    popular: false,
+    trialDays: 0,
+    items: [
+      "30 transactions / month",
+      "Limited AI quality",
+      "Core ledger tools",
+      "CSV export",
+      "1 tax profile",
+      "1 broker account",
+    ],
+  },
+  {
+    id: "standard" as const,
     name: "Standard",
-    price: "$3",
+    price: "$9",
+    yearly: "$45",
     note: "For individual traders",
     popular: false,
     trialDays: 7,
     items: [
-      "Unlimited transactions",
-      "Real-time market data",
-      "Unrealized P&L tracking",
-      "1 tax profile",
-      "CSV export",
-      "Core audit tools",
-      "Natural AI conversations",
-      "Light and dark themes",
+      "500 transactions / month",
+      "Standard AI quality",
+      "Document and transaction analysis",
+      "PDF tax reports",
+      "Anomaly detection",
+      "2 tax profiles",
     ],
   },
   {
+    id: "pro" as const,
     name: "Pro",
-    price: "$5",
+    price: "$25",
+    yearly: "$90",
     note: "For active traders and professionals",
     popular: true,
-    trialDays: 7,
+    trialDays: 0,
     items: [
+      "Unlimited transactions",
+      "Highest AI quality and variety",
       "Everything in Standard",
-      "Advanced agent workflows",
-      "Background task execution",
-      "PDF tax reports",
-      "Anomaly detection",
       "Tax-loss harvesting",
-      "Advanced reconciliation",
-      "Priority processing",
+      "Background task execution",
+      "Advanced integrations",
     ],
   },
 ];
@@ -186,12 +205,12 @@ const faqs = [
     "Pakistan (PSX CGT slabs with Filer/Non-Filer WHT) and India (NSE STCG/LTCG). More jurisdictions in progress.",
   ],
   [
-    "What's the difference between Standard and Pro?",
-    "Standard includes unlimited transactions, real-time market data, and core audit tools. Pro adds advanced agent workflows, background task execution, PDF reports, and tax-loss harvesting.",
+    "What's the difference between Basic, Standard and Pro?",
+    "Basic is $0 with limited AI quality, 30 transactions/month and core tools. Standard is $9/month or $45/year with stronger AI and more tools. Pro is $25/month or $90/year with the full tool set and highest AI quality.",
   ],
   [
     "How does the 7-day free trial work?",
-    "Both plans include a 7-day free trial. You get full access to all features. Cancel anytime during the trial with no charge.",
+    "Only Standard has a 7-day free trial, started from the trial card. Days are counted from that start date even if you sign out. When it ends, upgrade or continue on Basic at $0.",
   ],
   [
     "How do I know a ledger row wasn't altered?",
@@ -213,9 +232,7 @@ function Home() {
   const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
   const [isBusy, setIsBusy] = useState(false);
   const [pendingFileList, setPendingFileList] = useState<File[]>([]);
-  const KELVIQ_CHECKOUT_URL =
-    import.meta.env["VITE_KELVIQ_CHECKOUT_URL"] ||
-    "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
+  const [billingPeriod, setBillingPeriod] = useState<ChargePeriod>("monthly");
 
   // Redirect logged-in users to dashboard
   useEffect(() => {
@@ -785,10 +802,39 @@ function Home() {
               Simple, transparent pricing
             </h2>
             <p className="mt-3 text-sm" style={{ color: "var(--ink-2)" }}>
-              Every plan includes a 7-day free trial. Cancel anytime.
+              Basic is $0. Standard is $9/mo or $45/yr. Pro is $25/mo or $90/yr. A 7-day trial is
+              only on Standard, from the trial card.
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-2 max-w-4xl mx-auto">
+          <div
+            className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4"
+            style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
+          >
+            <div>
+              <p className="text-sm font-semibold">7-day free trial of Standard</p>
+              <p className="mt-0.5 text-xs" style={{ color: "var(--ink-2)" }}>
+                This card is the only way to start a free trial. Days keep counting if you sign out.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (!session) {
+                  navigate({ to: "/signup", search: { plan: "trial" } });
+                  return;
+                }
+                navigate({ to: "/app/billing" });
+              }}
+              className="rounded-full px-4 py-2 text-sm font-semibold"
+              style={{ background: "var(--color-accent)", color: "var(--accent-fg)" }}
+            >
+              Start 7-day free trial
+            </button>
+          </div>
+          <div className="mb-6 flex justify-center">
+            <PeriodToggle period={billingPeriod} onChange={setBillingPeriod} />
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
             {tiers.map((t, i) => (
               <Reveal key={t.name} i={i}>
                 <div
@@ -808,18 +854,20 @@ function Home() {
                       Most popular
                     </div>
                   )}
-                  <div className="mb-1 text-sm font-semibold">{t.name}</div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-semibold">{t.name}</span>
+                    {t.id === "free" && <StatusPill tone="ok">Free</StatusPill>}
+                  </div>
                   <div className="tnum mb-1 text-3xl font-bold">
-                    {t.price}
-                    <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
-                      /mo
-                    </span>
+                    {billingPeriod === "yearly" ? t.yearly : t.price}
+                    {t.id !== "free" && (
+                      <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
+                        {billingPeriod === "yearly" ? "/yr" : "/mo"}
+                      </span>
+                    )}
                   </div>
                   <div className="mb-5 text-xs" style={{ color: "var(--ink-3)" }}>
                     {t.note}
-                  </div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <StatusPill tone="ok">{t.trialDays}-day free trial</StatusPill>
                   </div>
                   <ul className="mb-6 space-y-2.5 text-sm" style={{ color: "var(--ink-2)" }}>
                     {t.items.map((it) => (
@@ -837,15 +885,14 @@ function Home() {
                     type="button"
                     onClick={() => {
                       if (!session) {
-                        navigate({ to: "/signup", search: { plan: t.name.toLowerCase() } });
+                        navigate({ to: "/signup", search: { plan: t.id } });
                         return;
                       }
-                      const checkoutUrl = KELVIQ_CHECKOUT_URL.replace(
-                        "plan_identifier=pro-plan",
-                        `plan_identifier=${t.name.toLowerCase()}-plan`,
-                      );
-                      const finalUrl = `${checkoutUrl}&metadata[org_id]=${profile?.org_id}`;
-                      window.location.href = finalUrl;
+                      window.location.href = kelviqCheckoutUrl({
+                        plan: t.id,
+                        period: billingPeriod,
+                        orgId: profile?.org_id ?? null,
+                      });
                     }}
                     className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all hover:shadow-md"
                     style={
@@ -854,7 +901,7 @@ function Home() {
                         : { border: "1px solid var(--hairline)", color: "var(--ink-2)" }
                     }
                   >
-                    Start {t.trialDays}-day free trial
+                    {t.id === "free" ? "Use Basic for $0" : `Choose ${t.name}`}
                     <ArrowRight size={14} strokeWidth={2} />
                   </button>
                 </div>

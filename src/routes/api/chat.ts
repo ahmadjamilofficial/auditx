@@ -5,7 +5,7 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { describeAttempts, resolveAgentModel, selectWorkingModel } from "@/lib/audit-agent.server";
 import { serverEnv, supabaseServerConfig } from "@/lib/env.server";
-import { planOf } from "@/lib/plans";
+import { pickCascadeForPlan, planOf } from "@/lib/plans";
 import { computeTax } from "@/lib/tax";
 import { computePortfolioSummary } from "@/lib/financial-intelligence";
 import type { Transaction } from "@/lib/demo-data";
@@ -364,7 +364,7 @@ export const Route = createFileRoute("/api/chat")({
             provider: resolved.provider,
             modelId: resolved.modelId,
           });
-          const model = resolved.model;
+          let model = resolved.model;
 
           const supabase = createClient<Database>(url, key, {
             global: { headers: { Authorization: authorization } },
@@ -398,13 +398,25 @@ export const Route = createFileRoute("/api/chat")({
           const plan =
             subActive && (subData?.status !== "trialing" || trialValid) ? rawPlan : "free";
           const limits = planOf(plan);
-          const isPro = plan === "pro" || plan === "enterprise";
+          const isPro = plan === "pro";
 
-          // Higher plans get larger tool budgets for deeper audits.
-          const maxSteps = plan === "enterprise" ? 36 : isPro ? 28 : 18;
+          // Higher plans get larger tool budgets and better models.
+          const maxSteps = limits.maxAgentSteps;
           const monthlyTxLimit = limits.transactionsPerMonth; // null = unlimited
-          // Specialist delegation is a Pro/Enterprise capability.
-          const canDelegate = isPro;
+          const canDelegate = limits.features.specialistAgents;
+
+          const cascadeFallback = resolved.cascade[0];
+          if (cascadeFallback) {
+            const picked = pickCascadeForPlan(resolved.cascade, plan, cascadeFallback);
+            resolved = {
+              ...resolved,
+              modelId: picked.modelId,
+              model: picked.model,
+              provider: picked.provider,
+              providerOptions: picked.providerOptions,
+            };
+            model = resolved.model;
+          }
 
           // Track usage for analytics (but don't block on it)
           const usageId = crypto.randomUUID();
@@ -513,7 +525,7 @@ export const Route = createFileRoute("/api/chat")({
                   return {
                     agent,
                     findings:
-                      "Specialist agents are a Pro/Enterprise capability. This account is on the Free plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
+                      "Specialist agents are a Pro capability. This account is on a limited plan: answer directly from the data already available, and mention that Pro unlocks the full specialist audit team.",
                     model_used: "not_available_on_free_plan",
                   };
                 }
@@ -1314,7 +1326,7 @@ export const Route = createFileRoute("/api/chat")({
           const planSection = `
 
 ━━ ACCOUNT ━━
-The user is on the ${plan} plan (${limits.name}). Free allows ${limits.transactionsPerMonth ?? "unlimited"} new transactions per month, 1 broker account and CSV export; specialist delegation, PDF exports, anomaly detection and tax-loss harvesting are Pro/Enterprise capabilities. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
+The user is on the ${limits.name} plan (id: ${plan}). AI quality is ${limits.aiQuality}. Basic ($0) is limited in features, variety and answer depth — keep replies shorter and use fewer tools. Standard has a 7-day trial only. Pro unlocks the full tool set. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
 
           const SYSTEM_PROMPT = `You are Wab, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
 

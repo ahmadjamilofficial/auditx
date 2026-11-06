@@ -193,26 +193,26 @@ function RootShell({ children }: { children: ReactNode }) {
         offers: [
           {
             "@type": "Offer",
-            name: "Free",
+            name: "Basic",
             price: "0",
             priceCurrency: "USD",
-            description: "50 transactions/month, CSV export",
+            description: "Completely free. Limited AI quality, 30 transactions/month, core tools.",
+          },
+          {
+            "@type": "Offer",
+            name: "Standard",
+            price: "9",
+            priceCurrency: "USD",
+            billingIncrement: "P1M",
+            description: "$9/month or $45/year. 7-day free trial. Standard AI quality.",
           },
           {
             "@type": "Offer",
             name: "Pro",
-            price: "9.99",
+            price: "25",
             priceCurrency: "USD",
             billingIncrement: "P1M",
-            description: "Unlimited transactions, PDF reports, anomaly detection",
-          },
-          {
-            "@type": "Offer",
-            name: "Enterprise",
-            price: "49",
-            priceCurrency: "USD",
-            billingIncrement: "P1M",
-            description: "Multi-client, team roles, API access",
+            description: "$25/month or $90/year. Highest AI quality and full tool set.",
           },
         ],
         featureList: [

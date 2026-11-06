@@ -1,127 +1,139 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { ArrowUpRight, BadgeCheck, CreditCard, Sparkles } from "lucide-react";
+import { ArrowUpRight, CreditCard, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Btn, Panel, StatusPill, reveal } from "@/components/kit";
+import { Btn, Panel, StatusPill } from "@/components/kit";
+import { PeriodToggle, PlanCards } from "@/components/site/PlanCards";
 import { useAuth } from "@/lib/auth-context";
+import {
+  type ChargePeriod,
+  type PlanId,
+  PLANS,
+  TRIAL_DAYS,
+  kelviqCheckoutUrl,
+  normalizePlanId,
+} from "@/lib/plans";
 import { supabase } from "@/lib/supabase";
+import {
+  clearTrialClock,
+  getTrialClock,
+  isTrialExpired,
+  startTrialClock,
+  trialDaysRemaining,
+} from "@/lib/trial";
 
 export const Route = createFileRoute("/app/billing")({
   component: Billing,
 });
 
-const plans = [
-  {
-    name: "Standard",
-    price: "$3",
-    monthlyPrice: 3,
-    note: "For individuals who need intelligent financial assistance",
-    popular: false,
-    trialDays: 7,
-    kelviqPlan: "standard-plan",
-    items: [
-      "Natural AI conversations",
-      "Agentic financial assistance",
-      "Persistent memory",
-      "Transaction analysis",
-      "Document analysis",
-      "Core audit tools",
-      "Light and dark themes",
-      "Standard integrations",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "$5",
-    monthlyPrice: 5,
-    note: "For advanced users and businesses requiring more powerful automation",
-    popular: true,
-    trialDays: 7,
-    kelviqPlan: "pro-plan",
-    items: [
-      "Everything in Standard",
-      "Advanced agent workflows",
-      "More integrations",
-      "Advanced reconciliation",
-      "Automated reporting",
-      "Background agent tasks",
-      "Advanced spreadsheet operations",
-      "Priority processing",
-    ],
-  },
-];
-
-interface PlanLimits {
+interface SubRow {
   plan: string;
   status: string;
-  can_use_ai: boolean;
-  can_use_background_tasks: boolean;
-  can_use_advanced_integrations: boolean;
-  trial_ends_at: string | null;
-}
-
-const CHECKOUT_FALLBACK =
-  "https://www.kelviq.com/buy/ac42e10b-db2e-44ca-b212-6d4f0429b6e3/?enabled=pro-plan%2Cstandard-plan&plan_identifier=pro-plan&charge_period=MONTHLY";
-
-function daysLeft(iso: string | null | undefined): number | null {
-  if (!iso) return null;
-  const ms = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(ms)) return null;
-  return Math.max(0, Math.ceil(ms / 86_400_000));
+  trial_end_at: string | null;
+  charge_period?: string | null;
 }
 
 function Billing() {
-  const { profile } = useAuth();
-  const [limits, setLimits] = useState<PlanLimits | null>(null);
+  const { profile, user } = useAuth();
+  const [sub, setSub] = useState<SubRow | null>(null);
+  const [period, setPeriod] = useState<ChargePeriod>("monthly");
+  const [clockTick, setClockTick] = useState(0);
 
-  const checkoutUrl = import.meta.env["VITE_KELVIQ_CHECKOUT_URL"] || CHECKOUT_FALLBACK;
-  const portalUrl = import.meta.env["VITE_KELVIQ_PORTAL_URL"] as string | undefined;
-
-  // Real subscription state from the database, not a client-side guess.
   useEffect(() => {
     let alive = true;
     const orgId = profile?.org_id;
     if (!orgId) return;
     void (async () => {
-      const { data } = await supabase.rpc("get_user_plan_limits", { org_id_param: orgId });
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("plan, status, trial_end_at, charge_period")
+        .eq("org_id", orgId)
+        .maybeSingle();
       if (!alive) return;
-      const row = (Array.isArray(data) ? data[0] : data) as PlanLimits | null;
-      if (row) setLimits(row);
+      setSub((data as SubRow | null) ?? null);
     })();
     return () => {
       alive = false;
     };
-  }, [profile?.org_id]);
+  }, [profile?.org_id, clockTick]);
 
-  const currentPlan = (limits?.plan ?? profile?.plan ?? "standard").toLowerCase();
-  const status = limits?.status ?? profile?.plan_status ?? "trialing";
-  const trialDays = daysLeft(limits?.trial_ends_at ?? null);
-  const onTrial = status === "trialing" && (trialDays === null || trialDays > 0);
-  const trialExpired = status === "trialing" && trialDays === 0;
+  const orgId = profile?.org_id ?? "";
+  const userId = user?.id ?? "";
+  const clock = getTrialClock(orgId, userId);
+  const serverEnds = sub?.trial_end_at ?? null;
+  const currentPlan = normalizePlanId(sub?.plan ?? profile?.plan ?? "free");
+  const status = sub?.status ?? profile?.plan_status ?? "active";
+  const onTrial =
+    status === "trialing" || (Boolean(clock) && !isTrialExpired(clock, serverEnds) && currentPlan === "standard");
+  const trialDays = trialDaysRemaining(clock, serverEnds);
+  const trialExpired =
+    (status === "trialing" && isTrialExpired(clock, serverEnds)) ||
+    (Boolean(clock) && isTrialExpired(clock, serverEnds) && currentPlan !== "pro" && status !== "active");
 
-  function urlFor(plan: (typeof plans)[number]) {
-    return checkoutUrl.replace(/plan_identifier=[a-z-]+/, `plan_identifier=${plan.kelviqPlan}`);
-  }
+  const priceNow =
+    currentPlan === "free"
+      ? "$0"
+      : period === "yearly" || sub?.charge_period === "YEARLY"
+        ? `$${PLANS[currentPlan].yearlyPrice}/year`
+        : `$${PLANS[currentPlan].monthlyPrice}/month`;
 
-  function handleManagePayment() {
-    if (portalUrl) {
-      window.open(portalUrl, "_blank", "noopener");
+  function openPlan(plan: PlanId) {
+    if (plan === "free") {
+      clearTrialClock(orgId, userId);
+      window.open(kelviqCheckoutUrl({ plan: "free", orgId }), "_blank", "noopener");
+      toast.info("Opening Basic ($0) checkout — this plan is completely free.");
       return;
     }
-    // No customer-portal URL configured: send the user to the checkout page
-    // where Kelviq lets them manage the existing subscription.
+    window.open(kelviqCheckoutUrl({ plan, period, orgId }), "_blank", "noopener");
+    toast.info(`Opening secure checkout for ${PLANS[plan].name}.`);
+  }
+
+  async function handleStartTrial() {
+    if (!orgId || !userId) {
+      toast.error("Sign in to start the free trial.");
+      return;
+    }
+    const started = startTrialClock(orgId, userId);
+    try {
+      const { data: existing } = await supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("org_id", orgId)
+        .maybeSingle();
+      if (existing?.id) {
+        await supabase
+          .from("subscriptions")
+          .update({
+            plan: "standard",
+            status: "trialing",
+            charge_period: "MONTHLY",
+            trial_end_at: started.endsAt,
+          } as never)
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("subscriptions").insert({
+          org_id: orgId,
+          plan: "standard",
+          status: "trialing",
+          charge_period: "MONTHLY",
+          trial_end_at: started.endsAt,
+        } as never);
+      }
+    } catch {
+      /* local clock still tracks days if the row cannot be written */
+    }
+    setClockTick((n) => n + 1);
     window.open(
-      urlFor(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!),
+      kelviqCheckoutUrl({ plan: "standard", period: "monthly", orgId }),
       "_blank",
       "noopener",
     );
-    toast.info("Opened Kelviq checkout — manage or cancel your subscription there.");
+    toast.info(`Started your ${TRIAL_DAYS}-day Standard trial. Days keep counting even if you sign out.`);
   }
 
-  function handleStartTrial(plan: (typeof plans)[number]) {
-    window.open(urlFor(plan), "_blank", "noopener");
-    toast.info(`Opening secure checkout for the ${plan.name} plan (7-day free trial).`);
+  function handleStayBasic() {
+    clearTrialClock(orgId, userId);
+    openPlan("free");
   }
 
   return (
@@ -140,32 +152,60 @@ function Billing() {
               CURRENT PLAN
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <p className="text-xl font-semibold capitalize">{currentPlan}</p>
+              <p className="text-xl font-semibold">{PLANS[currentPlan].name}</p>
               <StatusPill tone={onTrial ? "info" : trialExpired ? "bad" : "ok"}>
                 {onTrial
-                  ? trialDays === null
-                    ? "Free trial"
-                    : `Free trial · ${trialDays} day${trialDays === 1 ? "" : "s"} left`
+                  ? `Free trial · ${trialDays} day${trialDays === 1 ? "" : "s"} left`
                   : trialExpired
                     ? "Trial ended"
-                    : "Active"}
+                    : currentPlan === "free"
+                      ? "Free"
+                      : "Active"}
               </StatusPill>
             </div>
             <p className="mt-1 text-sm" style={{ color: "var(--ink-2)" }}>
-              {currentPlan === "pro" ? "$5/month" : "$3/month"}
-              {onTrial ? " · free until your trial ends, then billed monthly" : " · billed monthly"}
+              {priceNow}
+              {onTrial
+                ? " · free until your trial ends"
+                : currentPlan === "free"
+                  ? " · completely free"
+                  : " · billed on your selected cycle"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Btn variant="secondary" onClick={handleManagePayment}>
-              <CreditCard size={15} strokeWidth={1.75} />
-              Manage payment
-            </Btn>
-          </div>
+          <Btn
+            variant="secondary"
+            onClick={() => openPlan(currentPlan === "free" ? "standard" : currentPlan)}
+          >
+            <CreditCard size={15} strokeWidth={1.75} />
+            Manage payment
+          </Btn>
         </div>
       </Panel>
 
-      {/* Free trial — always visible, with real days remaining */}
+      {trialExpired && (
+        <div
+          className="rounded-2xl px-5 py-4"
+          style={{ background: "color-mix(in srgb, var(--bad) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--bad) 24%, transparent)" }}
+        >
+          <p className="text-sm font-semibold">Your {TRIAL_DAYS}-day Standard trial has ended</p>
+          <p className="mt-1 text-xs" style={{ color: "var(--ink-2)" }}>
+            Upgrade to keep Standard or Pro features, or switch back to Basic at $0 with limited AI
+            quality and tools.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Btn variant="primary" onClick={() => openPlan("standard")}>
+              Upgrade to Standard
+            </Btn>
+            <Btn variant="secondary" onClick={() => openPlan("pro")}>
+              Upgrade to Pro
+            </Btn>
+            <Btn variant="secondary" onClick={handleStayBasic}>
+              Continue on Basic $0
+            </Btn>
+          </div>
+        </div>
+      )}
+
       <div
         className="flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4"
         style={{ background: "var(--accent-6)", border: "1px solid var(--accent-15)" }}
@@ -179,101 +219,46 @@ function Billing() {
           <div>
             <p className="text-sm font-semibold">
               {onTrial
-                ? trialDays === null
-                  ? "You're on the 7-day free trial"
-                  : `7-day free trial — ${trialDays} day${trialDays === 1 ? "" : "s"} remaining`
-                : "Start your 7-day free trial"}
+                ? `${TRIAL_DAYS}-day Standard trial — ${trialDays} day${trialDays === 1 ? "" : "s"} remaining`
+                : trialExpired
+                  ? "Trial ended — upgrade or switch to Basic"
+                  : `Start a ${TRIAL_DAYS}-day free trial of Standard`}
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "var(--ink-2)" }}>
-              Every plan starts with 7 free days. Cancel any time before the trial ends and you are
-              not charged.
+              This card is the only way to start a free trial. Days are counted strictly from the
+              start date and continue if you sign out or sign back in. After {TRIAL_DAYS} days you
+              choose Standard, Pro, or Basic $0.
             </p>
           </div>
         </div>
         <Btn
           variant="primary"
-          onClick={() =>
-            handleStartTrial(plans.find((p) => p.name.toLowerCase() === currentPlan) ?? plans[0]!)
-          }
+          disabled={onTrial}
+          onClick={() => {
+            if (trialExpired) openPlan("standard");
+            else void handleStartTrial();
+          }}
         >
-          {onTrial ? "Manage trial" : trialExpired ? "Resume with free trial" : "Start free trial"}
+          {onTrial
+            ? "Trial active"
+            : trialExpired
+              ? "Upgrade to Standard"
+              : `Start ${TRIAL_DAYS}-day free trial`}
         </Btn>
       </div>
 
-      <div>
-        <p className="mb-4 text-sm font-semibold">Available Plans</p>
-        <div className="grid gap-4 md:grid-cols-3">
-          {plans.map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              variants={reveal}
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              <Panel
-                style={
-                  plan.popular
-                    ? { border: "2px solid var(--color-accent)", boxShadow: "var(--shadow-hover)" }
-                    : {}
-                }
-              >
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold">{plan.name}</p>
-                  {plan.popular && <StatusPill tone="info">Most popular</StatusPill>}
-                </div>
-                <p className="tnum mt-3 text-2xl font-semibold">
-                  {plan.price}
-                  {plan.name !== "Free" && (
-                    <span className="text-sm font-normal" style={{ color: "var(--ink-3)" }}>
-                      /mo
-                    </span>
-                  )}
-                </p>
-                <p className="mt-1 text-xs" style={{ color: "var(--ink-3)" }}>
-                  {plan.note}
-                </p>
-                <ul className="mt-4 space-y-2 text-sm" style={{ color: "var(--ink-2)" }}>
-                  {plan.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <BadgeCheck
-                        size={15}
-                        strokeWidth={1.75}
-                        style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: 1 }}
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Btn
-                  variant={
-                    currentPlan === plan.name.toLowerCase()
-                      ? "secondary"
-                      : plan.popular
-                        ? "primary"
-                        : "secondary"
-                  }
-                  className="mt-5 w-full"
-                  disabled={currentPlan === plan.name.toLowerCase() && !trialExpired}
-                  onClick={() => {
-                    if (currentPlan !== plan.name.toLowerCase() || trialExpired)
-                      handleStartTrial(plan);
-                  }}
-                >
-                  {currentPlan === plan.name.toLowerCase() && !trialExpired
-                    ? onTrial
-                      ? "Current plan · on free trial"
-                      : "Current plan"
-                    : plan.trialDays
-                      ? `Start ${plan.trialDays}-day free trial`
-                      : `Upgrade to ${plan.name}`}
-                </Btn>
-              </Panel>
-            </motion.div>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-semibold">Available Plans</p>
+        <PeriodToggle period={period} onChange={setPeriod} />
       </div>
+      <PlanCards
+        period={period}
+        {...(trialExpired ? {} : { currentPlan })}
+        onSelect={openPlan}
+        ctaFor={(id) =>
+          id === "free" ? "Use Basic for $0" : `Subscribe to ${PLANS[id].name}`
+        }
+      />
 
       <div
         className="flex items-start gap-2.5 rounded-2xl px-5 py-4 text-sm"
@@ -285,9 +270,9 @@ function Billing() {
           style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }}
         />
         <p style={{ color: "var(--ink-2)" }}>
-          <strong>Subscription:</strong> Wab now uses a simple subscription model. Choose Standard
-          ($3/mo) or Pro ($5/mo). Both plans include a 7-day free trial. Your subscription is
-          managed securely through Kelviq.
+          <strong>Plans:</strong> Basic is $0 and always free with limited features and AI quality.
+          Standard is $9/month or $45/year. Pro is $25/month or $90/year. A {TRIAL_DAYS}-day trial
+          applies only to Standard and only from the trial card above. Checkout is handled by Kelviq.
         </p>
       </div>
     </div>

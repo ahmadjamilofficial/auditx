@@ -105,7 +105,7 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
 
   return (
     <aside
-      className="hidden w-64 shrink-0 flex-col border-r md:flex"
+      className="hidden h-full min-h-0 w-64 shrink-0 flex-col overflow-hidden border-r md:flex"
       style={{ borderColor: "var(--sidebar-border)", background: "var(--sidebar)" }}
     >
       <div className="flex items-center gap-2 p-3">
@@ -141,7 +141,7 @@ export function ChatSidebar({ activeId }: { activeId: string }) {
           />
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin px-2 pb-3">
+      <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin px-2 pb-3">
         {isLoading && <p className="px-2 py-3 text-xs text-muted-foreground">Loading chats…</p>}
         {!isLoading && groups.length === 0 && (
           <p className="px-2 py-3 text-xs text-muted-foreground">No chats yet</p>

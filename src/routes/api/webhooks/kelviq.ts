@@ -99,13 +99,26 @@ async function processKelviqEvent(
       const subscriptionId = data.subscription_id as string;
 
       // Map Kelviq plan identifiers to our plans
-      const plan = planIdentifier === "pro-plan" ? "pro" : "standard";
+      const plan = mapKelviqPlan(planIdentifier);
 
       // Get org_id from metadata
-      const orgId = data.metadata?.org_id as string;
+      const orgId = data.metadata?.["org_id"] as string;
 
       if (!orgId) {
         return;
+      }
+
+      if (plan === "free") {
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: "cancelled",
+            cancelled_at: new Date().toISOString(),
+            plan: "standard",
+          })
+          .eq("org_id", orgId);
+        await supabase.from("profiles").update({ plan: "free" } as never).eq("org_id", orgId);
+        break;
       }
 
       // Create or update subscription
@@ -135,7 +148,7 @@ async function processKelviqEvent(
       // Update user's profile plan
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({ plan })
+        .update({ plan } as never)
         .eq("org_id", orgId);
 
       if (profileError) {
@@ -148,8 +161,18 @@ async function processKelviqEvent(
       // Subscription updated (plan change, etc.)
       const subscriptionId = data.subscription_id as string;
       const planIdentifier = data.plan_identifier as string;
-      const plan = planIdentifier === "pro-plan" ? "pro" : "standard";
+      const plan = mapKelviqPlan(planIdentifier);
 
+      if (plan === "free") {
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: "cancelled",
+            cancelled_at: new Date().toISOString(),
+            plan: "standard",
+          })
+          .eq("kelviq_subscription_id", subscriptionId);
+      } else {
       const { error: updateError } = await supabase
         .from("subscriptions")
         .update({
@@ -166,6 +189,7 @@ async function processKelviqEvent(
       if (updateError) {
         // Silent error handling
       }
+      }
 
       // Update user's profile plan
       const { data: subscription } = await supabase
@@ -177,7 +201,7 @@ async function processKelviqEvent(
       if (subscription) {
         const { error: profileError } = await supabase
           .from("profiles")
-          .update({ plan })
+          .update({ plan } as never)
           .eq("org_id", subscription.org_id);
 
         if (profileError) {
@@ -204,7 +228,7 @@ async function processKelviqEvent(
         // Silent error handling
       }
 
-      // Update user's profile plan to standard (downgrade to basic)
+      // Update user's profile plan to Basic ($0)
       const { data: subscription } = await supabase
         .from("subscriptions")
         .select("org_id")
@@ -214,7 +238,7 @@ async function processKelviqEvent(
       if (subscription) {
         const { error: profileError } = await supabase
           .from("profiles")
-          .update({ plan: "standard" })
+          .update({ plan: "free" } as never)
           .eq("org_id", subscription.org_id);
 
         if (profileError) {
@@ -267,6 +291,12 @@ async function processKelviqEvent(
       // Unhandled event type - silently ignore
       break;
   }
+}
+
+function mapKelviqPlan(planIdentifier: string | undefined): "free" | "standard" | "pro" {
+  if (planIdentifier === "pro-plan") return "pro";
+  if (planIdentifier === "free-plan") return "free";
+  return "standard";
 }
 
 interface KelviqWebhookEvent {

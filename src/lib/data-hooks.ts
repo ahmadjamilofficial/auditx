@@ -418,9 +418,10 @@ export interface AiUsageToday {
 
 /** Wab plan daily credit limits (mirrors ai_plan_limits table). */
 export const AI_PLAN_DAILY_LIMITS: Record<string, number> = {
-  free: 20,
-  pro: 100,
-  enterprise: 500,
+  free: 8,
+  standard: 60,
+  pro: 200,
+  enterprise: 200,
 };
 
 export function useAiUsageToday(userId: string | undefined) {

@@ -36,6 +36,13 @@ import {
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
 import { useTheme } from "@/lib/theme-context";
+import { TRIAL_DAYS, kelviqCheckoutUrl, normalizePlanId } from "@/lib/plans";
+import {
+  clearTrialClock,
+  getTrialClock,
+  isTrialExpired,
+  trialDaysRemaining,
+} from "@/lib/trial";
 
 // ── Persist sidebar state across page loads ───────────────────────────────────
 const SIDEBAR_KEY = "wab.sidebar.expanded";
@@ -152,6 +159,77 @@ function NavItem({
   );
 }
 
+function TrialStatusBar() {
+  const { profile, user } = useAuth();
+  const clock = getTrialClock(profile?.org_id, user?.id);
+  const current = normalizePlanId(profile?.plan);
+  const paid = profile?.plan_status === "active" && current !== "free";
+  if (paid) return null;
+  const onTrial = profile?.plan_status === "trialing" || Boolean(clock);
+  if (!onTrial && !clock) return null;
+  const expired = isTrialExpired(clock, clock?.endsAt);
+  const days = trialDaysRemaining(clock, clock?.endsAt);
+
+  if (expired && current !== "pro" && current !== "standard") {
+    return (
+      <div
+        className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 text-xs"
+        style={{
+          background: "color-mix(in srgb, var(--bad) 8%, transparent)",
+          borderColor: "var(--sidebar-border)",
+        }}
+      >
+        <p>
+          Your {TRIAL_DAYS}-day Standard trial has ended. Upgrade, or continue on Basic at $0 with
+          limited features and AI quality.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/app/billing"
+            className="rounded-full px-3 py-1.5 font-semibold text-white"
+            style={{ background: "var(--color-accent)" }}
+          >
+            Upgrade
+          </Link>
+          <button
+            type="button"
+            className="rounded-full border px-3 py-1.5 font-semibold"
+            style={{ borderColor: "var(--hairline)" }}
+            onClick={() => {
+              clearTrialClock(profile?.org_id, user?.id);
+              window.location.href = kelviqCheckoutUrl({
+                plan: "free",
+                orgId: profile?.org_id ?? null,
+              });
+            }}
+          >
+            Continue on Basic $0
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!expired && (profile?.plan_status === "trialing" || clock)) {
+    return (
+      <div
+        className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs"
+        style={{ background: "var(--accent-6)", borderColor: "var(--sidebar-border)" }}
+      >
+        <p>
+          Standard trial · {days} day{days === 1 ? "" : "s"} remaining of {TRIAL_DAYS}. Days keep
+          counting if you sign out.
+        </p>
+        <Link to="/app/billing" className="font-semibold" style={{ color: "var(--color-accent)" }}>
+          Manage
+        </Link>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 // ── InnerShell ────────────────────────────────────────────────────────────────
 
 function InnerShell({ children }: { children: ReactNode }) {
@@ -201,6 +279,7 @@ function InnerShell({ children }: { children: ReactNode }) {
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
   const orgName = profile?.org_name || "My Organisation";
   const plan = profile?.plan || "free";
+  const isAskPage = currentPath.startsWith("/app/parser");
   const initials = displayName.charAt(0).toUpperCase();
   const avatarUrl = (profile?.avatar_url || user?.user_metadata?.["avatar_url"]) as
     string | undefined;
@@ -210,9 +289,9 @@ function InnerShell({ children }: { children: ReactNode }) {
   // ── SidebarContent — shared by desktop and mobile ──────────────────────────
   function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: () => void }) {
     return (
-      <div className="flex h-full flex-col">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
         {/* ── Logo + toggle ────────────────────────────────────────────────── */}
-        <div className={collapsed ? "flex flex-col items-center gap-3 p-3" : "p-4"}>
+        <div className={`shrink-0 ${collapsed ? "flex flex-col items-center gap-3 p-3" : "p-4"}`}>
           <div className="flex w-full items-center justify-between">
             {collapsed ? (
               /* When collapsed: just the logomark, clicking it expands */
@@ -252,7 +331,9 @@ function InnerShell({ children }: { children: ReactNode }) {
             >
               <div className="min-w-0">
                 <p className="truncate font-semibold">{orgName}</p>
-                <p style={{ color: "var(--ink-3)" }}>{plan.toUpperCase()} plan</p>
+                <p style={{ color: "var(--ink-3)" }}>
+                  {(plan === "free" ? "BASIC" : plan).toUpperCase()} plan
+                </p>
               </div>
               <ChevronDown size={14} strokeWidth={1.75} style={{ color: "var(--ink-3)" }} />
             </div>
@@ -261,7 +342,7 @@ function InnerShell({ children }: { children: ReactNode }) {
 
         {/* ── Nav links ─────────────────────────────────────────────────────── */}
         <nav
-          className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin ${
+          className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin ${
             collapsed ? "flex flex-col items-center gap-1 px-3" : "space-y-4 px-4"
           }`}
         >
@@ -304,7 +385,7 @@ function InnerShell({ children }: { children: ReactNode }) {
         </nav>
 
         {/* ── User profile ──────────────────────────────────────────────────── */}
-        <div ref={collapsed ? undefined : userMenuRef} className="relative p-3">
+        <div ref={collapsed ? undefined : userMenuRef} className="relative shrink-0 p-3">
           {/* Profile button — when collapsed, clicking opens user menu ABOVE */}
           <button
             type="button"
@@ -427,18 +508,18 @@ function InnerShell({ children }: { children: ReactNode }) {
   // ── Layout ─────────────────────────────────────────────────────────────────
   return (
     <div
-      className="flex h-screen overflow-hidden"
+      className="flex h-dvh h-screen overflow-hidden"
       style={{
         background: "var(--color-login-bg)",
         fontFamily: "var(--font-body)",
         color: "var(--color-text)",
       }}
     >
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — own 100vh scroll, independent of the page */}
       <motion.aside
         animate={{ width: expanded ? 248 : 64 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="relative hidden shrink-0 lg:flex lg:flex-col overflow-x-hidden"
+        className="relative hidden h-dvh h-screen min-h-0 shrink-0 overflow-hidden lg:sticky lg:top-0 lg:flex lg:flex-col"
         style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
       >
         <SidebarContent collapsed={!expanded} />
@@ -471,7 +552,7 @@ function InnerShell({ children }: { children: ReactNode }) {
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
-              className="fixed left-0 top-0 z-50 h-full w-72 shadow-2xl lg:hidden"
+              className="fixed left-0 top-0 z-50 h-dvh h-screen w-72 overflow-hidden shadow-2xl lg:hidden"
               style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -485,10 +566,9 @@ function InnerShell({ children }: { children: ReactNode }) {
       </AnimatePresence>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top header */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header
-          className="flex shrink-0 items-center gap-3 border-b px-4 py-3 sm:px-6"
+          className={`flex shrink-0 items-center gap-3 border-b px-4 sm:px-6 ${isAskPage ? "py-2" : "py-3"}`}
           style={{ background: "var(--sidebar)", borderColor: "var(--sidebar-border)" }}
         >
           {/* Mobile hamburger */}
@@ -501,7 +581,7 @@ function InnerShell({ children }: { children: ReactNode }) {
             <Menu size={22} strokeWidth={1.75} />
           </button>
 
-          {/* Command bar trigger */}
+          {!isAskPage && (
           <button
             type="button"
             className="hidden flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-sm sm:flex"
@@ -517,9 +597,9 @@ function InnerShell({ children }: { children: ReactNode }) {
               ⌘K
             </kbd>
           </button>
+          )}
 
           <div className="ml-auto flex items-center gap-2">
-            {/* Theme toggle */}
             <button
               type="button"
               onClick={() => setTheme(actualTheme === "dark" ? "light" : "dark")}
@@ -534,7 +614,7 @@ function InnerShell({ children }: { children: ReactNode }) {
               )}
             </button>
 
-            {/* Upload shortcut */}
+            {!isAskPage && (
             <Link
               to="/app/parser"
               className="hidden items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white sm:flex"
@@ -546,8 +626,8 @@ function InnerShell({ children }: { children: ReactNode }) {
               <Upload size={14} strokeWidth={2} />
               Upload statement
             </Link>
+            )}
 
-            {/* Notification bell */}
             <div className="relative">
               <NotificationBell userId={user?.id} onClick={() => setNotifOpen(true)} />
               <NotificationCenter open={notifOpen} onClose={() => setNotifOpen(false)} />
@@ -555,8 +635,13 @@ function InnerShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin">{children}</main>
+        <TrialStatusBar />
+
+        <main
+          className={`min-h-0 flex-1 ${isAskPage ? "overflow-hidden" : "overflow-y-auto scrollbar-thin"}`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

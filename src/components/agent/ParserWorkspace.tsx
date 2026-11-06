@@ -60,14 +60,26 @@ import { loadComposerDraft, saveComposerDraft, clearComposerDraft } from "@/lib/
 
 // ── Suggestion chips ──────────────────────────────────────────────────────────
 
-const SUGGESTIONS = [
-  "Reconcile my last 10 trades and flag anything odd",
-  "Extract this broker slip and post it to my ledger",
-  "What is my realised capital gain this tax year?",
-  "Update unfinished records and prepare a new spreadsheet",
-  "Detect fee surcharges and WHT mismatches",
-  "Analyse my portfolio concentration and risk",
-];
+const SUGGESTIONS_BY_PLAN: Record<string, string[]> = {
+  free: [
+    "What is my realised capital gain this tax year?",
+    "Show my latest ledger totals",
+  ],
+  standard: [
+    "Reconcile my last 10 trades and flag anything odd",
+    "Extract this broker slip and post it to my ledger",
+    "What is my realised capital gain this tax year?",
+    "Detect fee surcharges and WHT mismatches",
+  ],
+  pro: [
+    "Reconcile my last 10 trades and flag anything odd",
+    "Extract this broker slip and post it to my ledger",
+    "What is my realised capital gain this tax year?",
+    "Update unfinished records and prepare a new spreadsheet",
+    "Detect fee surcharges and WHT mismatches",
+    "Analyse my portfolio concentration and risk",
+  ],
+};
 
 // ── Progress stage labels ─────────────────────────────────────────────────────
 
@@ -773,28 +785,16 @@ function Chat({
   const errorMessage = error?.message ?? "";
 
   return (
-    <div className="flex h-[calc(100vh-3.75rem)] min-h-[560px] flex-col overflow-hidden">
-      {/* ── Thread header bar ─────────────────────────────────────────────── */}
-      <div
-        className="flex shrink-0 items-center justify-between border-b px-4 py-2.5"
-        style={{
-          borderColor: "var(--hairline)",
-          background: "var(--surface)",
-        }}
-      >
-        {/* Right controls — empty, kept for layout */}
-        <div className="flex items-center gap-2 ml-auto" />
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* ── Messages ─────────────────────────────────────────────────────── */}
       <Conversation className="min-h-0 flex-1">
-        <ConversationContent className="mx-auto w-full max-w-3xl px-5 py-8">
+        <ConversationContent className="mx-auto w-full max-w-5xl px-5 pb-8 pt-10 sm:pt-12">
           {empty && (
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="flex min-h-[46vh] flex-col items-center justify-center text-center"
+              className="flex min-h-[52vh] flex-col items-center justify-center text-center"
             >
               <div
                 className="mb-5 flex size-14 items-center justify-center rounded-2xl"
@@ -882,12 +882,12 @@ function Chat({
 
       {/* ── Composer area ─────────────────────────────────────────────────── */}
       <div className="px-4 pb-6 pt-2">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="mx-auto w-full max-w-5xl">
           <AgentProgressBar stage={currentStage} visible={isStreaming} />
 
           {empty && (
             <div className="mb-3 flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((s) => (
+              {(SUGGESTIONS_BY_PLAN[plan] ?? SUGGESTIONS_BY_PLAN["free"] ?? []).map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -1100,9 +1100,9 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-3.75rem)] min-h-[560px]">
+    <div className="flex h-full min-h-0">
       <ChatSidebar activeId={threadId} />
-      <div className="min-w-0 flex-1">
+      <div className="min-h-0 min-w-0 flex-1">
         <Chat
           key={threadId}
           threadId={threadId}
