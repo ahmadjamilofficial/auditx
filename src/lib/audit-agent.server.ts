@@ -45,21 +45,39 @@ export interface ResolvedModel {
   }>;
 }
 
-/**
- * Hardcode a list of known-broken/retired model IDs only. Any model ID not
- * in this list passes through — future models won't be accidentally blocked.
- */
+/** Gemini 2.x is closed to new Google AI Studio users. Never send these IDs. */
 const RETIRED_GEMINI_IDS = new Set([
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-pro",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-exp",
   "gemini-2.0-flash-001",
   "gemini-2.0-flash-lite-001",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
   "gemini-1.0-pro",
 ]);
-const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+
+/** Hardcoded chat model — env cannot point us back at Gemini 2.5. */
+const GEMINI_CHAT_MODEL = "gemini-3.8-flash";
 
 function geminiModelId(env?: EnvBag): string {
   const configured = serverEnv("GEMINI_MODEL", env);
-  if (configured && !RETIRED_GEMINI_IDS.has(configured)) return configured;
-  return DEFAULT_GEMINI_MODEL;
+  if (
+    configured &&
+    configured.startsWith("gemini-3") &&
+    !RETIRED_GEMINI_IDS.has(configured)
+  ) {
+    return configured;
+  }
+  return GEMINI_CHAT_MODEL;
+}
+
+function isUnusableGemini(modelId: string, message?: string): boolean {
+  if (RETIRED_GEMINI_IDS.has(modelId) || /gemini-2\.[05]|gemini-1\./i.test(modelId)) return true;
+  if (message && /no longer available|not found|is not found/i.test(message)) return true;
+  return false;
 }
 
 /**
@@ -86,20 +104,6 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
     });
   }
 
-  const geminiKey =
-    serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
-  if (geminiKey) {
-    const modelId = geminiModelId(env);
-    const provider = createGoogleGenerativeAI({ apiKey: geminiKey });
-    cascade.push({
-      id: modelId,
-      model: provider(modelId) as unknown as LanguageModel,
-      provider: "gemini",
-      modelId,
-      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
-    });
-  }
-
   const openAIKey = serverEnv("OPENAI_API_KEY", env);
   if (openAIKey) {
     const modelId = serverEnv("OPENAI_MODEL", env) ?? "gpt-4o-mini";
@@ -108,6 +112,23 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
       id: modelId,
       model: provider.chat(modelId) as unknown as LanguageModel,
       provider: "openai",
+      modelId,
+      providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
+    });
+  }
+
+  const groqKey = serverEnv("GROQ_API_KEY", env);
+  if (groqKey) {
+    const modelId = serverEnv("GROQ_MODEL", env) ?? "llama-3.3-70b-versatile";
+    const provider = createOpenAICompatible({
+      name: "groq",
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: groqKey,
+    });
+    cascade.push({
+      id: modelId,
+      model: provider.chatModel(modelId) as unknown as LanguageModel,
+      provider: "groq",
       modelId,
       providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
@@ -134,21 +155,27 @@ export async function resolveAgentModel(env?: EnvBag): Promise<ResolvedModel | n
     });
   }
 
-  const groqKey = serverEnv("GROQ_API_KEY", env);
-  if (groqKey) {
-    const modelId = serverEnv("GROQ_MODEL", env) ?? "llama-3.3-70b-versatile";
-    const provider = createOpenAICompatible({
-      name: "groq",
-      baseURL: "https://api.groq.com/openai/v1",
-      apiKey: groqKey,
-    });
+  const geminiKey =
+    serverEnv("GEMINI_API_KEY", env) ?? serverEnv("GOOGLE_GENERATIVE_AI_API_KEY", env);
+  if (geminiKey) {
+    const modelId = geminiModelId(env);
+    const provider = createGoogleGenerativeAI({ apiKey: geminiKey });
     cascade.push({
-      id: modelId,
-      model: provider.chatModel(modelId) as unknown as LanguageModel,
-      provider: "groq",
-      modelId,
+      id: GEMINI_CHAT_MODEL,
+      model: provider(GEMINI_CHAT_MODEL) as unknown as LanguageModel,
+      provider: "gemini",
+      modelId: GEMINI_CHAT_MODEL,
       providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
     });
+    if (modelId !== GEMINI_CHAT_MODEL) {
+      cascade.push({
+        id: modelId,
+        model: provider(modelId) as unknown as LanguageModel,
+        provider: "gemini",
+        modelId,
+        providerOptions: DEFAULT_PROVIDER_OPTIONS as unknown as Record<string, unknown>,
+      });
+    }
   }
 
   if (cascade.length === 0) return null;
@@ -278,7 +305,7 @@ export async function selectWorkingModel(resolved: ResolvedModel | null): Promis
   for (let i = 0; i < resolved.cascade.length; i++) {
     const entry = resolved.cascade[i]!;
     const result = probeResults[i]!;
-    if (!result.ok) {
+    if (!result.ok || isUnusableGemini(entry.modelId, result.message)) {
       console.warn(
         `[Wab AI] provider ${entry.provider}/${entry.modelId} rejected the probe:`,
         result.message,

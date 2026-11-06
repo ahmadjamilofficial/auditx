@@ -239,7 +239,26 @@ export const csvImportAdapter: ProviderAdapter = {
 // EVM wallet — read-only, public JSON-RPC. No keys, no signing, no custody.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const DEFAULT_RPC = "https://eth.llamarpc.com";
+const DEFAULT_RPC = "https://ethereum.publicnode.com";
+
+const BLOCKSCOUT_HOST: Record<string, string> = {
+  ethereum: "https://eth.blockscout.com",
+  eth: "https://eth.blockscout.com",
+  mainnet: "https://eth.blockscout.com",
+  sepolia: "https://eth-sepolia.blockscout.com",
+  polygon: "https://polygon.blockscout.com",
+  matic: "https://polygon.blockscout.com",
+  base: "https://base.blockscout.com",
+  arbitrum: "https://arbitrum.blockscout.com",
+  optimism: "https://optimism.blockscout.com",
+  bsc: "https://bsc.blockscout.com",
+  bnb: "https://bsc.blockscout.com",
+};
+
+function weiToEth(value: string | number | bigint): number {
+  const wei = typeof value === "bigint" ? value : BigInt(value);
+  return Number(wei / 10n ** 12n) / 1e6;
+}
 
 export const evmWalletAdapter: ProviderAdapter = {
   id: "evm_wallet",
@@ -284,9 +303,10 @@ export const evmWalletAdapter: ProviderAdapter = {
       if (typeof payload.result !== "string") {
         return { ok: false, message: "RPC returned an unexpected payload for eth_getBalance." };
       }
+      const eth = weiToEth(payload.result);
       return {
         ok: true,
-        message: "Address is reachable and readable on the configured RPC node.",
+        message: `Connected — live balance ${eth.toLocaleString(undefined, { maximumFractionDigits: 6 })} ETH.`,
         permissions: { read: true, trade: false, withdraw: false, sign: false },
       };
     } catch (error) {
@@ -316,7 +336,7 @@ export const evmWalletAdapter: ProviderAdapter = {
     const hex = (body as { result?: string })?.result;
     if (typeof hex !== "string") throw new Error("RPC returned no balance for this address");
     const wei = BigInt(hex);
-    const whole = Number(wei / 10n ** 12n) / 1e6; // 18 decimals, kept within double precision
+    const whole = weiToEth(wei);
     return [
       {
         externalId: address.toLowerCase(),
@@ -330,11 +350,46 @@ export const evmWalletAdapter: ProviderAdapter = {
       },
     ];
   },
-  async fetchTransactions(): Promise<NormalizedTransaction[]> {
-    // Address-level history requires an indexing provider (Etherscan et al.).
-    // Until such a credential is configured we report zero history rather than
-    // fabricating activity.
-    return [];
+  async fetchTransactions(ctx: AdapterContext, since?: string): Promise<NormalizedTransaction[]> {
+    const address = (ctx.config["address"] ?? "").trim();
+    if (!address) return [];
+    const chain = (ctx.config["chain"] ?? "ethereum").trim().toLowerCase();
+    const host = BLOCKSCOUT_HOST[chain] ?? BLOCKSCOUT_HOST.ethereum!;
+    const { status, body } = await requestJson(
+      `${host}/api?module=account&action=txlist&address=${encodeURIComponent(address)}&page=1&offset=50&sort=desc`,
+      { headers: { accept: "application/json" } },
+      ctx.signal,
+    );
+    if (status >= 400) {
+      throw new Error(`Block explorer returned HTTP ${status} for ${chain} history.`);
+    }
+    const payload = body as { status?: string; message?: string; result?: unknown };
+    const rows = Array.isArray(payload.result) ? payload.result : [];
+    const sinceMs = since ? Date.parse(since) : Number.NaN;
+    return rows
+      .map((row) => {
+        const tx = row as Record<string, unknown>;
+        const hash = String(tx["hash"] ?? "");
+        const ts = Number(tx["timeStamp"] ?? 0) * 1000;
+        const value = weiToEth(String(tx["value"] ?? "0"));
+        const from = String(tx["from"] ?? "").toLowerCase();
+        const to = String(tx["to"] ?? "").toLowerCase();
+        const mine = address.toLowerCase();
+        const inbound = to === mine;
+        return {
+          externalId: hash || `${from}:${to}:${tx["nonce"] ?? ts}`,
+          kind: "transfer" as TransactionKind,
+          side: inbound ? ("buy" as const) : ("sell" as const),
+          instrument: "ETH",
+          amount: inbound ? value : -value,
+          fees: weiToEth(BigInt(String(tx["gasUsed"] ?? "0") || "0") * BigInt(String(tx["gasPrice"] ?? "0") || "0")),
+          currency: "ETH",
+          occurredAt: new Date(ts || Date.now()).toISOString(),
+          sourceRef: hash ? `evm:${hash}` : undefined,
+          raw: { hash, from, to, chain, blockNumber: tx["blockNumber"] },
+        };
+      })
+      .filter((row) => (Number.isFinite(sinceMs) ? Date.parse(row.occurredAt) >= sinceMs : true));
   },
 };
 
@@ -401,9 +456,14 @@ export const binanceAdapter: ProviderAdapter = {
       if (payload.canWithdraw) {
         warnings.push("This key can withdraw funds. Replace it with a read-only key.");
       }
+      const live =
+        (payload.balances ?? []).filter((row) => {
+          const b = row as { free?: string; locked?: string };
+          return (Number(b.free) || 0) + (Number(b.locked) || 0) > 0;
+        }).length;
       return {
         ok: true,
-        message: "Signed request accepted by Binance.",
+        message: `Connected to Binance. Live: ${live} asset${live === 1 ? "" : "s"} with a balance.`,
         permissions: {
           read: true,
           trade: Boolean(payload.canTrade),
@@ -449,10 +509,21 @@ export const binanceAdapter: ProviderAdapter = {
   async fetchTransactions(ctx: AdapterContext): Promise<NormalizedTransaction[]> {
     const apiKey = ctx.credentials["apiKey"]!;
     const apiSecret = ctx.credentials["apiSecret"]!;
-    const symbols = (ctx.config["symbols"] ?? "")
+    let symbols = (ctx.config["symbols"] ?? "")
       .split(",")
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
+    if (!symbols.length) {
+      const accounts = await binanceAdapter.fetchAccounts(ctx);
+      symbols = [
+        ...new Set(
+          accounts
+            .map((a) => a.currency.toUpperCase())
+            .filter((asset) => asset && asset !== "USDT" && asset !== "USDC" && asset !== "BUSD")
+            .map((asset) => `${asset}USDT`),
+        ),
+      ].slice(0, 15);
+    }
     if (!symbols.length) return [];
 
     const out: NormalizedTransaction[] = [];
@@ -463,8 +534,7 @@ export const binanceAdapter: ProviderAdapter = {
         { headers: { "X-MBX-APIKEY": apiKey } },
         ctx.signal,
       );
-      if (status !== 200)
-        throw new Error(`Binance trades request failed for ${symbol} (HTTP ${status})`);
+      if (status !== 200) continue;
       const trades =
         (body as Array<{
           id: number;
@@ -725,8 +795,47 @@ export const solanaWalletAdapter: ProviderAdapter = {
       },
     ];
   },
-  async fetchTransactions(): Promise<NormalizedTransaction[]> {
-    return [];
+  async fetchTransactions(ctx: AdapterContext, since?: string): Promise<NormalizedTransaction[]> {
+    const address = (ctx.config["address"] ?? "").trim();
+    if (!address) return [];
+    const rpc = ctx.config["rpc_url"] || DEFAULT_SOLANA_RPC;
+    const { status, body } = await requestJson(
+      rpc,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "getSignaturesForAddress",
+          params: [address, { limit: 40 }],
+        }),
+      },
+      ctx.signal,
+    );
+    const payload = body as {
+      result?: Array<{ signature?: string; blockTime?: number | null; err?: unknown }>;
+      error?: { message?: string };
+    };
+    if (status >= 400 || payload.error) {
+      throw new Error(payload.error?.message ?? `Solana RPC returned HTTP ${status}`);
+    }
+    const sinceMs = since ? Date.parse(since) : Number.NaN;
+    return (payload.result ?? [])
+      .filter((row) => row.signature)
+      .map((row) => {
+        const occurredAt = new Date((row.blockTime ?? 0) * 1000 || Date.now()).toISOString();
+        return {
+          externalId: row.signature!,
+          kind: "transfer" as TransactionKind,
+          instrument: "SOL",
+          currency: "SOL",
+          occurredAt,
+          sourceRef: `solana:${row.signature}`,
+          raw: { signature: row.signature, err: row.err ?? null },
+        };
+      })
+      .filter((row) => (Number.isFinite(sinceMs) ? Date.parse(row.occurredAt) >= sinceMs : true));
   },
 };
 
@@ -815,18 +924,25 @@ export const bankAccountAdapter: ProviderAdapter = {
   async fetchAccounts(ctx: AdapterContext): Promise<NormalizedAccount[]> {
     const account = (ctx.credentials["account_number"] ?? "").replace(/\s+/g, "");
     if (!account) return [];
-    const opening = num(ctx.config["opening_balance"]);
+    const opening = num(ctx.config["opening_balance"]) ?? 0;
     const last4 = account.slice(-4);
+    let live = opening;
+    let balanceSource = "opening_balance";
+    const txs = await bankAccountAdapter.fetchTransactions(ctx, undefined);
+    if (txs.length) {
+      live = txs.reduce((sum, tx) => sum + (tx.amount ?? 0), opening);
+      balanceSource = "statement_feed";
+    }
     return [
       {
         externalId: `bank:${last4}`,
         accountType: "cash",
         currency: (ctx.config["currency"] || "PKR").toUpperCase(),
-        balance: opening,
-        available: opening,
+        balance: live,
+        available: live,
         asOf: new Date().toISOString(),
         sourceRef: `bank:${last4}`,
-        raw: { bank: ctx.config["bank_name"] ?? "", last4, balanceSource: "opening_balance" },
+        raw: { bank: ctx.config["bank_name"] ?? "", last4, balanceSource, rows: txs.length },
       },
     ];
   },

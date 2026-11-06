@@ -12,8 +12,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { resolveEntitlement } from "./entitlement";
 import type { PlanId } from "./plans";
 import { supabase } from "./supabase";
+import { acceptStoredInvite } from "./team";
 
 interface OrgProfile {
   profile_id: string;
@@ -83,6 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      const joined = await acceptStoredInvite();
+      if (joined) {
+        const refreshed = await supabase
+          .from("profiles")
+          .select("id, org_id, full_name, role")
+          .eq("user_id", u.id)
+          .maybeSingle();
+        if (refreshed.data) row = refreshed.data;
+      }
+
       // 3. Organisation + subscription, fetched independently
       const [orgRes, subRes] = await Promise.all([
         supabase
@@ -92,19 +104,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle(),
         supabase
           .from("subscriptions")
-          .select("plan, status, trial_end_at")
+          .select("plan, status, trial_end_at, charge_period, current_period_end, created_at")
           .eq("org_id", row.org_id)
           .maybeSingle(),
       ]);
 
-      // No subscription row means Basic $0. Trial is started only from the trial card.
-      const rawPlan = (subRes.data?.plan as string | undefined) ?? "free";
-      const planStatus = (subRes.data?.status as string | undefined) ?? "active";
+      const entitlement = resolveEntitlement({
+        orgId: row.org_id,
+        userId: u.id,
+        subPlan: subRes.data?.plan as string | undefined,
+        subStatus: subRes.data?.status as string | undefined,
+        chargePeriod: subRes.data?.charge_period as string | undefined,
+        currentPeriodEnd: subRes.data?.current_period_end as string | undefined,
+        createdAt: subRes.data?.created_at as string | undefined,
+      });
       const trialEnded =
-        planStatus === "trialing" &&
+        subRes.data?.status === "trialing" &&
         subRes.data?.trial_end_at &&
         new Date(subRes.data.trial_end_at).getTime() <= Date.now();
-      const plan = trialEnded ? "free" : rawPlan;
+      const plan = trialEnded ? "free" : entitlement.featurePlan;
+      const planStatus = entitlement.paused || entitlement.expired ? "active" : (subRes.data?.status as string | undefined) ?? "active";
 
       setProfile({
         profile_id: row.id,
@@ -135,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       loadingUserId.current = u.id;
-      setLoading(true);
+      if (!loadedUserId.current) setLoading(true);
       try {
         await loadProfile(u);
         loadedUserId.current = u.id;

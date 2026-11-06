@@ -472,7 +472,7 @@ function Investigations() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemPrompt:
-            "You are Wab Investigation Agent. Analyse the financial data provided and generate a concise, evidence-backed investigation report. Use markdown formatting. Be precise about numbers. Clearly state confidence levels.",
+            "You are Wab, made by Wab. You are not ChatGPT or any other third-party model. Analyse the financial data provided and generate a concise, evidence-backed investigation report. Use markdown formatting. Be precise about numbers. Clearly state confidence levels.",
           userPrompt: aiPrompt,
         }),
       });

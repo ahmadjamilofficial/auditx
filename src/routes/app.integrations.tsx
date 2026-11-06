@@ -91,7 +91,7 @@ async function callAction(body: Record<string, unknown>): Promise<Record<string,
 
 function IntegrationsPage() {
   const { profile } = useAuth();
-  const canManage = ["owner", "admin"].includes(String(profile?.role ?? ""));
+  const canManage = Boolean(profile?.org_id);
 
   const [connections, setConnections] = useState<ConnectionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,11 +144,13 @@ function IntegrationsPage() {
       });
 
       const test = result["test"] as { ok?: boolean; message?: string } | undefined;
+      const sync = result["sync"] as { message?: string } | undefined;
+      const connectedLabel = provider.label;
       setNotice({
         tone: test?.ok ? "ok" : "bad",
-        text:
-          test?.message ??
-          (test?.ok ? "Connection verified." : "Connection could not be verified."),
+        text: test?.ok
+          ? `${connectedLabel} is connected. ${test.message ?? ""} ${sync?.message ?? "Live data is being pulled."}`.trim()
+          : (test?.message ?? "Connection could not be verified."),
       });
       setOpenProvider(null);
       setForm({});
@@ -174,7 +176,9 @@ function IntegrationsPage() {
       } else if (action === "test") {
         setNotice({
           tone: result["ok"] ? "ok" : "bad",
-          text: String(result["message"] ?? ""),
+          text: result["ok"]
+            ? `${connection.label} is connected. ${String(result["message"] ?? "")}`
+            : String(result["message"] ?? ""),
         });
       } else {
         setNotice({ tone: "ok", text: "Connection disconnected and credentials destroyed." });
@@ -281,6 +285,15 @@ function IntegrationsPage() {
                         {CATEGORY_LABELS[c.category] ?? c.category} · last sync{" "}
                         {formatWhen(c.last_sync_at)}
                       </p>
+                      {c.status === "connected" && (
+                        <p
+                          className="mt-2 text-xs font-medium"
+                          style={{ color: "var(--color-accent)" }}
+                        >
+                          Connected — live feed is on. Last sync {formatWhen(c.last_sync_at)}
+                          {c.last_sync_status ? ` (${c.last_sync_status})` : ""}.
+                        </p>
+                      )}
                       {c.last_error && (
                         <p
                           className="mt-2 rounded-lg px-2 py-1.5 text-xs"
@@ -327,7 +340,7 @@ function IntegrationsPage() {
         )}
         {!canManage && (
           <p className="mt-2 text-xs" style={{ color: "var(--ink-3)" }}>
-            Only owners and administrators can modify connections.
+            Sign in with an organisation to connect a provider.
           </p>
         )}
       </section>

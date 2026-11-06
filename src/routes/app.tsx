@@ -19,8 +19,9 @@ function AppLayout() {
     }
   }, [loading, session, navigate]);
 
-  // Render nothing (or a spinner) while auth is resolving
-  if (loading) {
+  // Keep the shell mounted once a session exists so mobile token refresh
+  // does not unmount the AI workspace and restart "Opening your workspace".
+  if (loading && !session) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div
@@ -31,7 +32,6 @@ function AppLayout() {
     );
   }
 
-  // Session confirmed — render the app
   if (!session) return null;
 
   return (

@@ -86,6 +86,7 @@
   --surface-sunken: oklch(0.985 0.001 100);
   --surface-glass: oklch(0.968 0.001 100 / 0.82);
   --color-sheet: oklch(0.928 0.002 100);
+  --row-hover: oklch(0.16 0.005 265 / 4%);
 
   /* ── Brand accent = the ink itself ────────────────────────────────────── */
   --color-accent: oklch(0.16 0.005 265);
@@ -191,6 +192,7 @@
   --surface-sunken: oklch(0.17 0.004 265);
   --surface-glass: oklch(0.145 0.004 265 / 0.82);
   --color-sheet: oklch(0.24 0.004 265);
+  --row-hover: oklch(0.32 0.004 265);
 
   /* In dark mode the mark inverts: the accent becomes white. */
   --color-accent: oklch(0.975 0 0);
@@ -357,6 +359,10 @@
 /* Theme-aware surface hover — works in both light and dark mode. */
 @utility bg-surface-hover {
   background-color: var(--accent-6);
+}
+
+.ledger-row:hover {
+  background: var(--row-hover);
 }
 
 /* Thin custom scrollbar for sidebar and other panels */

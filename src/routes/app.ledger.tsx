@@ -1502,7 +1502,7 @@ function Ledger() {
                 className="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
                 style={{
                   background: actionFilter === a ? "var(--color-accent)" : "var(--color-login-bg)",
-                  color: actionFilter === a ? "#fff" : "var(--ink-2)",
+                  color: actionFilter === a ? "var(--accent-fg)" : "var(--ink-2)",
                 }}
               >
                 {a}
@@ -1519,7 +1519,7 @@ function Ledger() {
                 className="rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors"
                 style={{
                   background: statusFilter === s ? "var(--color-accent)" : "var(--color-login-bg)",
-                  color: statusFilter === s ? "#fff" : "var(--ink-2)",
+                  color: statusFilter === s ? "var(--accent-fg)" : "var(--ink-2)",
                 }}
               >
                 {s.replace("_", " ")}
@@ -1611,7 +1611,7 @@ function Ledger() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: Math.min(i * 0.02, 0.3) }}
                     style={{ borderBottom: "1px solid var(--hairline)" }}
-                    className="transition-colors hover:bg-violet-50/40"
+                    className="ledger-row transition-colors"
                   >
                     <td className="px-4 py-3 text-sm font-semibold">{tx.ticker}</td>
                     <td className="px-4 py-3">

@@ -27,8 +27,22 @@ async function spreadsheetsToText(messages: UIMessage[]): Promise<UIMessage[]> {
         m.parts.map(async (p) => {
           if (p.type !== "file") return p;
           const name = p.filename ?? "file";
+          const isImage = (p.mediaType ?? "").startsWith("image/");
+          const isPdf = /\.pdf$/i.test(name) || (p.mediaType ?? "").includes("pdf");
           const isSheet = SHEET_RE.test(name) || SHEET_TYPES.some((t) => p.mediaType?.includes(t));
-          if (!isSheet || !p.url.startsWith("data:")) return p;
+          if (isImage || isPdf) return p;
+          if (!p.url?.startsWith("data:")) {
+            return {
+              type: "text" as const,
+              text: `The user attached "${name}" (${p.mediaType || "file"}). Treat this as an uploaded document in this turn.`,
+            };
+          }
+          if (!isSheet) {
+            return {
+              type: "text" as const,
+              text: `The user attached a file named "${name}" (${p.mediaType || "document"}). It is included in this message as context — read and use it. Do not say there is no file attached.`,
+            };
+          }
           try {
             const b64 = p.url.slice(p.url.indexOf(",") + 1);
             const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
@@ -385,7 +399,7 @@ export const Route = createFileRoute("/api/chat")({
           // A missing or inactive subscription row means the org is on the Free plan.
           const { data: subData } = await supabase
             .from("subscriptions")
-            .select("plan, status, trial_end_at")
+            .select("plan, status, trial_end_at, charge_period, current_period_end, created_at, cancel_at_period_end")
             .eq("org_id", thread.org_id)
             .maybeSingle();
 
@@ -393,10 +407,23 @@ export const Route = createFileRoute("/api/chat")({
           const trialValid = subData?.trial_end_at
             ? new Date(subData.trial_end_at) > new Date()
             : false;
-          // Cancelled / past_due / missing → Free limits until the subscription is sorted out.
+          const pausedToFree = subData?.cancel_at_period_end === true;
+          const periodDays = subData?.charge_period === "YEARLY" ? 365 : 30;
+          const started = subData?.created_at ? new Date(subData.created_at).getTime() : 0;
+          const strictEnd = started ? started + periodDays * 86_400_000 : 0;
+          const serverEnd = subData?.current_period_end
+            ? new Date(subData.current_period_end).getTime()
+            : 0;
+          const cycleEnd = Math.min(...[strictEnd, serverEnd].filter((n) => n > 0));
+          const cycleExpired = cycleEnd > 0 && Date.now() >= cycleEnd;
           const rawPlan = (subData?.plan as string) ?? "free";
           const plan =
-            subActive && (subData?.status !== "trialing" || trialValid) ? rawPlan : "free";
+            subActive &&
+            !pausedToFree &&
+            !cycleExpired &&
+            (subData?.status !== "trialing" || trialValid)
+              ? rawPlan
+              : "free";
           const limits = planOf(plan);
           const isPro = plan === "pro";
 
@@ -1328,7 +1355,9 @@ export const Route = createFileRoute("/api/chat")({
 ━━ ACCOUNT ━━
 The user is on the ${limits.name} plan (id: ${plan}). AI quality is ${limits.aiQuality}. Basic ($0) is limited in features, variety and answer depth — keep replies shorter and use fewer tools. Standard has a 7-day trial only. Pro unlocks the full tool set. If the user asks for a capability their plan doesn't include, answer what you can and mention the upgrade briefly — never block reads.`;
 
-          const SYSTEM_PROMPT = `You are Wab, a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags.
+          const SYSTEM_PROMPT = `You are Wab. You were made by Wab. You are not ChatGPT, GPT, Gemini, Claude, Llama, or any other third-party assistant. If anyone asks who you are, who made you, what model you are, or which company built you, answer only that you are Wab, made by Wab. Never name OpenAI, Google, Anthropic, Meta, Groq, or any underlying model.
+
+You are a fast, precise financial audit agent for PSX and NSE traders. You are connected to the user's real ledger, portfolio, profile, account, broker accounts, tax figures and reconciliation flags. When the user attaches a file, it is in the message — read it. Never claim no file was attached if a file part or an "Attached file" block is present.
 
 ━━ SPEED AND EFFICIENCY (most important) ━━
 - Answer greetings, definitions and general questions directly with NO tools.

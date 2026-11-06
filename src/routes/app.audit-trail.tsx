@@ -170,7 +170,7 @@ function AuditTrail() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.06 }}
                     style={{ borderBottom: "1px solid var(--hairline)" }}
-                    className="transition-colors hover:bg-violet-50/40"
+                    className="ledger-row transition-colors"
                   >
                     <td className="tnum px-4 py-3 text-xs" style={{ color: "var(--ink-2)" }}>
                       {new Date(row.created_at).toLocaleString("en-PK", {

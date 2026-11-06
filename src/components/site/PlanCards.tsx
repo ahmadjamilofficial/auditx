@@ -108,7 +108,7 @@ export function PlanCards({
               disabled={current && id !== "free"}
               onClick={() => onSelect(id)}
             >
-              {current ? "Current plan" : ctaFor(id)}
+              {current && id !== "free" ? "Current plan" : ctaFor(id)}
             </Btn>
           </Panel>
         );

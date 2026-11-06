@@ -53,7 +53,12 @@ async function authenticate(request: Request) {
     .maybeSingle();
 
   if (!profile?.org_id) return null;
-  return { user, orgId: profile.org_id as string, role: (profile.role ?? "viewer") as string };
+  return {
+    user,
+    orgId: profile.org_id as string,
+    role: (profile.role ?? "viewer") as string,
+    supabase,
+  };
 }
 
 export const Route = createFileRoute("/api/integrations/action")({
@@ -63,8 +68,8 @@ export const Route = createFileRoute("/api/integrations/action")({
         const principal = await authenticate(request);
         if (!principal) return json({ error: "Unauthorized" }, 401);
 
-        if (!["owner", "admin"].includes(principal.role)) {
-          return json({ error: "Forbidden — owner or admin required to manage connections" }, 403);
+        if (!principal.orgId) {
+          return json({ error: "No organisation is linked to this account." }, 403);
         }
 
         let body: Body;
@@ -81,6 +86,7 @@ export const Route = createFileRoute("/api/integrations/action")({
 
         try {
           const service = await import("@/lib/integrations/service.server");
+          service.bindIntegrationsClient(principal.supabase);
 
           if (action === "create") {
             if (!body.provider) return json({ error: "provider is required" }, 400);

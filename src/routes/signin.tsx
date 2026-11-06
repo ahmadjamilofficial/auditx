@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRightCircle, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRightCircle, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { persistInviteToken } from "@/lib/team";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +27,10 @@ function SignIn() {
   const [showPw, setShowPw] = useState(false);
   const [serverErr, setServerErr] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    persistInviteToken(new URLSearchParams(window.location.search).get("invite"));
+  }, []);
 
   // As soon as a session appears (from any sign-in method), navigate to dashboard
   useEffect(() => {
@@ -134,6 +139,14 @@ function SignIn() {
         className="relative flex flex-1 flex-col items-center justify-center px-6 py-12"
         style={{ background: "var(--color-login-bg)" }}
       >
+        <Link
+          to="/"
+          className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
+          style={{ border: "1px solid var(--hairline)", color: "var(--ink-2)", background: "var(--surface)" }}
+        >
+          <ArrowLeft size={13} strokeWidth={2} />
+          Back to home
+        </Link>
         <div className="absolute right-5 top-5">
           <ThemeToggle />
         </div>

@@ -6,6 +6,13 @@ import { Btn, Panel, StatusPill } from "@/components/kit";
 import { PeriodToggle, PlanCards } from "@/components/site/PlanCards";
 import { useAuth } from "@/lib/auth-context";
 import {
+  MONTHLY_DAYS,
+  YEARLY_DAYS,
+  pausePaidClock,
+  resolveEntitlement,
+  resumePaidClock,
+} from "@/lib/entitlement";
+import {
   type ChargePeriod,
   type PlanId,
   PLANS,
@@ -31,10 +38,12 @@ interface SubRow {
   status: string;
   trial_end_at: string | null;
   charge_period?: string | null;
+  current_period_end?: string | null;
+  created_at?: string | null;
 }
 
 function Billing() {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const [sub, setSub] = useState<SubRow | null>(null);
   const [period, setPeriod] = useState<ChargePeriod>("monthly");
   const [clockTick, setClockTick] = useState(0);
@@ -46,7 +55,7 @@ function Billing() {
     void (async () => {
       const { data } = await supabase
         .from("subscriptions")
-        .select("plan, status, trial_end_at, charge_period")
+        .select("plan, status, trial_end_at, charge_period, current_period_end, created_at")
         .eq("org_id", orgId)
         .maybeSingle();
       if (!alive) return;
@@ -61,7 +70,16 @@ function Billing() {
   const userId = user?.id ?? "";
   const clock = getTrialClock(orgId, userId);
   const serverEnds = sub?.trial_end_at ?? null;
-  const currentPlan = normalizePlanId(sub?.plan ?? profile?.plan ?? "free");
+  const entitlement = resolveEntitlement({
+    orgId,
+    userId,
+    subPlan: sub?.plan ?? profile?.plan,
+    subStatus: sub?.status ?? profile?.plan_status,
+    chargePeriod: sub?.charge_period,
+    currentPeriodEnd: sub?.current_period_end,
+    createdAt: sub?.created_at,
+  });
+  const currentPlan = normalizePlanId(entitlement.featurePlan);
   const status = sub?.status ?? profile?.plan_status ?? "active";
   const onTrial =
     status === "trialing" || (Boolean(clock) && !isTrialExpired(clock, serverEnds) && currentPlan === "standard");
@@ -77,11 +95,51 @@ function Billing() {
         ? `$${PLANS[currentPlan].yearlyPrice}/year`
         : `$${PLANS[currentPlan].monthlyPrice}/month`;
 
+  async function revertToFree() {
+    if (!orgId || !userId) return;
+    pausePaidClock(orgId, userId);
+    try {
+      await supabase
+        .from("subscriptions")
+        .update({ cancel_at_period_end: true } as never)
+        .eq("org_id", orgId);
+    } catch {
+      /* local pause still applies */
+    }
+    setClockTick((n) => n + 1);
+    await refreshProfile();
+    toast.success("Reverted to Basic ($0). You can restore your paid plan for free until the paid window ends.");
+  }
+
+  async function restorePaid(plan: PlanId) {
+    if (!orgId || !userId) return;
+    if (plan !== "standard" && plan !== "pro") return;
+    if (!entitlement.canRestore || entitlement.paidPlan !== plan) return;
+    resumePaidClock(orgId, userId);
+    try {
+      await supabase
+        .from("subscriptions")
+        .update({ cancel_at_period_end: false, status: "active", plan } as never)
+        .eq("org_id", orgId);
+    } catch {
+      /* local resume still applies */
+    }
+    setClockTick((n) => n + 1);
+    await refreshProfile();
+    toast.success(`Restored ${PLANS[plan].name} at no extra charge. ${entitlement.daysLeft} day(s) left in this cycle.`);
+  }
+
   function openPlan(plan: PlanId) {
     if (plan === "free") {
-      clearTrialClock(orgId, userId);
-      window.open(kelviqCheckoutUrl({ plan: "free", orgId }), "_blank", "noopener");
-      toast.info("Opening Basic ($0) checkout — this plan is completely free.");
+      if (currentPlan === "free") {
+        toast.info("You are already on Basic.");
+        return;
+      }
+      void revertToFree();
+      return;
+    }
+    if (entitlement.canRestore && entitlement.paidPlan === plan && !entitlement.expired) {
+      void restorePaid(plan);
       return;
     }
     window.open(kelviqCheckoutUrl({ plan, period, orgId }), "_blank", "noopener");
@@ -133,7 +191,7 @@ function Billing() {
 
   function handleStayBasic() {
     clearTrialClock(orgId, userId);
-    openPlan("free");
+    void revertToFree();
   }
 
   return (
@@ -167,9 +225,15 @@ function Billing() {
               {priceNow}
               {onTrial
                 ? " · free until your trial ends"
-                : currentPlan === "free"
-                  ? " · completely free"
-                  : " · billed on your selected cycle"}
+                : currentPlan === "free" && entitlement.canRestore
+                  ? ` · Basic now · ${entitlement.paidPlan ? PLANS[entitlement.paidPlan].name : "paid"} can be restored free for ${entitlement.daysLeft} day${entitlement.daysLeft === 1 ? "" : "s"}`
+                  : currentPlan === "free"
+                    ? " · completely free"
+                    : ` · billed every ${period === "yearly" ? `${YEARLY_DAYS} days` : `${MONTHLY_DAYS} days`}${
+                        entitlement.daysLeft
+                          ? ` · ${entitlement.daysLeft} day${entitlement.daysLeft === 1 ? "" : "s"} left in this cycle`
+                          : ""
+                      }`}
             </p>
           </div>
           <Btn
@@ -255,9 +319,13 @@ function Billing() {
         period={period}
         {...(trialExpired ? {} : { currentPlan })}
         onSelect={openPlan}
-        ctaFor={(id) =>
-          id === "free" ? "Use Basic for $0" : `Subscribe to ${PLANS[id].name}`
-        }
+        ctaFor={(id) => {
+          if (id === "free") return currentPlan === "free" ? "Current plan" : "Revert to Basic $0";
+          if (entitlement.canRestore && entitlement.paidPlan === id) {
+            return `Restore ${PLANS[id].name} free · ${entitlement.daysLeft}d left`;
+          }
+          return `Subscribe to ${PLANS[id].name}`;
+        }}
       />
 
       <div
@@ -270,9 +338,11 @@ function Billing() {
           style={{ color: "var(--color-accent)", marginTop: 2, flexShrink: 0 }}
         />
         <p style={{ color: "var(--ink-2)" }}>
-          <strong>Plans:</strong> Basic is $0 and always free with limited features and AI quality.
-          Standard is $9/month or $45/year. Pro is $25/month or $90/year. A {TRIAL_DAYS}-day trial
-          applies only to Standard and only from the trial card above. Checkout is handled by Kelviq.
+          <strong>Plans:</strong> Basic is $0. Switching to Basic from a paid plan happens in the
+          app — no Kelviq checkout. If your paid cycle is still active ({MONTHLY_DAYS} days monthly /{" "}
+          {YEARLY_DAYS} days yearly, counted strictly), you can restore that paid plan at no extra
+          charge. New paid cycles still go through Kelviq. A {TRIAL_DAYS}-day trial applies only to
+          Standard from the trial card above.
         </p>
       </div>
     </div>

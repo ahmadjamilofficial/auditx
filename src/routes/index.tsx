@@ -11,6 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { ChatComposer } from "@/components/agent/ChatComposer";
+import { LANDING_SUGGESTIONS } from "@/components/site/LandingComposer";
 import { Footer } from "@/components/site/Footer";
 import { LandingNavbar } from "@/components/site/LandingNavbar";
 import { StatusPill, Container, Reveal, Panel } from "@/components/kit";
@@ -339,6 +340,23 @@ function Home() {
               placeholder="Ask anything about your finances, trades, documents, or financial data…"
               disabled={false}
             />
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {LANDING_SUGGESTIONS.map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => {
+                    setChatValue(chip.prompt);
+                    setPendingPrompt(chip.prompt);
+                    navigate({ to: !loading && session ? "/app/parser" : "/signin" });
+                  }}
+                  className="rounded-full bg-surface px-3.5 py-2 text-xs font-medium sm:text-sm"
+                  style={{ border: "1px solid var(--hairline)", color: "var(--ink-2)" }}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>

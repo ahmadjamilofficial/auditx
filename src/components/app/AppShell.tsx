@@ -28,7 +28,7 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { CommandBarProvider, useCommandBar } from "@/components/intelligence/AuditXCommandBar";
+import { CommandBarProvider } from "@/components/intelligence/AuditXCommandBar";
 import {
   NotificationBell,
   NotificationCenter,
@@ -36,13 +36,6 @@ import {
 import { usePendingApprovals } from "@/lib/data-hooks";
 import { useAgentHeartbeat } from "@/lib/use-agent-heartbeat";
 import { useTheme } from "@/lib/theme-context";
-import { TRIAL_DAYS, kelviqCheckoutUrl, normalizePlanId } from "@/lib/plans";
-import {
-  clearTrialClock,
-  getTrialClock,
-  isTrialExpired,
-  trialDaysRemaining,
-} from "@/lib/trial";
 
 // ── Persist sidebar state across page loads ───────────────────────────────────
 const SIDEBAR_KEY = "wab.sidebar.expanded";
@@ -159,77 +152,6 @@ function NavItem({
   );
 }
 
-function TrialStatusBar() {
-  const { profile, user } = useAuth();
-  const clock = getTrialClock(profile?.org_id, user?.id);
-  const current = normalizePlanId(profile?.plan);
-  const paid = profile?.plan_status === "active" && current !== "free";
-  if (paid) return null;
-  const onTrial = profile?.plan_status === "trialing" || Boolean(clock);
-  if (!onTrial && !clock) return null;
-  const expired = isTrialExpired(clock, clock?.endsAt);
-  const days = trialDaysRemaining(clock, clock?.endsAt);
-
-  if (expired && current !== "pro" && current !== "standard") {
-    return (
-      <div
-        className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 text-xs"
-        style={{
-          background: "color-mix(in srgb, var(--bad) 8%, transparent)",
-          borderColor: "var(--sidebar-border)",
-        }}
-      >
-        <p>
-          Your {TRIAL_DAYS}-day Standard trial has ended. Upgrade, or continue on Basic at $0 with
-          limited features and AI quality.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/app/billing"
-            className="rounded-full px-3 py-1.5 font-semibold text-white"
-            style={{ background: "var(--color-accent)" }}
-          >
-            Upgrade
-          </Link>
-          <button
-            type="button"
-            className="rounded-full border px-3 py-1.5 font-semibold"
-            style={{ borderColor: "var(--hairline)" }}
-            onClick={() => {
-              clearTrialClock(profile?.org_id, user?.id);
-              window.location.href = kelviqCheckoutUrl({
-                plan: "free",
-                orgId: profile?.org_id ?? null,
-              });
-            }}
-          >
-            Continue on Basic $0
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!expired && (profile?.plan_status === "trialing" || clock)) {
-    return (
-      <div
-        className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs"
-        style={{ background: "var(--accent-6)", borderColor: "var(--sidebar-border)" }}
-      >
-        <p>
-          Standard trial · {days} day{days === 1 ? "" : "s"} remaining of {TRIAL_DAYS}. Days keep
-          counting if you sign out.
-        </p>
-        <Link to="/app/billing" className="font-semibold" style={{ color: "var(--color-accent)" }}>
-          Manage
-        </Link>
-      </div>
-    );
-  }
-
-  return null;
-}
-
 // ── InnerShell ────────────────────────────────────────────────────────────────
 
 function InnerShell({ children }: { children: ReactNode }) {
@@ -237,8 +159,7 @@ function InnerShell({ children }: { children: ReactNode }) {
   const nav = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
-  const { setOpen: setCommandBarOpen } = useCommandBar();
-  const { theme, setTheme, actualTheme } = useTheme();
+  const { setTheme, actualTheme } = useTheme();
 
   // Desktop sidebar: expanded state persisted in localStorage
   const [expanded, setExpanded] = useState(() => readSidebarPref());
@@ -568,10 +489,9 @@ function InnerShell({ children }: { children: ReactNode }) {
       {/* Main content */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header
-          className={`flex shrink-0 items-center gap-3 border-b px-4 sm:px-6 ${isAskPage ? "py-2" : "py-3"}`}
+          className="flex shrink-0 items-center gap-3 border-b px-4 py-2 sm:px-6"
           style={{ background: "var(--sidebar)", borderColor: "var(--sidebar-border)" }}
         >
-          {/* Mobile hamburger */}
           <button
             type="button"
             className="lg:hidden"
@@ -580,24 +500,6 @@ function InnerShell({ children }: { children: ReactNode }) {
           >
             <Menu size={22} strokeWidth={1.75} />
           </button>
-
-          {!isAskPage && (
-          <button
-            type="button"
-            className="hidden flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-sm sm:flex"
-            style={{ borderColor: "var(--hairline)", background: "var(--surface)", maxWidth: 380 }}
-            onClick={() => setCommandBarOpen(true)}
-          >
-            <Sparkles size={15} strokeWidth={1.75} style={{ color: "var(--color-accent)" }} />
-            <span style={{ color: "var(--ink-3)" }}>Ask Wab anything…</span>
-            <kbd
-              className="ml-auto rounded px-2 py-0.5 text-xs"
-              style={{ background: "var(--accent-6)", color: "var(--ink-3)" }}
-            >
-              ⌘K
-            </kbd>
-          </button>
-          )}
 
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -634,8 +536,6 @@ function InnerShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-
-        <TrialStatusBar />
 
         <main
           className={`min-h-0 flex-1 ${isAskPage ? "overflow-hidden" : "overflow-y-auto scrollbar-thin"}`}

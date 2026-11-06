@@ -39,10 +39,6 @@ import {
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
   PromptInput,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
   PromptInputFooter,
   PromptInputSubmit,
   PromptInputTextarea,
@@ -625,6 +621,20 @@ function DeleteChatModal({
 
 // ── AttachedFileStrip — shows queued files inside the composer ───────────────
 
+function AttachFilesButton() {
+  const attachments = usePromptInputAttachments();
+  return (
+    <button
+      type="button"
+      onClick={() => attachments.openFileDialog()}
+      title="Attach files"
+      className="flex size-8 items-center justify-center rounded-lg text-[color:var(--color-accent)] transition-colors hover:bg-[var(--accent-10)]"
+    >
+      <Paperclip size={15} strokeWidth={1.75} />
+    </button>
+  );
+}
+
 function AttachedFileStrip() {
   const attachments = usePromptInputAttachments();
   const files = attachments.files;
@@ -915,14 +925,18 @@ function Chat({
           )}
 
           <PromptInput
-            accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xlsx,.xls,.txt"
+            accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xlsx,.xls,.txt,application/pdf,image/png,image/jpeg,image/webp,text/csv,text/plain"
             multiple
             globalDrop
+            onError={(err) => toast.error(err.message)}
             onSubmit={async ({ text, files }) => {
               const trimmed = (text ?? "").trim();
               if (!trimmed && (!files || files.length === 0)) return;
               clearComposerDraft(threadId);
-              await sendMessage({ text: trimmed || "Analyse the attached document(s).", files });
+              await sendMessage({
+                text: trimmed || "Read the attached file(s) and use them as context.",
+                files,
+              });
             }}
           >
             <AttachedFileStrip />
@@ -941,17 +955,7 @@ function Chat({
             />
             <PromptInputFooter>
               <PromptInputTools>
-                <PromptInputActionMenu>
-                  <PromptInputActionMenuTrigger
-                    tooltip="Attach files"
-                    className="text-[color:var(--color-accent)] hover:text-[color:var(--color-accent)] hover:bg-[var(--accent-10)]"
-                  >
-                    <Paperclip size={15} strokeWidth={1.75} />
-                  </PromptInputActionMenuTrigger>
-                  <PromptInputActionMenuContent>
-                    <PromptInputActionAddAttachments label="Attach broker document" />
-                  </PromptInputActionMenuContent>
-                </PromptInputActionMenu>
+                <AttachFilesButton />
               </PromptInputTools>
               <PromptInputSubmit status={status} onStop={stop} />
             </PromptInputFooter>
@@ -1003,6 +1007,11 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
         if (cancelled) return;
         if (threadError) throw new Error(threadError.message);
         if (!thread) {
+          try {
+            sessionStorage.removeItem("wab.last.chat.thread");
+          } catch {
+            /* ignore */
+          }
           setWsStatus("not_found");
           return;
         }
@@ -1026,6 +1035,11 @@ export function ParserWorkspace({ threadId }: { threadId: string }) {
             parts: row.parts,
           })) as UIMessage[],
         );
+        try {
+          sessionStorage.setItem("wab.last.chat.thread", threadId);
+        } catch {
+          /* ignore */
+        }
         setWsStatus("ready");
       } catch (cause) {
         if (cancelled) return;

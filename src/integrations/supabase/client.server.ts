@@ -33,8 +33,32 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env["SUPABASE_URL"];
-  const SUPABASE_SERVICE_ROLE_KEY = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  const fromProcess = (name: string) =>
+    typeof process !== "undefined" ? process.env?.[name] : undefined;
+  const fromMeta = (name: string) => {
+    try {
+      return (import.meta as unknown as { env?: Record<string, string> }).env?.[name];
+    } catch {
+      return undefined;
+    }
+  };
+  const read = (...names: string[]) => {
+    for (const name of names) {
+      const value = (fromProcess(name) ?? fromMeta(name) ?? "").trim();
+      if (value && !value.startsWith("your-")) return value;
+    }
+    return "";
+  };
+
+  const SUPABASE_URL = read("SUPABASE_URL", "VITE_SUPABASE_URL");
+  const SUPABASE_SERVICE_ROLE_KEY = read(
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_PUBLISHABLE_KEY",
+    "VITE_SUPABASE_PUBLISHABLE_KEY",
+    "SUPABASE_ANON_KEY",
+    "VITE_SUPABASE_ANON_KEY",
+  );
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [

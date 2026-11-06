@@ -12,7 +12,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E.svg?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Gemini AI](https://img.shields.io/badge/Google-Gemini_2.0-4285F4.svg?style=flat-square&logo=google&logoColor=white)](https://aistudio.google.com/)
+[![Gemini AI](https://img.shields.io/badge/Google-Gemini_3.8-4285F4.svg?style=flat-square&logo=google&logoColor=white)](https://aistudio.google.com/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF.svg?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 [**Live Demo**](https://psxl.live) · [**Documentation**](#-documentation) · [**Quick Start**](#-quick-start) · [**Report a Bug**](https://github.com/Ahmadjamilofficial/wab/issues)
@@ -37,7 +37,9 @@
 - [Environment Variables](#-environment-variables)
 - [Database Setup](#-database-setup)
 - [Project Structure](#-project-structure)
+- [How it works](#-how-it-works)
 - [AI Pipeline](#-ai-pipeline)
+- [Live integrations](#-live-integrations)
 - [Tax Engine](#-tax-engine)
 - [Pricing](#-pricing)
 - [Roadmap](#-roadmap)
@@ -63,7 +65,7 @@ Modern financial software is either too generic or too complex. **Traders, finan
 ## Features
 
 ### Multimodal Statement Parser
-Drop a **PDF, photo, CSV, or XLSX** broker export. Gemini 2.0 Flash extracts:
+Drop a **PDF, photo, CSV, or XLSX** broker export. The chat model (Gemini 3.8 Flash by default, with Groq / OpenAI / OpenRouter fallbacks) extracts:
 - Transaction date, ticker symbol, action (BUY/SELL/DIV)
 - Execution price, quantity, brokerage fees, fees
 - Reference ID, broker name, exchange
@@ -101,6 +103,15 @@ Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + pa
 
 ---
 
+## How it works
+
+1. **Sign in** with email or Google. The first login provisions an organisation, profile, and Basic ($0) subscription.
+2. **Ask Wab** (`/app/parser`) is the workspace. Attach or drop PDFs, images, CSV, or XLSX. The model reads the files and can query the live ledger through tools.
+3. **Ledger / tax / audit trail** are the books of record. FIFO tax math never comes from the LLM.
+4. **Integrations** connect wallets, exchanges, brokerage APIs, bank statement feeds, and CSV imports. A provider is marked Connected only after a live API test succeeds; sync then upserts real balances and transactions.
+5. **Billing** is Basic $0, Standard $9/mo or $45/yr, Pro $25/mo or $90/yr, plus a dedicated 7-day Standard trial. Checkout is Kelviq; paid windows are counted in strict 30/365-day clocks.
+6. **Team** invites create a join link. The invitee signs up or signs in with `?invite=token` and is moved onto the organisation with the chosen role.
+
 ## Architecture
 
 ```
@@ -108,21 +119,21 @@ Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + pa
 │                     CLIENT (React SPA)                        │
 │  TanStack Start · React 19 · Tailwind CSS v4 · Framer Motion │
 │  TanStack Query · React Hook Form · Zod · Recharts            │
-└──────────────────────┬───────────────────────────────────────┘
-                       │ HTTPS / Supabase JS
-┌──────────────────────▼───────────────────────────────────────┐
-│                   SUPABASE BACKEND                            │
-│  Auth (email + Google OAuth) · PostgreSQL + RLS               │
-│  Storage (private trade-documents bucket)                     │
-│  Realtime subscriptions                                       │
-└──────────────────────┬───────────────────────────────────────┘
-                       │
-┌──────────────────────▼───────────────────────────────────────┐
-│                  GOOGLE AI LAYER                              │
-│  Gemini 2.0 Flash — document parsing + anomaly narration      │
-│  Gemini 2.0 Flash — tax explanation + portfolio analysis      │
-│  All AI keys server-side only (never exposed to browser)      │
-└──────────────────────────────────────────────────────────────┘
+└──────────────┬───────────────────────────────┬───────────────┘
+               │ HTTPS / JWT                   │ Vite API routes
+┌──────────────▼──────────────┐   ┌────────────▼───────────────┐
+│      SUPABASE BACKEND       │   │     SERVER ROUTES          │
+│  Auth · Postgres + RLS      │   │  /api/chat                 │
+│  Storage (trade documents)  │   │  /api/integrations/action  │
+│  Realtime                   │   │  /api/webhooks/kelviq      │
+└──────────────┬──────────────┘   └────────────┬───────────────┘
+               │                               │
+               │              ┌────────────────▼───────────────┐
+               │              │  MODEL ROUTER (server only)    │
+               │              │  Groq → OpenAI → OpenRouter    │
+               │              │  → Gemini 3.8 Flash            │
+               └──────────────┤  Tax + recon stay TypeScript   │
+                              └────────────────────────────────┘
 ```
 
 **Non-negotiable architecture rules:**
@@ -148,7 +159,7 @@ Every mutation (parse, post, reconcile, compute) writes a `sha256(prev_hash + pa
 || Database | Supabase (PostgreSQL) |
 || Auth | Supabase Auth (email + Google OAuth) |
 || Storage | Supabase Storage |
-|| AI / ML | Google Gemini 2.0 Flash (`@google/genai` v2) |
+|| AI / ML | Gemini 3.8 Flash + Groq / OpenAI / OpenRouter (`ai` SDK) |
 || Build Tool | Vite 8 + Rolldown |
 || Type Safety | TypeScript 5.8 |
 || Icons | Lucide React |
@@ -217,12 +228,20 @@ Create a `.env` file at the project root (copy from `.env.example`):
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
-# AI Providers (at least one required)
+# AI Providers (at least one required — Groq/OpenAI/OpenRouter are tried before Gemini)
 GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash-exp
-LOVABLE_API_KEY=your-lovable-key
-OPENROUTER_API_KEY=your-openrouter-key
-GROQ_API_KEY=your-groq-key
+GEMINI_MODEL=gemini-3.8-flash
+OPENAI_API_KEY=
+OPENROUTER_API_KEY=
+GROQ_API_KEY=
+
+# Billing
+KELVIQ_CHECKOUT_URL=
+KELVIQ_WEBHOOK_SECRET=
+
+# Integrations (encrypt provider secrets; service role optional but recommended)
+WAB_CREDENTIAL_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
 # Google OAuth Client ID
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
@@ -270,7 +289,27 @@ chat_messages          — chat messages
 financial_events       — financial events
 financial_insights     — AI-generated insights
 financial_investigations — investigation records
+provider_connections   — live integration connections
+provider_credentials   — AES-GCM encrypted API secrets
+provider_accounts      — synced live balances
+provider_transactions  — synced live history (idempotent)
+org_invites            — team invite tokens
 ```
+
+SQL migrations live in `supabase/migrations/` (including integrations and team invites). Apply new files in the Supabase SQL editor if you are not using the CLI.
+
+## Live integrations
+
+| Provider | What is live |
+|---|---|
+| EVM wallet | JSON-RPC balance + Blockscout transaction history |
+| Solana wallet | RPC balance + `getSignaturesForAddress` |
+| Binance | Signed REST balances + `myTrades` |
+| Alpaca | Account equity + activities |
+| Bank | Optional HTTPS CSV statement feed |
+| CSV import | Deterministic parse of pasted statements |
+
+A connection is **Connected** only after the adapter's live `test()` succeeds. Sync then writes accounts and transactions; it never fabricates rows.
 
 ---
 
@@ -313,7 +352,7 @@ wab/
 
 ## AI Pipeline
 
-Wab uses Google Gemini 2.0 Flash for three distinct, bounded tasks:
+Wab routes chat through server-only keys. Gemini 2.x models are retired; the default Gemini id is `gemini-3.8-flash`. Three bounded jobs:
 
 ### Document Parsing
 ```
@@ -355,13 +394,14 @@ The engine is a pure function with zero side effects — fully unit-testable and
 
 **7-Day Free Trial, Then Paid:**
 
-| Plan | Price | Trial | Transactions | Key Features |
+| Plan | Price | Trial | Transactions | Key features |
 |---|---|---|---|---|
-| **Trial** | FREE | 7 days | Unlimited | Full access to all features |
-| **Standard** | $3/mo | - | Unlimited | Core audit tools, notifications, basic reports |
-| **Pro** | $5/mo | - | Unlimited | Advanced agents, PDF reports, anomaly detection, tax-loss harvesting |
+| **Basic** | $0 | — | 30 / month | Core ledger, limited AI |
+| **Standard trial** | $0 for 7 days | 7 days | Standard limits | Started only from the trial card |
+| **Standard** | $9/mo or $45/yr | — | 500 / month | Stronger AI, anomaly detection, team invites |
+| **Pro** | $25/mo or $90/yr | — | Unlimited | Highest AI quality, tax-loss harvesting, live integrations |
 
-After the 7-day trial, users must choose a paid plan to continue using Wab.
+Checkout is Kelviq. Switching back to Basic is in-app (no blank checkout). Paid access uses a strict 30-day or 365-day clock and can be restored if that window is still valid.
 
 ---
 
@@ -373,10 +413,12 @@ After the 7-day trial, users must choose a paid plan to continue using Wab.
 - [x] Supabase Auth + Google OAuth
 - [x] Multi-tenant RLS isolation
 - [x] Tax-loss harvesting suggestions
-- [x] Gemini AI anomaly explanations
+- [x] Gemini / Groq / OpenAI chat with file attachments
+- [x] Live wallet, Binance, Alpaca, bank, and CSV integrations
+- [x] Team invite links
 - [x] Theme toggle (light/dark)
 - [x] Improved favicon
-- [ ] Exchange broker API connections
+- [ ] Additional licensed open-banking aggregators
 - [ ] Regulatory update webhooks
 - [ ] Mobile app (React Native)
 - [ ] Additional jurisdiction profiles

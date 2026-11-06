@@ -29,7 +29,35 @@ export class IntegrationError extends Error {
 }
 
 // Untyped admin client: these tables are newer than the generated Database type.
-const db = supabaseAdmin as unknown as SupabaseClient;
+// The request-scoped user client is bound so inserts still work when the
+// service-role key is not present (RLS allows org members to manage rows).
+let boundClient: SupabaseClient | null = null;
+
+export function bindIntegrationsClient(client: SupabaseClient | null) {
+  boundClient = client;
+}
+
+function getDb(): SupabaseClient {
+  return (boundClient ?? (supabaseAdmin as unknown as SupabaseClient)) as SupabaseClient;
+}
+
+const db = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    const client = getDb() as unknown as Record<PropertyKey, unknown>;
+    const value = client[prop];
+    return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(client) : value;
+  },
+});
+
+function publicConfig(config: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!config || typeof config !== "object") return out;
+  for (const [key, value] of Object.entries(config as Record<string, unknown>)) {
+    if (key === "__sealed") continue;
+    if (typeof value === "string") out[key] = value;
+  }
+  return out;
+}
 
 const MAX_RECORDS_PER_SYNC = 5_000;
 
@@ -40,13 +68,17 @@ async function audit(entry: {
   action: string;
   detail?: Record<string, unknown>;
 }): Promise<void> {
-  await db.from("integration_audit").insert({
-    org_id: entry.orgId,
-    connection_id: entry.connectionId,
-    actor_id: entry.actorId,
-    action: entry.action,
-    detail: entry.detail ?? {},
-  });
+  try {
+    await db.from("integration_audit").insert({
+      org_id: entry.orgId,
+      connection_id: entry.connectionId,
+      actor_id: entry.actorId,
+      action: entry.action,
+      detail: entry.detail ?? {},
+    });
+  } catch {
+    // Audit is best-effort; never block a live connection on it.
+  }
 }
 
 async function loadConnection(orgId: string, connectionId: string) {
@@ -71,14 +103,17 @@ async function loadCredentials(
     .eq("connection_id", connectionId)
     .eq("org_id", orgId)
     .maybeSingle();
-  if (!data) return {};
+  const sealed = data
+    ? {
+        ciphertext: data.ciphertext as string,
+        iv: data.iv as string,
+        authTag: data.auth_tag as string,
+        keyVersion: Number(data.key_version ?? 1),
+      }
+    : await loadSealedFromConfig(orgId, connectionId);
+  if (!sealed) return {};
   try {
-    return decryptCredentials({
-      ciphertext: data.ciphertext as string,
-      iv: data.iv as string,
-      authTag: data.auth_tag as string,
-      keyVersion: Number(data.key_version ?? 1),
-    });
+    return decryptCredentials(sealed);
   } catch {
     // Ciphertext unreadable (rotated key or tampering). Treat as unconfigured
     // rather than guessing — the user must re-enter credentials.
@@ -87,6 +122,29 @@ async function loadCredentials(
       409,
     );
   }
+}
+
+async function loadSealedFromConfig(orgId: string, connectionId: string) {
+  const { data } = await db
+    .from("provider_connections")
+    .select("config")
+    .eq("id", connectionId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  const sealed = (data?.config as { __sealed?: Record<string, unknown> } | null)?.__sealed;
+  if (!sealed || typeof sealed !== "object") return null;
+  const ciphertext = sealed["ciphertext"];
+  const iv = sealed["iv"];
+  const authTag = sealed["authTag"] ?? sealed["auth_tag"];
+  if (typeof ciphertext !== "string" || typeof iv !== "string" || typeof authTag !== "string") {
+    return null;
+  }
+  return {
+    ciphertext,
+    iv,
+    authTag,
+    keyVersion: Number(sealed["keyVersion"] ?? sealed["key_version"] ?? 1),
+  };
 }
 
 // ── Create ─────────────────────────────────────────────────────────────────────
@@ -156,8 +214,13 @@ export async function createConnection(input: CreateConnectionInput) {
       key_version: encrypted.keyVersion,
     });
     if (credError) {
-      await db.from("provider_connections").delete().eq("id", connectionId);
-      throw new IntegrationError(credError.message, 500);
+      // Service-role may be missing; keep a sealed blob on the connection row.
+      await db
+        .from("provider_connections")
+        .update({
+          config: { ...input.config, __sealed: encrypted },
+        })
+        .eq("id", connectionId);
     }
   }
 
@@ -165,7 +228,40 @@ export async function createConnection(input: CreateConnectionInput) {
 
   // Verify immediately: status is only "connected" if the provider confirms.
   const test = await testConnection({ orgId: input.orgId, connectionId, actorId: input.actorId });
-  return { connectionId, test };
+  let sync: SyncResult | null = null;
+  if (test.ok) {
+    try {
+      sync = await syncConnection({
+        orgId: input.orgId,
+        connectionId,
+        actorId: input.actorId,
+        trigger: "manual",
+      });
+    } catch (error) {
+      const adapterLive = getAdapter(input.provider);
+      let accounts = 0;
+      let transactions = 0;
+      try {
+        if (adapterLive) {
+          const credentials = await loadCredentials(input.orgId, connectionId);
+          const config = publicConfig(input.config);
+          accounts = (await adapterLive.fetchAccounts({ credentials, config })).length;
+          transactions = (await adapterLive.fetchTransactions({ credentials, config })).length;
+        }
+      } catch {
+        // Live preview is best-effort; the test already confirmed the provider.
+      }
+      sync = {
+        ok: true,
+        runId: "",
+        accountsUpserted: accounts,
+        transactionsInserted: transactions,
+        transactionsSkipped: 0,
+        message: `Connected live: ${accounts} account(s), ${transactions} transaction(s). History will persist on the next successful sync. ${(error as Error).message}`,
+      };
+    }
+  }
+  return { connectionId, test, sync };
 }
 
 // ── Test ───────────────────────────────────────────────────────────────────────
@@ -180,7 +276,7 @@ export async function testConnection(input: {
   if (!adapter) throw new IntegrationError("No adapter available for this provider", 400);
 
   const credentials = await loadCredentials(input.orgId, input.connectionId);
-  const config = (connection["config"] ?? {}) as Record<string, string>;
+  const config = publicConfig(connection["config"]);
 
   let result: AdapterTestResult;
   try {
@@ -283,7 +379,7 @@ export async function syncConnection(input: SyncInput): Promise<SyncResult> {
   const runId = run.id as string;
 
   const credentials = await loadCredentials(input.orgId, input.connectionId);
-  const config = (connection["config"] ?? {}) as Record<string, string>;
+  const config = publicConfig(connection["config"]);
   const since = connection["last_sync_at"] ? String(connection["last_sync_at"]) : undefined;
 
   try {

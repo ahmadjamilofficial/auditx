@@ -255,7 +255,7 @@ function TaxCenter() {
                   <tr
                     key={i}
                     style={{ borderBottom: "1px solid var(--hairline)" }}
-                    className="transition-colors hover:bg-violet-50/40"
+                    className="ledger-row transition-colors"
                   >
                     <td className="px-3 py-3 text-sm font-semibold">{lot.ticker}</td>
                     <td className="px-3 py-3 text-xs" style={{ color: "var(--ink-2)" }}>

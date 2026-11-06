@@ -3,40 +3,34 @@ import { motion } from "framer-motion";
 import {
   Bell,
   Building2,
+  Copy,
   CreditCard,
   Download,
-  Key,
   Loader2,
   Plus,
   Trash2,
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Btn, Panel } from "@/components/kit";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
 import { setNotificationPrefs } from "@/lib/notifications";
-import { limitLabel, withinLimit } from "@/lib/plans";
-import {
-  useBrokerConnections,
-  useConnectBroker,
-  useDeleteBroker,
-  useDeleteOrganization,
-} from "@/lib/data-hooks";
+import { useDeleteOrganization } from "@/lib/data-hooks";
 import { DirectSourceConnect } from "@/components/app/DirectSourceConnect";
+import { inviteUrl, randomInviteToken, type TeamRole } from "@/lib/team";
 
 export const Route = createFileRoute("/app/settings")({
   component: Settings,
 });
 
-type Tab = "org" | "tax-profiles" | "brokers" | "import" | "team" | "notifications" | "api";
+type Tab = "org" | "tax-profiles" | "import" | "team" | "notifications";
 
 const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
   { id: "org", label: "Organisation", icon: Building2 },
   { id: "tax-profiles", label: "Tax Profiles", icon: CreditCard },
-  { id: "brokers", label: "Broker Accounts", icon: Key },
   { id: "import", label: "Import Data", icon: Download },
   { id: "team", label: "Team & Roles", icon: Users },
   { id: "notifications", label: "Notifications", icon: Bell },
@@ -51,27 +45,81 @@ function Settings() {
   const [jurisdiction, setJurisdiction] = useState(profile?.jurisdiction ?? "PSX");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [connectingBroker, setConnectingBroker] = useState(false);
-  const [brokerFormOpen, setBrokerFormOpen] = useState(false);
-  const [brokerForm, setBrokerForm] = useState({
-    name: "",
-    broker_name: "",
-    currency: "PKR",
-    exchange: "PSX",
-    external_ref: "",
-  });
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deletingOrg, setDeletingOrg] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<TeamRole>("analyst");
+  const [inviting, setInviting] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
-  const { data: brokerData } = useBrokerConnections(profile?.org_id);
-  const connectBrokerMutation = useConnectBroker();
-  const deleteBrokerMutation = useDeleteBroker();
   const deleteOrgMutation = useDeleteOrganization();
-  const brokers = (brokerData || []).map((b) => ({
-    id: b.id,
-    name: b.name,
-    type: b.broker_name,
-  }));
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["org-members", profile?.org_id],
+    enabled: Boolean(profile?.org_id),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, role, user_id")
+        .eq("org_id", profile!.org_id)
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+
+  const { data: invites = [] } = useQuery({
+    queryKey: ["org-invites", profile?.org_id],
+    enabled: Boolean(profile?.org_id),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("org_invites")
+        .select("id, email, role, token, status, expires_at, created_at")
+        .eq("org_id", profile!.org_id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+
+  async function sendInvite() {
+    if (!profile?.org_id || !user?.id) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setInviting(true);
+    try {
+      const token = randomInviteToken();
+      const { error } = await supabase.from("org_invites").insert({
+        org_id: profile.org_id,
+        email,
+        role: inviteRole,
+        token,
+        invited_by: user.id,
+        status: "pending",
+      });
+      if (error) throw error;
+      const url = inviteUrl(token);
+      await navigator.clipboard.writeText(url).catch(() => undefined);
+      toast.success(`Invite created for ${email}`, {
+        description: "The invite link is copied. Share it so they can join this organisation.",
+      });
+      setInviteEmail("");
+      setInviteOpen(false);
+      void queryClient.invalidateQueries({ queryKey: ["org-invites", profile.org_id] });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not create invite. Apply the org_invites migration in Supabase.",
+      );
+    } finally {
+      setInviting(false);
+    }
+  }
 
   const [notifications, setNotifications] = useState({
     lowConfidenceAlert: true,
@@ -109,59 +157,6 @@ function Settings() {
       toast.error("Failed to save organization settings");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function addBroker() {
-    if (!profile?.org_id) return;
-    if (!brokerForm.broker_name.trim()) {
-      toast.error("Enter the broker name");
-      return;
-    }
-    if (!withinLimit(profile.plan, "brokerAccounts", brokers.length)) {
-      toast.error(
-        `Your ${profile.plan.toUpperCase()} plan allows ${limitLabel(profile.plan, "brokerAccounts")} broker account(s).`,
-        {
-          description: "Upgrade to connect more brokers.",
-        },
-      );
-      return;
-    }
-    setConnectingBroker(true);
-    try {
-      await connectBrokerMutation.mutateAsync({
-        orgId: profile.org_id,
-        broker: {
-          name: brokerForm.name.trim() || `${brokerForm.broker_name.trim()} Account`,
-          broker_name: brokerForm.broker_name.trim(),
-          currency: brokerForm.currency,
-          exchange: brokerForm.exchange,
-          external_ref: brokerForm.external_ref.trim() || undefined,
-        },
-      });
-      toast.success("Broker account added");
-      setBrokerForm({
-        name: "",
-        broker_name: "",
-        currency: "PKR",
-        exchange: "PSX",
-        external_ref: "",
-      });
-      setBrokerFormOpen(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add broker");
-    } finally {
-      setConnectingBroker(false);
-    }
-  }
-
-  async function removeBroker(id: string) {
-    if (!profile?.org_id) return;
-    try {
-      await deleteBrokerMutation.mutateAsync({ id, orgId: profile.org_id });
-      toast.success("Broker account removed");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to remove broker");
     }
   }
 
@@ -224,7 +219,7 @@ function Settings() {
       <div>
         <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>Settings</h1>
         <p className="mt-0.5 text-sm" style={{ color: "var(--ink-2)" }}>
-          Manage your organisation, tax profiles, broker accounts and team.
+          Manage your organisation, tax profiles, team, and notifications.
         </p>
       </div>
 
@@ -341,7 +336,7 @@ function Settings() {
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
                   placeholder={`Type "${profile?.org_name ?? ""}" to confirm`}
-                  className="mb-3 w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
+                  className="mb-8 mt-2 w-full rounded-[10px] border bg-surface px-4 py-3 text-sm outline-none"
                   style={{ borderColor: "var(--hairline)", maxWidth: 400 }}
                 />
                 <Btn
@@ -410,181 +405,121 @@ function Settings() {
             </motion.div>
           )}
 
-          {tab === "brokers" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Panel>
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm font-semibold">Broker Accounts</p>
-                  <Btn variant="secondary" onClick={() => setBrokerFormOpen((v) => !v)}>
-                    <Plus size={15} strokeWidth={1.75} />
-                    {brokerFormOpen ? "Cancel" : "Add broker"}
-                  </Btn>
-                </div>
-
-                {brokerFormOpen && (
-                  <div
-                    className="mb-4 grid gap-3 rounded-xl p-4 sm:grid-cols-2"
-                    style={{ background: "var(--color-login-bg)" }}
-                  >
-                    <input
-                      type="text"
-                      value={brokerForm.broker_name}
-                      onChange={(e) =>
-                        setBrokerForm({ ...brokerForm, broker_name: e.target.value })
-                      }
-                      placeholder="Broker name (e.g. AKD Securities)"
-                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
-                      style={{ borderColor: "var(--hairline)" }}
-                    />
-                    <input
-                      type="text"
-                      value={brokerForm.name}
-                      onChange={(e) => setBrokerForm({ ...brokerForm, name: e.target.value })}
-                      placeholder="Account label (optional)"
-                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
-                      style={{ borderColor: "var(--hairline)" }}
-                    />
-                    <select
-                      value={brokerForm.exchange}
-                      onChange={(e) => setBrokerForm({ ...brokerForm, exchange: e.target.value })}
-                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
-                      style={{ borderColor: "var(--hairline)" }}
-                    >
-                      <option value="PSX">PSX</option>
-                      <option value="NSE">NSE</option>
-                    </select>
-                    <select
-                      value={brokerForm.currency}
-                      onChange={(e) => setBrokerForm({ ...brokerForm, currency: e.target.value })}
-                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
-                      style={{ borderColor: "var(--hairline)" }}
-                    >
-                      <option value="PKR">PKR</option>
-                      <option value="INR">INR</option>
-                      <option value="USD">USD</option>
-                    </select>
-                    <input
-                      type="text"
-                      value={brokerForm.external_ref}
-                      onChange={(e) =>
-                        setBrokerForm({ ...brokerForm, external_ref: e.target.value })
-                      }
-                      placeholder="Account / client code (optional)"
-                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none sm:col-span-2"
-                      style={{ borderColor: "var(--hairline)" }}
-                    />
-                    <div className="sm:col-span-2">
-                      <Btn onClick={addBroker} disabled={connectingBroker}>
-                        {connectingBroker ? (
-                          <>
-                            <Loader2 size={15} strokeWidth={1.75} className="animate-spin" />
-                            Adding…
-                          </>
-                        ) : (
-                          "Save broker account"
-                        )}
-                      </Btn>
-                    </div>
-                  </div>
-                )}
-
-                {brokers.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-2">
-                    <Key size={28} strokeWidth={1.5} style={{ color: "var(--ink-3)" }} />
-                    <p className="text-sm font-medium">No broker accounts added</p>
-                    <p className="text-xs text-center" style={{ color: "var(--ink-3)" }}>
-                      Broker names are inferred automatically when you parse statements.
-                      <br />
-                      Use "Add broker" to link an account manually.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {brokers.map((broker) => (
-                      <div
-                        key={broker.id}
-                        className="flex items-center justify-between rounded-xl px-4 py-3"
-                        style={{ background: "var(--color-login-bg)" }}
-                      >
-                        <div>
-                          <p className="text-sm font-medium">{broker.name}</p>
-                          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                            {broker.type}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="rounded-full px-2.5 py-1 text-xs font-medium"
-                            style={{
-                              background: "color-mix(in srgb, var(--ok) 10%, transparent)",
-                              color: "var(--ok)",
-                            }}
-                          >
-                            Connected
-                          </span>
-                          <button
-                            type="button"
-                            aria-label={`Remove ${broker.name}`}
-                            onClick={() => removeBroker(broker.id)}
-                            className="rounded-lg p-1.5 hover:bg-red-50"
-                            style={{ color: "var(--bad)" }}
-                          >
-                            <Trash2 size={15} strokeWidth={1.75} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Panel>
-            </motion.div>
-          )}
-
           {tab === "team" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Panel>
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm font-semibold">Team Members</p>
-                  <Btn variant="secondary" disabled>
+                  <Btn variant="secondary" onClick={() => setInviteOpen((v) => !v)}>
                     <Plus size={15} strokeWidth={1.75} />
-                    Invite member
+                    {inviteOpen ? "Cancel" : "Invite member"}
                   </Btn>
                 </div>
-                <div className="space-y-3">
+
+                {inviteOpen && (
                   <div
-                    className="flex items-center gap-3 rounded-xl px-4 py-3"
+                    className="mb-4 grid gap-3 rounded-xl p-4 sm:grid-cols-[1fr_140px_auto]"
                     style={{ background: "var(--color-login-bg)" }}
                   >
-                    <div
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full overflow-hidden text-xs font-semibold"
-                      style={{
-                        background: avatarUrl ? "transparent" : "var(--color-accent)",
-                        color: "var(--accent-fg)",
-                      }}
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="teammate@company.com"
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
+                      style={{ borderColor: "var(--hairline)" }}
+                    />
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as TeamRole)}
+                      className="rounded-[10px] border bg-surface px-3.5 py-2.5 text-sm outline-none"
+                      style={{ borderColor: "var(--hairline)" }}
                     >
-                      {avatarUrl ? (
-                        <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
+                      <option value="admin">Admin</option>
+                      <option value="analyst">Analyst</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                    <Btn onClick={() => void sendInvite()} disabled={inviting}>
+                      {inviting ? (
+                        <Loader2 size={15} strokeWidth={1.75} className="animate-spin" />
                       ) : (
-                        initials
+                        "Create invite"
                       )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{displayName}</p>
-                      <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-                        {user?.email ?? ""}
-                      </p>
-                    </div>
-                    <span
-                      className="rounded-full px-2.5 py-1 text-xs font-medium"
-                      style={{ background: "var(--accent-10)", color: "var(--color-accent)" }}
-                    >
-                      Owner
-                    </span>
+                    </Btn>
+                    <p className="text-xs sm:col-span-3" style={{ color: "var(--ink-3)" }}>
+                      Creates a join link (copied to your clipboard). They sign up or sign in with
+                      that link and are added to this organisation.
+                    </p>
                   </div>
-                  <p className="pt-2 text-center text-xs" style={{ color: "var(--ink-3)" }}>
-                    Team invitations require additional setup. Contact support to enable team
-                    collaboration.
-                  </p>
+                )}
+
+                <div className="space-y-3">
+                  {members.map((member) => {
+                    const isYou = member.user_id === user?.id;
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3"
+                        style={{ background: "var(--color-login-bg)" }}
+                      >
+                        <div
+                          className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
+                          style={{
+                            background: isYou && avatarUrl ? "transparent" : "var(--color-accent)",
+                            color: "var(--accent-fg)",
+                          }}
+                        >
+                          {isYou && avatarUrl ? (
+                            <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
+                          ) : (
+                            (member.full_name || "?").charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {member.full_name || "Member"}
+                            {isYou ? " (you)" : ""}
+                          </p>
+                          <p className="text-xs capitalize" style={{ color: "var(--ink-3)" }}>
+                            {member.role}
+                          </p>
+                        </div>
+                        <span
+                          className="rounded-full px-2.5 py-1 text-xs font-medium capitalize"
+                          style={{ background: "var(--accent-10)", color: "var(--color-accent)" }}
+                        >
+                          {member.role}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {invites.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3"
+                      style={{ background: "var(--color-login-bg)" }}
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{inv.email}</p>
+                        <p className="text-xs capitalize" style={{ color: "var(--ink-3)" }}>
+                          Pending {inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                        style={{ border: "1px solid var(--hairline)" }}
+                        onClick={() => {
+                          void navigator.clipboard.writeText(inviteUrl(inv.token));
+                          toast.success("Invite link copied");
+                        }}
+                      >
+                        <Copy size={12} />
+                        Copy link
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </Panel>
             </motion.div>
@@ -600,7 +535,7 @@ function Settings() {
                 </p>
                 <DirectSourceConnect
                   orgId={profile?.org_id ?? ""}
-                  onComplete={() => setTab("brokers")}
+                  onComplete={() => setTab("org")}
                 />
               </Panel>
             </motion.div>

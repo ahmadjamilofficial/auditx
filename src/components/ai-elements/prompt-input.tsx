@@ -33,7 +33,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
-import { CornerDownLeftIcon, ImageIcon, Monitor, PlusIcon, SquareIcon, XIcon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  CornerDownLeftIcon,
+  ImageIcon,
+  Monitor,
+  PlusIcon,
+  SquareIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
+import { createPortal } from "react-dom";
 import { nanoid } from "nanoid";
 import type {
   ChangeEvent,
@@ -471,6 +481,41 @@ export type PromptInputProps = Omit<HTMLAttributes<HTMLFormElement>, "onSubmit" 
   ) => void | Promise<void>;
 };
 
+function DropOverlay({ compact }: { compact?: boolean }) {
+  return (
+    <div
+      className={
+        compact
+          ? "pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-2xl"
+          : "pointer-events-none fixed inset-0 z-[80] flex items-center justify-center"
+      }
+      style={{
+        background: compact
+          ? "color-mix(in srgb, var(--color-accent) 12%, transparent)"
+          : "color-mix(in srgb, var(--color-login-bg) 72%, transparent)",
+        border: compact ? "2px dashed var(--color-accent)" : undefined,
+        backdropFilter: compact ? undefined : "blur(6px)",
+      }}
+    >
+      <div
+        className="flex flex-col items-center gap-2 rounded-2xl px-8 py-6 text-center"
+        style={{
+          background: "var(--surface)",
+          border: "1.5px dashed var(--color-accent)",
+          color: "var(--color-accent)",
+          boxShadow: "var(--shadow-card)",
+        }}
+      >
+        <UploadIcon className="size-8" />
+        <p className="text-sm font-semibold">Drop files to attach</p>
+        <p className="text-xs" style={{ color: "var(--ink-2)" }}>
+          PDF, images, CSV, or spreadsheets
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export const PromptInput = ({
   className,
   accept,
@@ -500,6 +545,9 @@ export const PromptInput = ({
   const [referencedSources, setReferencedSources] = useState<
     (SourceDocumentUIPart & { id: string })[]
   >([]);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const dragDepth = useRef(0);
 
   // Keep a ref to files for cleanup on unmount (avoids stale closure)
   const filesRef = useRef(files);
@@ -523,13 +571,17 @@ export const PromptInput = ({
         .map((s) => s.trim())
         .filter(Boolean);
 
+      const name = f.name.toLowerCase();
+      const ext = name.includes(".") ? `.${name.split(".").pop()}` : "";
       return patterns.some((pattern) => {
-        if (pattern.endsWith("/*")) {
-          // e.g: image/* -> image/
-          const prefix = pattern.slice(0, -1);
-          return f.type.startsWith(prefix);
+        const p = pattern.toLowerCase();
+        if (p.endsWith("/*")) {
+          const prefix = p.slice(0, -1);
+          return f.type.toLowerCase().startsWith(prefix);
         }
-        return f.type === pattern;
+        if (p.startsWith(".")) return ext === p;
+        if (p.includes("/")) return f.type.toLowerCase() === p;
+        return ext === `.${p}` || name.endsWith(`.${p}`);
       });
     },
     [accept],
@@ -678,63 +730,69 @@ export const PromptInput = ({
     }
   }, [files, syncHiddenInput]);
 
+  const announceAdded = useCallback((list: FileList | File[]) => {
+    const names = Array.from(list)
+      .map((f) => f.name)
+      .slice(0, 3);
+    const extra = list.length > 3 ? ` +${list.length - 3} more` : "";
+    setUploadNote(
+      list.length === 1
+        ? `File uploaded: ${names[0]}`
+        : `${list.length} files uploaded: ${names.join(", ")}${extra}`,
+    );
+    window.setTimeout(() => setUploadNote(null), 4000);
+  }, []);
+
   // Attach drop handlers on nearest form and document (opt-in)
   useEffect(() => {
     const form = formRef.current;
-    if (!form) {
-      return;
-    }
-    if (globalDrop) {
-      // when global drop is on, let the document-level handler own drops
-      return;
-    }
+    const target: HTMLElement | Document | null = globalDrop ? document : form;
+    if (!target) return;
 
+    const hasFiles = (e: DragEvent) =>
+      Boolean(e.dataTransfer?.types && Array.from(e.dataTransfer.types).includes("Files"));
+
+    const onDragEnter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepth.current += 1;
+      setDragActive(true);
+    };
+    const onDragLeave = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (dragDepth.current === 0) setDragActive(false);
+    };
     const onDragOver = (e: DragEvent) => {
-      if (e.dataTransfer?.types?.includes("Files")) {
-        e.preventDefault();
-      }
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
     };
     const onDrop = (e: DragEvent) => {
-      if (e.dataTransfer?.types?.includes("Files")) {
-        e.preventDefault();
-      }
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragDepth.current = 0;
+      setDragActive(false);
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
         add(e.dataTransfer.files);
+        announceAdded(e.dataTransfer.files);
       }
     };
-    form.addEventListener("dragover", onDragOver);
-    form.addEventListener("drop", onDrop);
-    return () => {
-      form.removeEventListener("dragover", onDragOver);
-      form.removeEventListener("drop", onDrop);
-    };
-  }, [add, globalDrop]);
 
-  useEffect(() => {
-    if (!globalDrop) {
-      return;
-    }
-
-    const onDragOver = (e: DragEvent) => {
-      if (e.dataTransfer?.types?.includes("Files")) {
-        e.preventDefault();
-      }
-    };
-    const onDrop = (e: DragEvent) => {
-      if (e.dataTransfer?.types?.includes("Files")) {
-        e.preventDefault();
-      }
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        add(e.dataTransfer.files);
-      }
-    };
-    document.addEventListener("dragover", onDragOver);
-    document.addEventListener("drop", onDrop);
+    target.addEventListener("dragenter", onDragEnter as EventListener);
+    target.addEventListener("dragleave", onDragLeave as EventListener);
+    target.addEventListener("dragover", onDragOver as EventListener);
+    target.addEventListener("drop", onDrop as EventListener);
     return () => {
-      document.removeEventListener("dragover", onDragOver);
-      document.removeEventListener("drop", onDrop);
+      target.removeEventListener("dragenter", onDragEnter as EventListener);
+      target.removeEventListener("dragleave", onDragLeave as EventListener);
+      target.removeEventListener("dragover", onDragOver as EventListener);
+      target.removeEventListener("drop", onDrop as EventListener);
+      dragDepth.current = 0;
+      setDragActive(false);
     };
-  }, [add, globalDrop]);
+  }, [add, globalDrop, announceAdded]);
 
   useEffect(
     () => () => {
@@ -753,11 +811,12 @@ export const PromptInput = ({
     (event) => {
       if (event.currentTarget.files) {
         add(event.currentTarget.files);
+        announceAdded(event.currentTarget.files);
       }
       // Reset input value to allow selecting files that were previously removed
       event.currentTarget.value = "";
     },
-    [add],
+    [add, announceAdded],
   );
 
   const attachmentsCtx = useMemo<AttachmentsContext>(
@@ -861,9 +920,19 @@ export const PromptInput = ({
         title="Upload files"
         type="file"
       />
-      <form className={cn("w-full", className)} onSubmit={handleSubmit} ref={formRef} {...props}>
-        <InputGroup className="overflow-hidden">{children}</InputGroup>
+      <form className={cn("relative w-full", className)} onSubmit={handleSubmit} ref={formRef} {...props}>
+        <InputGroup className="overflow-hidden flex-col items-stretch">{children}</InputGroup>
+        {dragActive && !globalDrop ? <DropOverlay compact /> : null}
       </form>
+      {uploadNote ? (
+        <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs font-medium" style={{ color: "var(--color-accent)" }}>
+          <CheckCircle2Icon className="size-3.5" />
+          {uploadNote}
+        </p>
+      ) : null}
+      {dragActive && globalDrop && typeof document !== "undefined"
+        ? createPortal(<DropOverlay />, document.body)
+        : null}
     </>
   );
 

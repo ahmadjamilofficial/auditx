@@ -9,19 +9,25 @@ export const Route = createFileRoute("/app/parser/")({
   component: ParserIndex,
 });
 
+const LAST_THREAD_KEY = "wab.last.chat.thread";
+
 function ParserIndex() {
-  const { user, loading, refreshProfile } = useAuth();
+  const { user, session, loading, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const started = useRef(false);
   const [failure, setFailure] = useState<string | null>(null);
 
   const open = useCallback(async () => {
     const currentUser = user;
-    if (!currentUser) return;
+    if (!currentUser || !session?.access_token) return;
     setFailure(null);
-    console.log("[Wab][ParserIndex] Opening workspace", { userId: currentUser.id });
 
     try {
+      const cached = sessionStorage.getItem(LAST_THREAD_KEY);
+      if (cached) {
+        navigate({ to: "/app/parser/$threadId", params: { threadId: cached }, replace: true });
+      }
+
       const { data: existing, error: listError } = await withTimeout(
         supabase
           .from("chat_threads")
@@ -36,7 +42,7 @@ function ParserIndex() {
 
       const found = existing?.[0]?.id;
       if (found) {
-        console.log("[Wab][ParserIndex] Existing thread found, navigating", { threadId: found });
+        sessionStorage.setItem(LAST_THREAD_KEY, found);
         navigate({ to: "/app/parser/$threadId", params: { threadId: found }, replace: true });
         return;
       }
@@ -74,27 +80,25 @@ function ParserIndex() {
       );
       if (error || !created) throw new Error(error?.message ?? "Could not open the AI workspace.");
 
-      console.log("[Wab][ParserIndex] Thread created, navigating", { threadId: created.id });
+      sessionStorage.setItem(LAST_THREAD_KEY, created.id);
       navigate({ to: "/app/parser/$threadId", params: { threadId: created.id }, replace: true });
     } catch (cause) {
       console.error("[Wab][ParserIndex] ERROR opening workspace", {
         userId: currentUser.id,
         cause,
       });
-      started.current = false;
       setFailure(cause instanceof Error ? cause.message : "Could not open the AI workspace.");
     }
-  }, [user, navigate, refreshProfile]);
+  }, [user, session?.access_token, navigate, refreshProfile]);
 
   const userId = user?.id;
+  const token = session?.access_token;
   useEffect(() => {
-    if (loading || !userId || started.current) return;
+    if (loading || !userId || !token || started.current) return;
     started.current = true;
     void open();
-    // `open` is intentionally excluded: it is recreated whenever auth state
-    // refreshes and would otherwise re-trigger navigation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, userId]);
+  }, [loading, userId, token]);
 
   if (failure) {
     return (
@@ -105,6 +109,7 @@ function ParserIndex() {
         <button
           type="button"
           onClick={() => {
+            started.current = false;
             started.current = true;
             void open();
           }}
