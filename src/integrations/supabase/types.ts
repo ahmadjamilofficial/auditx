@@ -1510,6 +1510,67 @@ export type Database = {
           },
         ]
       }
+      org_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          org_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          org_id: string
+          role?: string
+          status?: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          org_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_invites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_invites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_monthly"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "org_invites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_needing_nightly"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
       org_policy_config: {
         Row: {
           allowed_auto_actions: string[]
@@ -2856,6 +2917,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_org_invite: { Args: { _token: string }; Returns: Json }
       complete_agent_job: {
         Args: {
           p_error?: string
@@ -2934,6 +2996,7 @@ export type Database = {
         Args: { org_id_param: string }
         Returns: boolean
       }
+      lookup_org_invite: { Args: { _token: string }; Returns: Json }
       provision_current_user: {
         Args: { _full_name: string; _jurisdiction?: string; _org_name: string }
         Returns: {
