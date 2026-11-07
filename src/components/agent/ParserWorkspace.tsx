@@ -249,7 +249,7 @@ function ErrorBanner({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto my-3 max-w-3xl overflow-hidden rounded-2xl px-5 py-4"
+      className="mx-auto my-3 max-w-[48rem] overflow-hidden rounded-2xl px-5 py-4"
       style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
     >
       <div className="flex items-start gap-3">
@@ -307,7 +307,7 @@ function AgentProgressBar({ stage, visible }: { stage: string | null; visible: b
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.25 }}
-          className="mx-auto mb-3 flex max-w-3xl items-center gap-3 rounded-2xl px-4 py-3"
+          className="mx-auto mb-3 flex max-w-[48rem] items-center gap-3 rounded-2xl px-4 py-3"
           style={{
             background: "var(--accent-6)",
             border: "1px solid var(--accent-14)",
@@ -344,6 +344,75 @@ function AgentProgressBar({ stage, visible }: { stage: string | null; visible: b
 }
 
 // ── CSV download helper ───────────────────────────────────────────────────────
+
+function formatMoney(value: unknown, currency?: unknown): string {
+  const num = typeof value === "number" ? value : Number(value);
+  const amount = Number.isFinite(num)
+    ? num.toLocaleString(undefined, { maximumFractionDigits: 2 })
+    : String(value ?? "—");
+  const cur = typeof currency === "string" && currency.trim() ? currency.trim() : "";
+  return cur ? `${cur} ${amount}` : amount;
+}
+
+function narrateToolOutput(name: string, output: unknown): string {
+  if (output == null) return "";
+  if (typeof output === "string") return output.trim();
+  if (typeof output !== "object") return String(output);
+
+  const rec = output as Record<string, unknown>;
+  if (typeof rec["error"] === "string") return rec["error"];
+  if (typeof rec["message"] === "string" && rec["accounts"] == null) return rec["message"];
+
+  if (Array.isArray(rec["accounts"])) {
+    const accounts = rec["accounts"] as Record<string, unknown>[];
+    if (accounts.length === 0) {
+      return typeof rec["note"] === "string"
+        ? rec["note"]
+        : "No live balances are available yet. Connect a source, then ask again.";
+    }
+    const lines = accounts.map((account) => {
+      const label =
+        [account["account_type"], account["external_id"], account["connection_id"]]
+          .filter((part) => typeof part === "string" && part.trim())
+          .join(" · ") || "Account";
+      return `- ${label}: ${formatMoney(account["balance"] ?? account["available"], account["currency"])}`;
+    });
+    const note = typeof rec["note"] === "string" ? `\n\n${rec["note"]}` : "";
+    return `Here is your current balance:\n\n${lines.join("\n")}${note}`;
+  }
+
+  if (typeof rec["totalTransactions"] === "number") {
+    return `Your ledger has ${rec["totalTransactions"]} transaction(s), ${rec["needsReview"] ?? 0} needing review, and ${rec["openFlags"] ?? 0} open flag(s).`;
+  }
+
+  if (typeof rec["plan"] === "string" && typeof rec["transactions"] === "number") {
+    return `You are on the ${rec["plan"]} plan, with ${rec["transactions"]} ledger transaction(s) and ${rec["open_flags"] ?? 0} open flag(s).`;
+  }
+
+  const scalars = Object.entries(rec)
+    .filter(([, value]) => value == null || ["string", "number", "boolean"].includes(typeof value))
+    .slice(0, 8)
+    .map(([key, value]) => `${key.replace(/_/g, " ")}: ${String(value)}`);
+  return scalars.length > 0 ? scalars.join("\n") : "";
+}
+
+function assistantHasWrittenText(parts: UIMessage["parts"]): boolean {
+  return parts.some((part) => part.type === "text" && part.text.trim().length > 0);
+}
+
+function narrateAssistantTools(parts: UIMessage["parts"]): string {
+  const paragraphs: string[] = [];
+  for (const part of parts) {
+    const tp = part as unknown as ToolPart;
+    if (!(tp.type?.startsWith("tool-") || tp.type === "dynamic-tool")) continue;
+    if (tp.state !== "output-available" || tp.output == null) continue;
+    const name = tp.toolName ?? tp.type.replace(/^tool-/, "");
+    if (name === "report_progress" || name === "plan_task") continue;
+    const text = narrateToolOutput(name, tp.output);
+    if (text) paragraphs.push(text);
+  }
+  return paragraphs.join("\n\n");
+}
 
 function triggerCsvDownload(filename: string, csv: string) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -691,11 +760,12 @@ function Chat({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, stop, error, addToolApprovalResponse, setMessages } =
+  const { messages, sendMessage, status, stop, error, addToolApprovalResponse } =
     useChat({
       id: threadId,
       messages: initial,
       transport,
+      throttle: 80,
       sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
       onFinish: () => {
         void queryClient.invalidateQueries({ queryKey: ["chat_threads", user?.id] });
@@ -751,29 +821,31 @@ function Chat({
 
   useEffect(() => {
     if (status !== "streaming") {
-      setCurrentStage(null);
+      setCurrentStage((prev) => (prev == null ? prev : null));
       return;
     }
     const lastMsg = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastMsg) return;
+    let nextStage: string | null = null;
     for (const part of [...(lastMsg.parts ?? [])].reverse()) {
       const tp = part as unknown as ToolPart;
       const name = tp.toolName ?? tp.type?.replace(/^tool-/, "");
       if (name === "report_progress" && tp.output) {
         const out = tp.output as Record<string, unknown>;
         if (typeof out["stage"] === "string") {
-          setCurrentStage(out["stage"]);
-          return;
+          nextStage = out["stage"];
+          break;
         }
       }
       if (name === "plan_task" && tp.state === "input-available" && tp.input) {
         const inp = tp.input as Record<string, unknown>;
         if (typeof inp["public_stage"] === "string") {
-          setCurrentStage(inp["public_stage"]);
-          return;
+          nextStage = inp["public_stage"];
+          break;
         }
       }
     }
+    setCurrentStage((prev) => (prev === nextStage ? prev : nextStage));
   }, [messages, status]);
 
   async function handleDeleteChat() {
@@ -798,7 +870,7 @@ function Chat({
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* ── Messages ─────────────────────────────────────────────────────── */}
       <Conversation className="min-h-0 flex-1">
-        <ConversationContent className="mx-auto w-full max-w-5xl px-5 pb-8 pt-10 sm:pt-12">
+        <ConversationContent className="mx-auto w-full max-w-[48rem] px-4 pb-8 pt-8 sm:px-5 sm:pt-10">
           {empty && (
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -828,17 +900,33 @@ function Chat({
             </motion.div>
           )}
 
-          {messages.map((message) => (
+          {messages.map((message, messageIndex) => {
+            const isLastAssistant =
+              message.role === "assistant" && messageIndex === messages.length - 1;
+            const fallbackText =
+              message.role === "assistant" &&
+              !isStreaming &&
+              !assistantHasWrittenText(message.parts)
+                ? narrateAssistantTools(message.parts)
+                : "";
+            return (
             <Message key={message.id} from={message.role}>
               <MessageContent>
                 {message.parts.map((part, index) => {
+                  const partKey =
+                    ("toolCallId" in part && typeof part.toolCallId === "string" && part.toolCallId) ||
+                    `${message.id}-${part.type}-${index}`;
                   if (part.type === "text")
-                    return <MessageResponse key={index}>{part.text}</MessageResponse>;
+                    return (
+                      <MessageResponse key={partKey} isAnimating={isStreaming && isLastAssistant}>
+                        {part.text}
+                      </MessageResponse>
+                    );
 
                   if (part.type === "file")
                     return (
                       <div
-                        key={index}
+                        key={partKey}
                         className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs"
                         style={{ borderColor: "var(--hairline)" }}
                       >
@@ -851,7 +939,7 @@ function Chat({
                     const approvalId = tp.approval?.id;
                     return (
                       <ToolCard
-                        key={index}
+                        key={partKey}
                         part={tp}
                         onApprove={
                           approvalId
@@ -863,9 +951,11 @@ function Chat({
                   }
                   return null;
                 })}
+                {fallbackText ? <MessageResponse>{fallbackText}</MessageResponse> : null}
               </MessageContent>
             </Message>
-          ))}
+            );
+          })}
 
           {status === "submitted" && (
             <Shimmer>Reading your ledger and planning next steps…</Shimmer>
@@ -891,8 +981,8 @@ function Chat({
       </Conversation>
 
       {/* ── Composer area ─────────────────────────────────────────────────── */}
-      <div className="px-4 pb-6 pt-2">
-        <div className="mx-auto w-full max-w-5xl">
+      <div className="px-3 pb-4 pt-1 sm:px-4 sm:pb-5">
+        <div className="mx-auto w-full max-w-[48rem]">
           <AgentProgressBar stage={currentStage} visible={isStreaming} />
 
           {empty && (
@@ -925,6 +1015,7 @@ function Chat({
           )}
 
           <PromptInput
+            className="[&_[data-slot=input-group]]:rounded-[28px] [&_[data-slot=input-group]]:bg-surface [&_[data-slot=input-group]]:shadow-[var(--shadow-card)]"
             accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xlsx,.xls,.txt,application/pdf,image/png,image/jpeg,image/webp,text/csv,text/plain"
             multiple
             globalDrop
@@ -944,7 +1035,7 @@ function Chat({
               ref={textareaRef}
               autoFocus
               placeholder="Ask Wab a question about your data…"
-              className="px-4 text-sm"
+              className="min-h-[52px] px-4 text-[15px] leading-6"
               onChange={(e) => {
                 // Auto-grow
                 const el = e.currentTarget;

@@ -3,6 +3,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  stepCountIs,
   streamText,
   tool,
   type UIMessage,
@@ -1411,6 +1412,8 @@ You are a fast, precise financial audit agent for PSX and NSE traders. You are c
 - Only use delegate_agent for large multi-document audits that truly need a specialist. Never delegate simple questions.
 - Keep answers concise. Use the structured report sections only for real audits/analysis; otherwise answer in a few short paragraphs or a table.
 - Always finish with a complete written answer.
+- After every tool call you MUST continue and write a plain-English answer in the same turn. Never stop after tools. Never leave the user with only JSON, raw tool output, or a silent tool card.
+- For balance, holdings, ledger totals, tax, or account questions: state the figures in short sentences (amount + currency + source). If nothing is connected, say that plainly.
 
 ━━ DATA ━━
 - Account/profile/plan/organisation → get_account_overview
@@ -1445,12 +1448,13 @@ NEW TOOLS ADDED:
               delete_transaction: "user-approval" as const,
             },
             experimental_toolApprovalSecret: approvalSecret,
-            maxSteps,
+            // AI SDK 7 ignores maxSteps; without stopWhen the loop ends after the
+            // first tool call and the user never gets a written answer.
+            stopWhen: stepCountIs(maxSteps),
             maxRetries: 0,
-            // After the plan's tool budget, tools switch off so the model must
-            // write its final answer instead of stopping mid-way.
+            // Last step is text-only so the model must narrate tool results.
             prepareStep: ({ stepNumber }: { stepNumber: number }) =>
-              stepNumber >= maxSteps ? { toolChoice: "none" as const } : {},
+              stepNumber >= Math.max(0, maxSteps - 1) ? { toolChoice: "none" as const } : {},
             providerOptions: resolved.providerOptions as never,
           };
 
@@ -1509,7 +1513,7 @@ NEW TOOLS ADDED:
                     ...STREAM_OPTS,
                     providerOptions: entry.providerOptions as never,
                   });
-                  const ui = result.toUIMessageStream({ sendReasoning: true });
+                  const ui = result.toUIMessageStream({ sendReasoning: false });
                   const iterator = ui[Symbol.asyncIterator]();
                   const first = await iterator.next();
                   const chunk = first.value as { type?: string; errorText?: string } | undefined;

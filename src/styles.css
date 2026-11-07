@@ -68,6 +68,10 @@
 }
 
 :root {
+  --chat-scrollbar-thumb: oklch(0.16 0.005 265 / 22%);
+  --chat-scrollbar-thumb-hover: oklch(0.16 0.005 265 / 38%);
+  --chat-scrollbar-track: transparent;
+
   /* ── Type ─────────────────────────────────────────────────────────────── */
   --font-heading: "Helvetica Now Display Bold", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -180,6 +184,10 @@
 }
 
 .dark {
+  --chat-scrollbar-thumb: oklch(1 0 0 / 20%);
+  --chat-scrollbar-thumb-hover: oklch(1 0 0 / 36%);
+  --chat-scrollbar-track: transparent;
+
   --color-text: oklch(0.975 0 0);
   --ink-2: oklch(0.975 0 0 / 62%);
   --ink-3: oklch(0.975 0 0 / 42%);
@@ -384,4 +392,32 @@
   &::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-20);
   }
+}
+
+/* Chat transcript scrollbar — separate light/dark thumbs, ChatGPT-like gutter. */
+.chat-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--chat-scrollbar-thumb) var(--chat-scrollbar-track);
+}
+
+.chat-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: var(--chat-scrollbar-track);
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--chat-scrollbar-thumb);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--chat-scrollbar-thumb-hover);
 }
